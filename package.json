@@ -1,0 +1,32 @@
+{
+  "name": "pim-data-service",
+  "version": "1.0.0",
+  "description": "App used to export and import data for PIM",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "dependencies": {
+    "express": "^4.18.0",
+    "@propelsoftwaresolutions/propel-sfdc-connect": "^1.0.0",
+    "uuid": "^8.3.2"
+  },
+  "devDependencies": {
+    "eslint": "^8.22.0",
+    "mocha": "^10.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PropelPLM/pim-data-service.git"
+  },
+  "keywords": [
+    "express",
+    "node"
+  ],
+  "author": "Propel Software Solutions",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/PropelPLM/pim-data-service/issues"
+  },
+  "homepage": "https://github.com/PropelPLM/pim-data-service#readme"
+}

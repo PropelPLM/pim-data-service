@@ -1,0 +1,9 @@
+{
+    "description": "Node app built to export or import csv files",
+    "image": "heroku/nodejs",
+    "keywords": ["express", "node", "static"],
+    "logo": "http://node-js-sample.herokuapp.com/node.svg",
+    "name": "Propel PIM Data Service",
+    "repository": "https://github.com/PropelPLM/pim-data-service.git"
+  }
+  
