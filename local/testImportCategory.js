@@ -4,9 +4,9 @@ const ImportPimCategory = require('../lib/ImportCategory');
 const hostUrl = "pim-qa.my.salesforce.com"
 const namespace = ""
 const orgId = "00D8c0000086640"
-const sessionId = "00D8c0000086640!AQkAQCSV_71E78O0qEf6EzPiQHKPL09Qrajei0zElPs9TwagBn25P8awP35AVJaheXu9pAsdqZUfclj6qicl4gDvq5I.WyPd"
+const sessionId = "00D8c0000086640!AQkAQE92Ql6U.xnPyzeOtwHYmj2m.zu6AKEcq_pU7MxyEUv7tbL3dWCVp.F1TWPpgQkc2z191OuQhVKhy_MHS.A25vnGHs0s"
 
-function pimCategoryTest() {
+function categoryTest() {
   let treq = {
     body: {
       "skipDB": true,
@@ -28,4 +28,4 @@ function pimCategoryTest() {
   new ImportPimCategory(treq, tres)
 }
 
-pimCategoryTest()
+categoryTest()

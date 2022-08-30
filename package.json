@@ -5,10 +5,13 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "test": "mocha"
+    "test": "mocha",
+    "-----------local-tests-----------": "",
+    "categoryimport": "node ./local/testImportCategory.js"
   },
   "dependencies": {
     "body-parser": "^1.20.0",
+    "csv-parser": "^3.0.0",
     "express": "^4.18.0",
     "helmet": "^5.1.1",
     "uuid": "^8.3.2",

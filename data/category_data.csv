@@ -1,5 +1,5 @@
-name,category_id,parent_category,parent_category_id,variant_1,variant_2,variant_3,variant_4
-New Category Import Test - Level 1,38888,Crazy Cool Clothes and More,10000,Color,Size,,
-New Category Import Test - Level 2,38889,New Category Import Test - Level 1,38888,Color,Size,,
-New Category Import Test - Level 3,38890,New Category Import Test - Level 2,38889,Color,Size,,
-New Category Import Test - Level 4,38891,New Category Import Test - Level 3,38890,Logo,Color,Size,
+name,category_id,parent_category,parent_category_id,
+New Category Import Test - Level 1,39888,Crazy Cool Clothes and More,10000,
+New Category Import Test - Level 2,39889,New Category Import Test - Level 1,39888,
+New Category Import Test - Level 3,39890,New Category Import Test - Level 2,39889,
+New Category Import Test - Level 4,39891,New Category Import Test - Level 3,39890,
