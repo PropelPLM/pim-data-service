@@ -16,7 +16,7 @@ function categoryTest() {
       "sessionId": sessionId,
       "batchsize": 3,
       "mapping": {},
-      "data": fs.readFileSync('../data/category_data.csv'),
+      "data": fs.readFileSync('./data/category_data.csv'),
       "options": {},
     }
   }

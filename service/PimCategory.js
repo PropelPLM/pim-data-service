@@ -1,4 +1,4 @@
-//const ImportLog = require('../ImportLog')
+const propelConnect = require('@propelsoftwaresolutions/propel-sfdc-connect')
 
 class PimCategory {
 
@@ -13,18 +13,18 @@ class PimCategory {
 
   async populate() {
     try {
-      this.categories = await this.helper.service.queryLimit(this.helper.namespaceQuery(
+      this.categories = await this.helper.connection.queryLimit(this.helper.namespaceQuery(
         `select Id, Name, Category_Id__c from Category__c`
       ))
     } catch(error) {
-    //   this.logs.push(new ImportLog(
-    //     this.helper.namespace + 'Category__c',
-    //     '',
-    //     '',
-    //     '',
-    //     error,
-    //     false
-    //   ))
+      this.logs.push(propelConnect.newLog({
+        errors: error,
+        id: '',
+        isInsert: false,
+        objName: this.helper.namespace + 'Category__c',
+        rowName: '',
+        success: false,
+      }))
 
       console.log(error)
     }
