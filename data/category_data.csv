@@ -1,5 +1,5 @@
 name,category_id,parent_category,parent_category_id
-New Category Import Test - Level 1,39988,Crazy Cool Clothes and More,10000
-New Category Import Test - Level 2,39989,New Category Import Test - Level 1,39988
-New Category Import Test - Level 3,39990,New Category Import Test - Level 2,39989
-New Category Import Test - Level 4,39991,New Category Import Test - Level 3,39990
+New Category Import Test - Level 1,59988,Crazy Cool Clothes and More,10000
+New Category Import Test - Level 2,59989,New Category Import Test - Level 1,59988
+New Category Import Test - Level 3,59990,New Category Import Test - Level 2,59989
+New Category Import Test - Level 4,59991,New Category Import Test - Level 3,59990

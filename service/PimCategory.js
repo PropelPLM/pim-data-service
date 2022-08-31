@@ -1,14 +1,13 @@
-const propelConnect = require('@propelsoftwaresolutions/propel-sfdc-connect')
-
 class PimCategory {
 
   /**
    * @param {ImportHelper} helper
+   * @param {ImportLog} log
    */
-  constructor(helper) {
+  constructor(helper, log) {
     this.categories = []
     this.helper = helper
-    this.logs = []
+    this.log = log
   }
 
   async populate() {
@@ -17,15 +16,7 @@ class PimCategory {
         `select Id, Name, Category_Id__c from Category__c`
       ))
     } catch(error) {
-      this.logs.push(propelConnect.newLog({
-        errors: error,
-        id: '',
-        isInsert: false,
-        objName: this.helper.namespace + 'Category__c',
-        rowName: '',
-        success: false,
-      }))
-
+      //TODO: figure out what to send to the logs.
       console.log(error)
     }
   }

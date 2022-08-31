@@ -4,7 +4,7 @@ const ImportPimCategory = require('../lib/ImportCategory');
 const hostUrl = "pim-qa.my.salesforce.com"
 const namespace = ""
 const orgId = "00D8c0000086640"
-const sessionId = "00D8c0000086640!AQkAQE92Ql6U.xnPyzeOtwHYmj2m.zu6AKEcq_pU7MxyEUv7tbL3dWCVp.F1TWPpgQkc2z191OuQhVKhy_MHS.A25vnGHs0s"
+const sessionId = "00D8c0000086640!AQkAQBXVJgh_0uclnfxTAQ4UZpawx9QIr_vzxALTzzI4lqCFSAb.p8.KfbKOeEIn166RwHfDPLBOh3TNxgd0Gc63Lcx1PG9J"
 
 function categoryTest() {
   let treq = {
