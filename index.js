@@ -29,5 +29,12 @@ app.get('/', (req, res) => {
  * route for importing pim categories
  */
 app.post('/import/pim/category', (req, res) => {
-  new ImportCategory(req, res)
+  try {
+    new ImportCategory(req, res)
+    res.status(200)
+    res.send({ message: 'Request received', success: true })
+  } catch(error) {
+    res.status(400)
+    res.send({ message: `Error: ${error}`, success: false })
+  }
 })
