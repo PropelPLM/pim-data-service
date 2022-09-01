@@ -16,6 +16,7 @@ app.listen((process.env.PORT || 5001))
  * objects used in routes
  */
 const ImportCategory = require('./lib/ImportCategory');
+const ImportProduct = require('./lib/ImportProduct')
 
 /**
  * routes for our node app
@@ -31,6 +32,19 @@ app.get('/', (req, res) => {
 app.post('/import/pim/category', (req, res) => {
   try {
     new ImportCategory(req, res)
+    res.status(200)
+    res.send({ message: 'Request received', success: true })
+  } catch(error) {
+    res.status(400)
+    res.send({ message: `Error: ${error}`, success: false })
+  }
+
+  /**
+ * route for importing pim products
+ */
+app.post('/import/pim/product', (req, res) => {
+  try {
+    new ImportProduct(req, res)
     res.status(200)
     res.send({ message: 'Request received', success: true })
   } catch(error) {
