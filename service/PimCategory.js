@@ -1,8 +1,8 @@
 class PimCategory {
 
   /**
-   * @param {ImportHelper} helper
-   * @param {ImportLog} log
+   * @param {PropelHelper} helper
+   * @param {PropelLog} log
    */
   constructor(helper, log) {
     this.categories = []
@@ -16,7 +16,8 @@ class PimCategory {
         `select Id, Name, Category_Id__c from Category__c`
       ))
     } catch(error) {
-      //TODO: figure out what to send to the logs.
+      this.log.addToLogs([{errors: [error] }], this.helper.namespace('Category__c'))
+
       console.log(error)
     }
   }

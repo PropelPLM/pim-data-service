@@ -7,15 +7,15 @@
     "start": "node index.js",
     "test": "mocha",
     "-----------local-tests-----------": "",
-    "categoryimport": "node ./local/testImportCategory.js"
+    "categoryimport": "node ./local/testImportCategory.js",
+    "productimport": "node ./local/testImportProduct.js"
   },
   "dependencies": {
     "body-parser": "^1.20.0",
     "csv-parser": "^3.0.0",
     "express": "^4.18.0",
     "helmet": "^5.1.1",
-    "uuid": "^8.3.2",
-    "@propelsoftwaresolutions/propel-sfdc-connect": "1.1.8"
+    "@propelsoftwaresolutions/propel-sfdc-connect": "1.1.9"
   },
   "devDependencies": {
     "eslint": "^8.22.0",
