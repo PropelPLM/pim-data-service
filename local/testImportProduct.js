@@ -4,7 +4,7 @@ const ImportProduct = require('../lib/ImportProduct');
 const hostUrl = "pim-qa.my.salesforce.com"
 const namespace = ""
 const orgId = "00D8c0000086640"
-const sessionId = "00D8c0000086640!AQkAQNoiRza8Z_FkA6NhT6KEe65mebIWz5.QI2h_E3iUoAOJjs.1Eeks0sbUtPtTq.ZW5uu6ye6SIg8AErwGPDQ9MR6xChDU"
+const sessionId = "00D8c0000086640!AQkAQMuoPTArYaA_YSbOc82n8wsx8R2nynbW5guP5vu1pz2hzBlzujx1MVC5TXwXBEAdSC7xrikgXdrey3v1orQUDc1JaPVt"
 
 function productTest() {
   let treq = {
