@@ -38,6 +38,7 @@ app.post('/import/pim/category', (req, res) => {
     res.status(400)
     res.send({ message: `Error: ${error}`, success: false })
   }
+})
 
   /**
  * route for importing pim products
