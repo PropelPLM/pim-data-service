@@ -12,10 +12,9 @@ class PimProduct {
 
   async populate() {
     try {
-      const results = await this.helper.connection.simpleQuery(this.helper.namespaceQuery(
+      this.products = await this.helper.connection.queryLimit(this.helper.namespaceQuery(
         `select Id, Name, (select Id, Name from Variants__r) from Product__c`
       ))
-      this.products = results.records
     } catch(error) {
       this.log.addToLogs([{errors: [error] }], this.helper.namespace('Product__c'))
 

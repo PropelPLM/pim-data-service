@@ -3,7 +3,6 @@ const express = require('express');
 const app = express()
 const bodyParser = require('body-parser');
 const helmet = require('helmet');
-const propelConnect = require('@propelsoftwaresolutions/propel-sfdc-connect');
 
 // app Configuration
 const bodySize = '80mb'
@@ -15,15 +14,18 @@ app.listen((process.env.PORT || 5001))
 /**
  * objects used in routes
  */
-const ImportCategory = require('./lib/ImportCategory');
+const ImportCategory = require('./lib/ImportCategory')
 const ImportProduct = require('./lib/ImportProduct')
+const ExportPim = require('./lib/ExportProduct.js');
+
+const ERROR_OBJ = { message: '', success: false }
+const SUCCESS_OBJ = { message: 'Request received', success: true }
 
 /**
  * routes for our node app
  */
 app.get('/', (req, res) => {
-  const logging = propelConnect.newConnection('test', 'test')
-  res.send('Propel PIM data server is running. AND connection is ' + logging.QUERY_LIST)
+  res.status(200).send('Propel PIM data server is running.')
 })
 
 /**
@@ -32,11 +34,10 @@ app.get('/', (req, res) => {
 app.post('/import/pim/category', (req, res) => {
   try {
     new ImportCategory(req, res)
-    res.status(200)
-    res.send({ message: 'Request received', success: true })
+    res.status(200).send(SUCCESS_OBJ)
   } catch(error) {
-    res.status(400)
-    res.send({ message: `Error: ${error}`, success: false })
+    ERROR_OBJ.message = error
+    res.status(400).send(ERROR_OBJ)
   }
 })
 
@@ -46,10 +47,23 @@ app.post('/import/pim/category', (req, res) => {
 app.post('/import/pim/product', (req, res) => {
   try {
     new ImportProduct(req, res)
-    res.status(200)
-    res.send({ message: 'Request received', success: true })
+    res.status(200).send(SUCCESS_OBJ)
   } catch(error) {
-    res.status(400)
-    res.send({ message: `Error: ${error}`, success: false })
+    ERROR_OBJ.message = error
+    res.status(400).send(ERROR_OBJ)
   }
 })
+
+/**
+ * 
+ */
+app.post('/export/pim', (req, res) => {
+  try {
+    new ExportPim(req);
+    res.status(200).send(SUCCESS_OBJ);
+  } catch (error) {
+    ERROR_OBJ.message = error
+    res.status(400).send(ERROR_OBJ);
+  }
+});
+
