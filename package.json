@@ -9,13 +9,15 @@
     "-----------local-tests-----------": "",
     "categoryimport": "node ./local/testImportCategory.js",
     "productimport": "node ./local/testImportProduct.js",
-    "exportproduct": "node ./local/testExportProduct.js"
+    "exportproduct": "node ./local/testExportProduct.js",
+    "legacyexport": "node ./local/testLegacyExportProduct.js"
   },
   "dependencies": {
     "body-parser": "^1.20.0",
     "csv-parser": "^3.0.0",
     "express": "^4.18.0",
     "helmet": "^5.1.1",
+    "jsforce-propel": "^1.9.3",
     "objects-to-csv": "^1.3.6",
     "@propelsoftwaresolutions/propel-sfdc-connect": "1.2.15"
   },

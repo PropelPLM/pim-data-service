@@ -16,7 +16,9 @@ app.listen((process.env.PORT || 5001))
  */
 const ImportCategory = require('./lib/ImportCategory')
 const ImportProduct = require('./lib/ImportProduct')
-const ExportPim = require('./lib/ExportProduct.js');
+const ExportPim = require('./lib/ExportProduct.js')
+
+const LegacyExportPim = require('./legacy/LegacyExportPIM')
 
 const ERROR_OBJ = { message: '', success: false }
 const SUCCESS_OBJ = { message: 'Request received', success: true }
@@ -55,9 +57,9 @@ app.post('/import/pim/product', (req, res) => {
 })
 
 /**
- * 
+ * route for exporting pim products
  */
-app.post('/export/pim', (req, res) => {
+app.post('/export/pim/product', (req, res) => {
   try {
     new ExportPim(req);
     res.status(200).send(SUCCESS_OBJ);
@@ -65,5 +67,16 @@ app.post('/export/pim', (req, res) => {
     ERROR_OBJ.message = error
     res.status(400).send(ERROR_OBJ);
   }
-});
+})
 
+/**
+ * route for legacy exporter
+ */
+app.post('/export/legacy/pim/product', (req, res) => {
+  try {
+    LegacyExportPim(req);
+    res.status(200).send('')
+  } catch (err) {
+    res.status(400).send('')
+  }
+})

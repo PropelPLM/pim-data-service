@@ -1,0 +1,60 @@
+class PimExportHelper {
+    constructor(namespace) {
+      this.namespaceString = namespace;
+    }
+  
+    /**
+     * to inject name space
+     * @param {string} field
+     * @return {string}
+     */
+    namespace(field) {
+      return this.namespaceString ? `${this.namespaceString}${field}` : field;
+    }
+  
+    /**
+     * @param {string} queryStr
+     * @return {string}
+     */
+    namespaceQuery(queryStr) {
+      let parts = queryStr.split(/[ ,.\n]/g);
+      parts.forEach((p) => {
+        if (p.endsWith('__c') || p.endsWith('__r')) {
+          queryStr = queryStr.replace(
+            new RegExp(`[ ]${p}`),
+            ' ' + this.namespace(p)
+          );
+          queryStr = queryStr.replace(
+            new RegExp(`[,]${p}`),
+            ',' + this.namespace(p)
+          );
+          queryStr = queryStr.replace(
+            new RegExp(`[.]${p}`),
+            '.' + this.namespace(p)
+          );
+        }
+      });
+      return queryStr;
+    }
+  
+    /**
+     * gets field data from object with namespace
+     * @param {Object} object
+     * @param {string} fieldApi
+     */
+    getValue(object, fieldApi) {
+      let fields = fieldApi.split('.');
+      let queryResult = object;
+      fields.forEach((field) => {
+        if (field.endsWith('__c') || field.endsWith('__r')) {
+          queryResult = queryResult[this.namespace(field)];
+        } else {
+          queryResult = queryResult.field;
+        }
+      });
+      return queryResult;
+    }
+  }
+  
+  module.exports = PimExportHelper;
+  
