@@ -3,18 +3,23 @@ class PimProduct {
   /**
    * @param {PropelHelper} helper
    * @param {PropelLog} log
+   * @param {Array} productNames
    */
-  constructor(helper, log) {
+  constructor(helper, log, productNames) {
     this.helper = helper
     this.log = log
     this.products = []
+    this.productNames = productNames
   }
 
   async populate() {
     try {
-      this.products = await this.helper.connection.queryLimit(this.helper.namespaceQuery(
-        `select Id, Name, (select Id, Name from Variants__r) from Product__c`
+      const formatedNames = this.productNames.join(',')
+
+      const result = await this.helper.connection.simpleQuery(this.helper.namespaceQuery(
+        `select Id, Name, (select Id, Name from Variants__r) from Product__c where Name in (${formatedNames})`
       ))
+      this.products = result.records
     } catch(error) {
       this.log.addToLogs([{errors: [error] }], this.helper.namespace('Product__c'))
 
