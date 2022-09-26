@@ -16,9 +16,9 @@ app.listen((process.env.PORT || 5001))
  */
 const ImportCategory = require('./lib/ImportCategory')
 const ImportProduct = require('./lib/ImportProduct')
-const ExportPim = require('./lib/ExportProduct.js')
+const ExportPim = require('./lib/ExportProduct')
 
-const LegacyExportPim = require('./legacy/LegacyExportPIM')
+const LegacyExportPim = require('./legacy/ExportPIM')
 
 const ERROR_OBJ = { message: '', success: false }
 const SUCCESS_OBJ = { message: 'Request received', success: true }
