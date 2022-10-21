@@ -233,7 +233,7 @@ async function buildStructureWithCategoryIds(pCategoryIds) {
   // return productsList
   return await service.simpleQuery(
     helper.namespaceQuery(
-      `select Id, Name, Category__c, Category__r.Name, Title__c,
+      `select Id, Name, Category__c, Category__r.Name,
       (
         select
             Id,
@@ -300,7 +300,7 @@ async function buildStructureWithSecondaryCategoryIds(pCategoryIds) {
     // return productsList
     return await service.simpleQuery(
       helper.namespaceQuery(
-        `select Id, Name, Category__c, Category__r.Name, Title__c,
+        `select Id, Name, Category__c, Category__r.Name,
       (
         select
             Id,
