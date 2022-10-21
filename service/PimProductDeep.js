@@ -16,7 +16,7 @@ class PimProductDeep {
   async populate() {
     try {
       const results = await this.helper.connection.simpleQueryExtend(this.helper.namespaceQuery(
-        `select Id, Name, Category__c, Category__r.Name, Title__c,
+        `select Id, Name, Category__c, Category__r.Name,
           (
             select
                 Id,

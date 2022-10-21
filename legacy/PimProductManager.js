@@ -10,7 +10,7 @@ async function PimProductManager(recordIds, pHelper, pService) {
 async function buildWithProductIds(recordIds) {
   // ProductManager.buildWithProductIds
   const productsList = await service.queryExtend(helper.namespaceQuery(
-    `select Id, Name, Category__c, Category__r.Name, Title__c,
+    `select Id, Name, Category__c, Category__r.Name,
       (
         select
             Id,

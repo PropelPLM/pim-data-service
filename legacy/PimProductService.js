@@ -18,7 +18,6 @@ async function getResultForProductStructure(productsList) {
     tempMap = new Map();
     tempMap.set('Id', product.Id);
     tempMap.set('Product_ID', product.Name);
-    tempMap.set('Title', helper.getValue(product, 'Title__c')); // TODO: move product title to an Attribute
     tempMap.set(
       'Category__r.Name',
       helper.getValue(product, 'Category__r').Name
