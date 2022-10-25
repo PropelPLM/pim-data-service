@@ -14,8 +14,8 @@ async function LegacyExportPIM(req) {
   let recordsAndCols;
   try {
     recordsAndCols = await PimStructure(reqBody, isListPageExport);
-  } catch (err) {
-    console.log('error: ', err);
+  } catch (error) {
+    console.log('error: ', error);
   }
   let csvString = convertArrayOfObjectsToCSV(
     recordsAndCols[0],
@@ -79,7 +79,7 @@ function convertArrayOfObjectsToCSV(records, columns) {
 
   // in the keys valirable store fields API Names as a key
   // this labels use in CSV file header
-  columns.forEach(col => {
+  columns.forEach((col) => {
     if (col.fieldName) {
       if (col.fieldName === 'ProductLink') {
         keys.push(col.typeAttributes.label.fieldName);
