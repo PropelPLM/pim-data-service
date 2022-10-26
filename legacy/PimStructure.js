@@ -313,7 +313,7 @@ async function PimStructure(reqBody, isListPageExport) {
     let templateHeaders;
     if (reqBody.options.isTemplateExport && reqBody.templateVersionData) {
       // parse headers and fields and store them in a map
-      const templateRows = reqBody.templateVersionData.split('\n');
+      const templateRows = reqBody.templateVersionData.split(/\r?\n/);
       templateHeaders = templateRows[0].split(',');
       templateFields = templateRows[1].split(',');
       console.log('templateRows: ', templateRows);
