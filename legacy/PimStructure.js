@@ -27,6 +27,7 @@ async function PimStructure(reqBody, isListPageExport) {
     // export is from product data page
     /** PIM repo ProductService.getProductById start */
     // PIM repo ProductManager.buildWithProductIds
+    console.log('reqbodyu: ', reqBody);
     let productsList = await PimProductManager(recordIds, helper, service);
 
     // PIM repo ProductService.getResultForProductStructure(productsList)
