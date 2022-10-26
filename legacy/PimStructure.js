@@ -27,7 +27,6 @@ async function PimStructure(reqBody, isListPageExport) {
     // export is from product data page
     /** PIM repo ProductService.getProductById start */
     // PIM repo ProductManager.buildWithProductIds
-    console.log('reqbodyu: ', reqBody);
     let productsList = await PimProductManager(recordIds, helper, service);
 
     // PIM repo ProductService.getResultForProductStructure(productsList)
@@ -317,6 +316,9 @@ async function PimStructure(reqBody, isListPageExport) {
       const templateRows = reqBody.templateVersionData.split('\n');
       templateHeaders = templateRows[0].split(',');
       templateFields = templateRows[1].split(',');
+      console.log('templateRows: ', templateRows);
+      console.log('templateHeaders: ', templateHeaders);
+      console.log('templateFields: ', templateFields);
       for (let i = 0; i < templateFields.length; i++) {
         if (templateFields[i].includes(ATTRIBUTE_FLAG)) {
           // remove PROPEL_ATT() flag temporarily to remove double quotes or consecutive double quotes
