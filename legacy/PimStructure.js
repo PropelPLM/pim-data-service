@@ -321,6 +321,7 @@ async function PimStructure(reqBody, isListPageExport) {
       for (let i = 0; i < templateFields.length; i++) {
         if (templateFields[i].includes(ATTRIBUTE_FLAG)) {
           // remove PROPEL_ATT() flag temporarily to remove double quotes or consecutive double quotes
+          console.log('templateFields[i]: ', templateFields[i]);
           templateFields[i] = templateFields[i].split('\"');
           console.log('templateFields[i]: ', templateFields[i]);
           templateFields[i] =
@@ -638,16 +639,13 @@ async function addExportColumns(
     for (let i = 0; i < templateFields.length; i++) {
       field = templateFields[i];
       if (field.includes(ATTRIBUTE_FLAG)) {
-        console.log('field includes flag: ', field);
         // template specifies that the column's rows should contain a field's value
         field = field.slice(11, -1);
-        console.log('field after slice: ', field);
         Array.from(productVariantValueMapList[0].keys()).forEach(col => {
           const isMatchingColAndField =
             (field !== 'Product ID' && field === col) ||
             (col === 'Product_ID' && field === 'Product ID');
           if (col !== 'Id' && isMatchingColAndField) {
-            console.log('cols pushed');
             // push columns specified in template
             exportColumns = [
               ...exportColumns,
@@ -658,7 +656,6 @@ async function addExportColumns(
               },
             ];
           }
-          console.log('exportColumns: ', exportColumns);
         });
       } else {
         // template specifies that the column's rows should contain the raw value in the template
