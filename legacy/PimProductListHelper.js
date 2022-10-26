@@ -17,7 +17,7 @@ async function PimProductListHelper(reqBody, pHelper, pService) {
   /** PIM repo ProductService.productStructureByCategory start */
   let pqlBuilder = {
     objectType: 'CATEGORY',
-    objectId: categoryId,
+    objectId: categoryId
   };
 
   // PIM repo ProductPQLHelper.getRecordByCategory()
@@ -29,7 +29,7 @@ async function PimProductListHelper(reqBody, pHelper, pService) {
 
   // filter the records if rows were selected or filters applied in product list page
   let filteredRecords = [];
-  exportRecords.forEach(record => {
+  exportRecords.forEach((record) => {
     if (
       recordIds.includes(record.get('Id')) ||
       vvIds.includes(record.get('Id'))
@@ -56,7 +56,7 @@ async function PimProductListHelper(reqBody, pHelper, pService) {
     let attributeResults = new Map();
     if (variantValueIds.size > 0) {
       variantValueIds = Array.from(variantValueIds);
-      variantValueIds = variantValueIds.map(id => `'${id}'`).join(',');
+      variantValueIds = variantValueIds.map((id) => `'${id}'`).join(',');
       let variantValues = await service.queryExtend(
         helper.namespaceQuery(
           `select Id, Variant__r.Product__c
@@ -66,11 +66,11 @@ async function PimProductListHelper(reqBody, pHelper, pService) {
         ),
         variantValueIds.split(',')
       );
-      variantValues.forEach(value => {
+      variantValues.forEach((value) => {
         productIdSet.add(helper.getValue(value, 'Variant__r.Product__c'));
       });
       const productIds = Array.from(productIdSet)
-        .map(id => `'${id}'`)
+        .map((id) => `'${id}'`)
         .join(',');
       let productsList = await PimProductManager(productIds, helper, service);
       let productMap = await getProductMap(productsList);
@@ -90,10 +90,10 @@ async function PimProductListHelper(reqBody, pHelper, pService) {
     // for each key of attribute results (Product__c Id or Variant_Value__c Id)
     if (attributeResults.size > 0) {
       const productIdKeys = Array.from(attributeResults.keys());
-      productIdKeys.forEach(productId => {
+      productIdKeys.forEach((productId) => {
         if (attributeResults.get(productId) !== null) {
           // check list of export records if there is a Map with a matching Id
-          exportRecordsAndColumns[0].forEach(exportRecord => {
+          exportRecordsAndColumns[0].forEach((exportRecord) => {
             if (exportRecord.get('Id') === productId) {
               // add attribute labels and values from attributeResults into corresponding export record
               const labels = Array.from(attributeResults.get(productId).keys());
@@ -150,7 +150,7 @@ async function getRecordByCategory(reqBody, pqlBuilder, isPrimaryCategory) {
   let cm = {
     allChildrenIds: new Set(),
     allParentIds: new Set(),
-    startingCategoryId: pqlBuilder.objectId,
+    startingCategoryId: pqlBuilder.objectId
   };
   isPrimaryCategory = await getCategoryPrimaryStatus(pqlBuilder.objectId);
   let childrenIds = await getAllChildrenIds(cm);
@@ -166,7 +166,7 @@ async function getRecordByCategory(reqBody, pqlBuilder, isPrimaryCategory) {
 
 async function getCategoryPrimaryStatus(categoryId) {
   let categoryIdList = [categoryId];
-  categoryIdList = categoryIdList.map(id => `'${id}'`).join(',');
+  categoryIdList = categoryIdList.map((id) => `'${id}'`).join(',');
   const categoryList = await service.simpleQuery(
     helper.namespaceQuery(
       `select Id, Is_Primary__c
@@ -189,10 +189,10 @@ async function getAllChildrenIds(cm) {
     tempCategories = await categoryChildrenQuery(nextIds);
     nextIds = new Set();
 
-    tempCategories.forEach(cat => {
+    tempCategories.forEach((cat) => {
       nextIds.add(cat.Id);
     });
-    nextIds.forEach(id => {
+    nextIds.forEach((id) => {
       cm.allChildrenIds.add(id);
     });
   }
@@ -203,10 +203,10 @@ async function getAllChildrenIds(cm) {
 async function categoryChildrenQuery(pParentIds) {
   try {
     let listParentIds = [];
-    pParentIds.forEach(id => {
+    pParentIds.forEach((id) => {
       listParentIds.push(id);
     });
-    listParentIds = listParentIds.map(id => `'${id}'`).join(',');
+    listParentIds = listParentIds.map((id) => `'${id}'`).join(',');
     return await service.simpleQuery(
       helper.namespaceQuery(
         `select Id, Name, Parent__c
@@ -215,8 +215,8 @@ async function categoryChildrenQuery(pParentIds) {
       `
       )
     );
-  } catch (errorMsg) {
-    console.error(errorMsg);
+  } catch (err) {
+    console.error(err);
   }
 }
 
@@ -226,10 +226,10 @@ async function buildStructureWithCategoryIds(pCategoryIds) {
     throw 'No Category Ids';
   }
   let listCategoryIds = [];
-  pCategoryIds.forEach(id => {
+  pCategoryIds.forEach((id) => {
     listCategoryIds.push(id);
   });
-  listCategoryIds = listCategoryIds.map(id => `'${id}'`).join(',');
+  listCategoryIds = listCategoryIds.map((id) => `'${id}'`).join(',');
   // return productsList
   return await service.simpleQuery(
     helper.namespaceQuery(
@@ -279,10 +279,10 @@ async function buildStructureWithSecondaryCategoryIds(pCategoryIds) {
     throw 'No Category Ids';
   }
   let listCategoryIds = [];
-  pCategoryIds.forEach(id => {
+  pCategoryIds.forEach((id) => {
     listCategoryIds.push(id);
   });
-  listCategoryIds = listCategoryIds.map(id => `'${id}'`).join(',');
+  listCategoryIds = listCategoryIds.map((id) => `'${id}'`).join(',');
   let links = await service.simpleQuery(
     helper.namespaceQuery(
       `select Id, Product__c
@@ -293,10 +293,10 @@ async function buildStructureWithSecondaryCategoryIds(pCategoryIds) {
 
   if (links.size > 0) {
     let productIds = [];
-    links.forEach(link => {
+    links.forEach((link) => {
       productIds.push(helper.getValue(link, 'Product__c'));
     });
-    productIds = productIds.map(id => `'${id}'`).join(',');
+    productIds = productIds.map((id) => `'${id}'`).join(',');
     // return productsList
     return await service.simpleQuery(
       helper.namespaceQuery(
@@ -344,7 +344,7 @@ async function buildStructureWithSecondaryCategoryIds(pCategoryIds) {
 // PIM repo ProductManager.getProductMap
 async function getProductMap(productsList) {
   let productMap = new Map();
-  productsList.forEach(product => {
+  productsList.forEach((product) => {
     productMap.set(product.Id, product);
   });
   return productMap;
@@ -360,10 +360,10 @@ async function getResultForProductMap(
   let tempMap = new Map();
   let variantToAttributeMap = await getVariantMap(productsList);
 
-  Array.from(productMap.values()).forEach(product => {
+  Array.from(productMap.values()).forEach((product) => {
     tempMap = new Map();
     if (helper.getValue(product, 'Attributes__r') !== null) {
-      helper.getValue(product, 'Attributes__r').records.forEach(attribute => {
+      helper.getValue(product, 'Attributes__r').records.forEach((attribute) => {
         if (
           helper.getValue(attribute, 'Overwritten_Variant_Value__c') === null &&
           helper.getValue(attribute, 'Attribute_Label__r') !== null
@@ -382,7 +382,7 @@ async function getResultForProductMap(
   let tempVariantValue;
   let tempVariantMap = new Map();
   variantValueIds = variantValueIds.replace(/'/g, '').split(',');
-  variantValueIds.forEach(vvId => {
+  variantValueIds.forEach((vvId) => {
     tempVariantValue = variantValueDetailMap.get(vvId);
     tempVariantMap = new Map(
       results.get(helper.getValue(tempVariantValue, 'Variant__r.Product__c'))
@@ -392,10 +392,10 @@ async function getResultForProductMap(
       helper
         .getValue(tempVariantValue, 'Parent_Value_Path__c')
         .split(',')
-        .forEach(pathVVId => {
+        .forEach((pathVVId) => {
           // for each parent, add their overwritten attribute values
           if (variantToAttributeMap.has(pathVVId)) {
-            variantToAttributeMap.get(pathVVId).forEach(attribute => {
+            variantToAttributeMap.get(pathVVId).forEach((attribute) => {
               tempVariantMap.set(
                 helper.getValue(attribute, 'Attribute_Label__r.Primary_Key__c'),
                 helper.getValue(attribute, 'Value__c')
@@ -406,7 +406,7 @@ async function getResultForProductMap(
     }
 
     if (variantToAttributeMap.has(vvId)) {
-      variantToAttributeMap.get(vvId).forEach(attribute => {
+      variantToAttributeMap.get(vvId).forEach((attribute) => {
         if (helper.getValue(attribute, 'Attribute_Label__r')) {
           tempVariantMap.set(
             helper.getValue(attribute, 'Attribute_Label__r.Primary_Key__c'),
@@ -423,9 +423,9 @@ async function getResultForProductMap(
 // PIM repo ProductManager.getVariantMap()
 async function getVariantMap(productsList) {
   let variantMap = new Map();
-  productsList.forEach(product => {
+  productsList.forEach((product) => {
     if (helper.getValue(product, 'Attributes__r') !== null) {
-      helper.getValue(product, 'Attributes__r').records.forEach(attribute => {
+      helper.getValue(product, 'Attributes__r').records.forEach((attribute) => {
         // iterate through each product's Attribute_Value__c
         if (
           helper.getValue(attribute, 'Overwritten_Variant_Value__c') !== null
@@ -443,7 +443,7 @@ async function getVariantMap(productsList) {
                 ...variantMap.get(
                   helper.getValue(attribute, 'Overwritten_Variant_Value__c')
                 ),
-                attribute,
+                attribute
               ]
             );
           } else {
@@ -463,10 +463,10 @@ async function getVariantMap(productsList) {
 // PIM repo ProductManager.getVariantValueDetailMap()
 async function getVariantValueDetailMap(productsList) {
   let productIdList = [];
-  productsList.forEach(product => {
+  productsList.forEach((product) => {
     productIdList.push(product.Id);
   });
-  productIdList = productIdList.map(id => `'${id}'`).join(',');
+  productIdList = productIdList.map((id) => `'${id}'`).join(',');
   let variantValueMap = new Map();
   const variantValueList = await service.simpleQuery(
     helper.namespaceQuery(
@@ -475,7 +475,7 @@ async function getVariantValueDetailMap(productsList) {
       where Variant__r.Product__c IN (${productIdList})`
     )
   );
-  variantValueList.forEach(value => {
+  variantValueList.forEach((value) => {
     variantValueMap.set(value.Id, value);
   });
   return variantValueMap;
@@ -491,18 +491,18 @@ async function addExportColumns(
   const defaultColumns = new Map([
     ['Product ID', 'Product_ID'],
     ['Title', 'Title'],
-    ['Category Name', 'Category__r.Name'],
+    ['Category Name', 'Category__r.Name']
   ]);
   let exportColumns = [];
   let templateHeaderValueMap = new Map();
 
   // populate default columns first if not templated export
   if (!templateFields || templateFields.length === 0) {
-    Array.from(defaultColumns.keys()).forEach(defaultCol => {
+    Array.from(defaultColumns.keys()).forEach((defaultCol) => {
       exportColumns.push({
         fieldName: defaultColumns.get(defaultCol),
         label: defaultCol,
-        type: 'text',
+        type: 'text'
       });
     });
   }
@@ -513,12 +513,12 @@ async function addExportColumns(
   let linkedGroupsChildren = [];
   let columnAttributeIds = new Set();
   if (linkedAttributes.length > 0) {
-    linkedAttributes.forEach(attr => {
+    linkedAttributes.forEach((attr) => {
       columnAttributeIds.add(attr);
     });
   }
   if (linkedGroups.length > 0) {
-    linkedGroups = linkedGroups.map(id => `'${id}'`).join(',');
+    linkedGroups = linkedGroups.map((id) => `'${id}'`).join(',');
     linkedGroupsChildren = await service.simpleQuery(
       helper.namespaceQuery(
         `select Id, Name, Attribute_Group__c
@@ -526,13 +526,13 @@ async function addExportColumns(
         where Attribute_Group__c IN (${linkedGroups})`
       )
     );
-    linkedGroupsChildren.forEach(childAttr => {
+    linkedGroupsChildren.forEach((childAttr) => {
       columnAttributeIds.add(childAttr.Id);
     });
   }
   if (columnAttributeIds.size > 0) {
     columnAttributeIds = Array.from(columnAttributeIds);
-    columnAttributeIds = columnAttributeIds.map(id => `'${id}'`).join(',');
+    columnAttributeIds = columnAttributeIds.map((id) => `'${id}'`).join(',');
 
     // get SOQL query for Label__c of all attribute labels
     const columnAttributes = await service.simpleQuery(
@@ -544,11 +544,11 @@ async function addExportColumns(
     );
 
     // add these attributes as columns to export
-    columnAttributes.forEach(attr => {
+    columnAttributes.forEach((attr) => {
       exportColumns.push({
         fieldName: helper.getValue(attr, 'Primary_Key__c'),
         label: helper.getValue(attr, 'Label__c'),
-        type: 'text',
+        type: 'text'
       });
     });
   } else {
@@ -562,12 +562,12 @@ async function addExportColumns(
     );
 
     if (!templateFields || templateFields.length === 0) {
-      columnAttributes.forEach(attr => {
+      columnAttributes.forEach((attr) => {
         // if not template export, push all attribute columns
         exportColumns.push({
           fieldName: helper.getValue(attr, 'Primary_Key__c'),
           label: helper.getValue(attr, 'Label__c'),
-          type: 'text',
+          type: 'text'
         });
       });
     } else if (templateFields && templateFields.length > 0) {
@@ -586,17 +586,17 @@ async function addExportColumns(
           exportColumns.push({
             fieldName: defaultColumns.get(field),
             label: templateHeaders[i],
-            type: 'text',
+            type: 'text'
           });
         } else if (isAttributeField && !isDefaultColumn) {
           // value specified in template is a field's value, and col in template is an attribute column
           field = field.slice(11, -1);
-          columnAttributes.forEach(colAttr => {
+          columnAttributes.forEach((colAttr) => {
             if (helper.getValue(colAttr, 'Label__c') === field) {
               exportColumns.push({
                 fieldName: helper.getValue(colAttr, 'Primary_Key__c'),
                 label: templateHeaders[i],
-                type: 'text',
+                type: 'text'
               });
             }
           });
@@ -606,15 +606,15 @@ async function addExportColumns(
           exportColumns.push({
             fieldName: templateHeaders[i],
             label: templateHeaders[i],
-            type: 'text',
+            type: 'text'
           });
         }
       }
     }
   }
   // populate export records with raw values specified in the template
-  Array.from(templateHeaderValueMap.keys()).forEach(header => {
-    exportRecordsAndColumns[0].forEach(recordMap => {
+  Array.from(templateHeaderValueMap.keys()).forEach((header) => {
+    exportRecordsAndColumns[0].forEach((recordMap) => {
       recordMap.set(header, templateHeaderValueMap.get(header));
     });
   });
