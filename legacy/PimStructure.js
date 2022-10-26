@@ -321,8 +321,8 @@ async function PimStructure(reqBody, isListPageExport) {
       for (let i = 0; i < templateFields.length; i++) {
         if (templateFields[i].includes(ATTRIBUTE_FLAG)) {
           // remove PROPEL_ATT() flag temporarily to remove double quotes or consecutive double quotes
-          templateFields[i] = templateFields[i].split('"');
-          console.log('Math.floor(templateFields[i].length / 2): ', Math.floor(templateFields[i].length / 2));
+          templateFields[i] = templateFields[i].split('\"');
+          console.log('templateFields[i].length: ', templateFields[i].length);
           templateFields[i] =
             templateFields[i][Math.floor(templateFields[i].length / 2)];
           console.log('templateFields[i]: ', templateFields[i]);
