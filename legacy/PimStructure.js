@@ -316,9 +316,8 @@ async function PimStructure(reqBody, isListPageExport) {
       const templateRows = reqBody.templateVersionData.split(/\r?\n/);
       templateHeaders = templateRows[0].split(',');
       templateFields = templateRows[1].split(',');
-      console.log('templateRows: ', templateRows);
-      console.log('templateHeaders: ', templateHeaders);
-      console.log('templateFields: ', templateFields);
+      console.log('templateHeaders1: ', templateHeaders);
+      console.log('templateFields1: ', templateFields);
       for (let i = 0; i < templateFields.length; i++) {
         if (templateFields[i].includes(ATTRIBUTE_FLAG)) {
           // remove PROPEL_ATT() flag temporarily to remove double quotes or consecutive double quotes
@@ -332,6 +331,8 @@ async function PimStructure(reqBody, isListPageExport) {
         }
       }
     }
+    console.log('templateHeaders2: ', templateHeaders);
+    console.log('templateFields2: ', templateFields);
     return await addExportColumns(
       productVariantValueMapList,
       templateFields,
