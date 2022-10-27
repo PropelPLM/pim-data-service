@@ -75,7 +75,6 @@ app.post('/export/pim/product', (req, res) => {
 app.post('/export/legacy/pim/product', (req, res) => {
   try {
     LegacyExportPim(req);
-    console.log('reqBody: ', req.body);
     res.status(200).send('');
   } catch (err) {
     res.status(400).send('');

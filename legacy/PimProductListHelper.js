@@ -120,14 +120,8 @@ async function PimProductListHelper(reqBody, pHelper, pService) {
     templateFields = templateRows[1].split(',');
     for (let i = 0; i < templateFields.length; i++) {
       if (templateFields[i].includes(ATTRIBUTE_FLAG)) {
-        // remove PROPEL_ATT() flag temporarily to remove double quotes or consecutive double quotes
-        templateFields[i] = templateFields[i].split('"');
-        templateFields[i] =
-          templateFields[i][Math.floor(templateFields[i].length / 2)];
-        if (templateFields[i].includes(ATTRIBUTE_FLAG)) {
-          templateFields[i] = templateFields[i].slice(11, -1);
-        }
-        templateFields[i] = 'PROPEL_ATT(' + templateFields[i] + ')';
+        // remove double quotes (note the 3 different kinds of double quotes in the regex)
+        templateFields[i] = templateFields[i].replace(/["“”]+/g, '');
       }
     }
   }
