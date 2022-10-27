@@ -14,8 +14,8 @@ async function LegacyExportPIM(req) {
   let recordsAndCols;
   try {
     recordsAndCols = await PimStructure(reqBody, isListPageExport);
-  } catch (error) {
-    console.log('error: ', error);
+  } catch (err) {
+    console.log('error: ', err);
   }
   let csvString = convertArrayOfObjectsToCSV(
     recordsAndCols[0],
