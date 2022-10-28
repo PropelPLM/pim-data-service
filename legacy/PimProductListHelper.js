@@ -115,7 +115,7 @@ async function PimProductListHelper(reqBody, pHelper, pService) {
   let templateHeaders;
   if (reqBody.options.isTemplateExport && reqBody.templateVersionData) {
     // parse headers and fields and store them in a map
-    const templateRows = reqBody.templateVersionData.split('\n');
+    const templateRows = reqBody.templateVersionData.split(/\r?\n/);
     templateHeaders = templateRows[0].split(',');
     templateFields = templateRows[1].split(',');
     for (let i = 0; i < templateFields.length; i++) {
