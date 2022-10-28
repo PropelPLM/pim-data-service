@@ -13,7 +13,7 @@ async function PimStructure(reqBody, isListPageExport) {
   service = new ForceService(reqBody.hostUrl, reqBody.sessionId);
 
   let exportRecordsAndCols = [];
-  const recordIds = reqBody.recordIds.map((id) => `'${id}'`).join(',');
+  const recordIds = reqBody.recordIds.map(id => `'${id}'`).join(',');
   const exportType = reqBody.exportType;
   const namespace = reqBody.namespace;
   helper = new PimExportHelper(namespace);
@@ -43,7 +43,7 @@ async function PimStructure(reqBody, isListPageExport) {
     const excludedLabelIds = reqBody.excludedLabelIds;
     let linkedLabelIds = [];
     const linkedGroupIds = reqBody.linkedGroupIds
-      .map((id) => `'${id}'`)
+      .map(id => `'${id}'`)
       .join(',');
     const linkedGroups = await service.simpleQuery(
       helper.namespaceQuery(
@@ -69,11 +69,11 @@ async function PimStructure(reqBody, isListPageExport) {
       )
     );
     // add child attributes of linked attribute groups (following logic of PIM repo's ProductDetailController.generateLayout())
-    linkedGroups.forEach((attrGroup) => {
+    linkedGroups.forEach(attrGroup => {
       if (helper.getValue(attrGroup, 'Attribute_Labels__r')) {
         helper
           .getValue(attrGroup, 'Attribute_Labels__r')
-          .records.forEach((attrLabel) => {
+          .records.forEach(attrLabel => {
             if (!excludedLabelIds.includes(attrLabel.Id)) {
               linkedLabelIds.push(attrLabel.Id);
             }
@@ -81,7 +81,7 @@ async function PimStructure(reqBody, isListPageExport) {
       }
     });
     // add linked attribute labels and their values to base product
-    linkedLabelIds = linkedLabelIds.map((id) => `'${id}'`).join(',');
+    linkedLabelIds = linkedLabelIds.map(id => `'${id}'`).join(',');
     const linkedLabels = await service.simpleQuery(
       helper.namespaceQuery(`select Id, Name
       from Attribute_Label__c
@@ -101,9 +101,9 @@ async function PimStructure(reqBody, isListPageExport) {
           Overwritten_Variant_Value__c = null)`
       )
     );
-    linkedLabels.forEach((label) => {
+    linkedLabels.forEach(label => {
       // add the base product's attribute values
-      linkedValues.forEach((val) => {
+      linkedValues.forEach(val => {
         if (
           helper.getValue(val, 'Attribute_Label__c') === label.Id &&
           helper.getValue(val, 'Product__c') === exportRecords[0].get('Id')
@@ -122,7 +122,7 @@ async function PimStructure(reqBody, isListPageExport) {
 
     if (exportType === 'currentVariant') {
       let variantValuePath = reqBody.variantValuePath
-        .map((id) => `'${id}'`)
+        .map(id => `'${id}'`)
         .join(',');
       if (variantValuePath.length > 0) {
         // get Variant__c object and Variant_Value__c object for every variant value in current variant
@@ -136,10 +136,10 @@ async function PimStructure(reqBody, isListPageExport) {
         const varList = Array.from(variantAndValueMap.keys());
         valuesList = Array.from(variantAndValueMap.values()); // note: this is an array of arrays
         let valuesIdList = [];
-        valuesList.forEach((val) => {
+        valuesList.forEach(val => {
           valuesIdList.push(val[0].Id);
         });
-        valuesIdList = valuesIdList.map((id) => `'${id}'`).join(',');
+        valuesIdList = valuesIdList.map(id => `'${id}'`).join(',');
         const overwrittenValues = await service.simpleQuery(
           helper.namespaceQuery(
             `select Id, Attribute_Label__c, Value__c, Product__c, Overwritten_Variant_Value__c
@@ -162,9 +162,9 @@ async function PimStructure(reqBody, isListPageExport) {
 
           // add any overwritten values
           if (overwrittenValues.length > 0) {
-            overwrittenValues.forEach((overwrittenValue) => {
+            overwrittenValues.forEach(overwrittenValue => {
               let affectedLabelName;
-              linkedLabels.forEach((label) => {
+              linkedLabels.forEach(label => {
                 if (
                   label.Id ===
                   helper.getValue(overwrittenValue, 'Attribute_Label__c')
@@ -208,14 +208,14 @@ async function PimStructure(reqBody, isListPageExport) {
       let newVariant = new Map();
       let varList = Array.from(variantAndValueListMap.keys());
       valuesList = [];
-      Array.from(variantAndValueListMap.values()).forEach((valList) => {
+      Array.from(variantAndValueListMap.values()).forEach(valList => {
         valuesList.push.apply(valuesList, valList); // flatten array
       });
       let valuesIdList = [];
-      valuesList.forEach((val) => {
+      valuesList.forEach(val => {
         valuesIdList.push(val.Id);
       });
-      valuesIdList = valuesIdList.map((id) => `'${id}'`).join(',');
+      valuesIdList = valuesIdList.map(id => `'${id}'`).join(',');
       const overwrittenValues = await service.simpleQuery(
         helper.namespaceQuery(
           `select Id, Attribute_Label__c, Value__c, Product__c, Overwritten_Variant_Value__c
@@ -230,7 +230,7 @@ async function PimStructure(reqBody, isListPageExport) {
 
       let currValue;
       let isFirstLevelVariant;
-      valuesList.forEach((val) => {
+      valuesList.forEach(val => {
         newVariant = new Map();
         currValue = val;
         isFirstLevelVariant = true;
@@ -267,9 +267,9 @@ async function PimStructure(reqBody, isListPageExport) {
 
         // add any overwritten values
         if (overwrittenValues.length > 0) {
-          overwrittenValues.forEach((overwrittenValue) => {
+          overwrittenValues.forEach(overwrittenValue => {
             let affectedLabelName;
-            linkedLabels.forEach((label) => {
+            linkedLabels.forEach(label => {
               if (
                 label.Id ===
                 helper.getValue(overwrittenValue, 'Attribute_Label__c')
@@ -335,12 +335,12 @@ async function PimStructure(reqBody, isListPageExport) {
 // PIM repo ProductService.getVariantAndVariantValues
 async function getVariantAndVariantValues(variantValueIds, exportType) {
   let valueIds = [];
-  variantValueIds.split(', ').forEach((id) => {
+  variantValueIds.split(', ').forEach(id => {
     valueIds.push(id);
   });
   valueIds =
     exportType === 'allVariants'
-      ? valueIds.map((id) => `'${id}'`).join(',')
+      ? valueIds.map(id => `'${id}'`).join(',')
       : valueIds;
   let returnMap = new Map();
   let values = await service.simpleQuery(
@@ -358,7 +358,7 @@ async function getVariantAndVariantValues(variantValueIds, exportType) {
   );
 
   let tempVariant;
-  values.forEach((value) => {
+  values.forEach(value => {
     tempVariant = {
       Id: helper.getValue(value, 'Variant__c'),
       Name: helper.getValue(value, 'Variant__r').Name
@@ -403,14 +403,14 @@ async function fillInInheritedData(
     let newVariant = new Map();
     let varList = Array.from(variantAndValueListMap.keys());
     valuesList = [];
-    Array.from(variantAndValueListMap.values()).forEach((valList) => {
+    Array.from(variantAndValueListMap.values()).forEach(valList => {
       valuesList.push.apply(valuesList, valList); // flatten array
     });
     let valuesIdList = [];
-    valuesList.forEach((val) => {
+    valuesList.forEach(val => {
       valuesIdList.push(val.Id);
     });
-    valuesIdList = valuesIdList.map((id) => `'${id}'`).join(',');
+    valuesIdList = valuesIdList.map(id => `'${id}'`).join(',');
     const overwrittenValues = await service.simpleQuery(
       helper.namespaceQuery(
         `select Id, Attribute_Label__c, Value__c, Product__c, Overwritten_Variant_Value__c
@@ -425,7 +425,7 @@ async function fillInInheritedData(
 
     let currValue;
     let isFirstLevelVariant;
-    valuesList.forEach((val) => {
+    valuesList.forEach(val => {
       newVariant = new Map();
       currValue = val;
       isFirstLevelVariant = true;
@@ -462,9 +462,9 @@ async function fillInInheritedData(
 
       // add any overwritten values
       if (overwrittenValues.length > 0) {
-        overwrittenValues.forEach((overwrittenValue) => {
+        overwrittenValues.forEach(overwrittenValue => {
           let affectedLabelName;
-          linkedLabels.forEach((label) => {
+          linkedLabels.forEach(label => {
             if (
               label.Id ===
               helper.getValue(overwrittenValue, 'Attribute_Label__c')
@@ -494,7 +494,7 @@ async function fillInInheritedData(
 
   // loop through base product's data
   let baseProductData = new Map();
-  Array.from(baseProduct.keys()).forEach((key) => {
+  Array.from(baseProduct.keys()).forEach(key => {
     if (baseProduct.get(key) != null && baseProduct.get(key) != '') {
       // baseProduct has value for that attribute
       baseProductData.set(key, baseProduct.get(key));
@@ -504,10 +504,10 @@ async function fillInInheritedData(
   // loop through baseProduct's children to settle inheritance from base product
   variantValueTree
     .get(baseProduct.get('Product_ID'))
-    .forEach((firstLevelVariant) => {
-      exportRecords.forEach((variant) => {
+    .forEach(firstLevelVariant => {
+      exportRecords.forEach(variant => {
         if (variant.get('Product_ID') === firstLevelVariant) {
-          Array.from(baseProductData.keys()).forEach((key) => {
+          Array.from(baseProductData.keys()).forEach(key => {
             if (
               !variant.has(key) ||
               (variant.has(key) &&
@@ -529,11 +529,11 @@ async function fillInInheritedData(
     });
 
   // loop through each variant (top down) to settle inheritance from parent variants
-  exportRecords.forEach((variant) => {
-    variantValueTree.get(variant.get('Product_ID')).forEach((childVariant) => {
-      exportRecords.forEach((variantValue) => {
+  exportRecords.forEach(variant => {
+    variantValueTree.get(variant.get('Product_ID')).forEach(childVariant => {
+      exportRecords.forEach(variantValue => {
         if (variantValue.get('Product_ID') === childVariant) {
-          Array.from(variant.keys()).forEach((key) => {
+          Array.from(variant.keys()).forEach(key => {
             if (
               !variantValue.has(key) ||
               (variantValue.has(key) &&
@@ -570,7 +570,7 @@ async function createVariantValueTree(valuesList, baseProduct) {
   variantValueTree.push(treeNode);
 
   // add nodes for variants
-  valuesList.forEach((value) => {
+  valuesList.forEach(value => {
     treeNode = new Map();
     treeNode.set('Product_ID', value.Name);
     treeNode.set('Id', value.Id);
@@ -578,7 +578,7 @@ async function createVariantValueTree(valuesList, baseProduct) {
     if (helper.getValue(value, 'Parent_Variant_Value__c')) {
       const parentId = helper.getValue(value, 'Parent_Variant_Value__c');
       // add current variant value's id to the list of children in its parent in variantValueTree
-      variantValueTree.forEach((node) => {
+      variantValueTree.forEach(node => {
         if (node.get('Id') === parentId) {
           let childrenList = node.get('Children');
           childrenList.push(value.Name);
@@ -596,7 +596,7 @@ async function createVariantValueTree(valuesList, baseProduct) {
 
   // convert the data structure to reduce search overhead
   let childMap = new Map();
-  variantValueTree.forEach((variant) => {
+  variantValueTree.forEach(variant => {
     childMap.set(variant.get('Product_ID'), variant.get('Children'));
   });
   return childMap;
@@ -612,7 +612,7 @@ async function addExportColumns(
   let templateHeaderValueMap = new Map();
   if (!templateFields || templateFields.length === 0) {
     // if not template export, push all attribute columns
-    Array.from(productVariantValueMapList[0].keys()).forEach((col) => {
+    Array.from(productVariantValueMapList[0].keys()).forEach(col => {
       if (col !== 'Id') {
         exportColumns = [
           ...exportColumns,
@@ -628,7 +628,7 @@ async function addExportColumns(
       if (field.includes(ATTRIBUTE_FLAG)) {
         // template specifies that the column's rows should contain a field's value
         field = field.slice(11, -1);
-        Array.from(productVariantValueMapList[0].keys()).forEach((col) => {
+        Array.from(productVariantValueMapList[0].keys()).forEach(col => {
           const isMatchingColAndField =
             (field !== 'Product ID' && field === col) ||
             (col === 'Product_ID' && field === 'Product ID');
@@ -658,8 +658,8 @@ async function addExportColumns(
       }
     }
     // populate export records with raw values specified in the template
-    Array.from(templateHeaderValueMap.keys()).forEach((header) => {
-      exportRecordsAndCols[0].forEach((recordMap) => {
+    Array.from(templateHeaderValueMap.keys()).forEach(header => {
+      exportRecordsAndCols[0].forEach(recordMap => {
         recordMap.set(header, templateHeaderValueMap.get(header));
       });
     });

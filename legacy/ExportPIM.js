@@ -79,7 +79,7 @@ function convertArrayOfObjectsToCSV(records, columns) {
 
   // in the keys valirable store fields API Names as a key
   // this labels use in CSV file header
-  columns.forEach((col) => {
+  columns.forEach(col => {
     if (col.fieldName) {
       if (col.fieldName === 'ProductLink') {
         keys.push(col.typeAttributes.label.fieldName);
