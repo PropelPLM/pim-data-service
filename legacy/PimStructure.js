@@ -313,19 +313,13 @@ async function PimStructure(reqBody, isListPageExport) {
     let templateHeaders;
     if (reqBody.options.isTemplateExport && reqBody.templateVersionData) {
       // parse headers and fields and store them in a map
-      const templateRows = reqBody.templateVersionData.split('\n');
+      const templateRows = reqBody.templateVersionData.split(/\r?\n/);
       templateHeaders = templateRows[0].split(',');
       templateFields = templateRows[1].split(',');
       for (let i = 0; i < templateFields.length; i++) {
         if (templateFields[i].includes(ATTRIBUTE_FLAG)) {
-          // remove PROPEL_ATT() flag temporarily to remove double quotes or consecutive double quotes
-          templateFields[i] = templateFields[i].split('"');
-          templateFields[i] =
-            templateFields[i][Math.floor(templateFields[i].length / 2)];
-          if (templateFields[i].includes(ATTRIBUTE_FLAG)) {
-            templateFields[i] = templateFields[i].slice(11, -1);
-          }
-          templateFields[i] = 'PROPEL_ATT(' + templateFields[i] + ')';
+          // remove double quotes (note the 3 different kinds of double quotes in the regex)
+          templateFields[i] = templateFields[i].replace(/["“”]+/g, '');
         }
       }
     }
@@ -367,7 +361,7 @@ async function getVariantAndVariantValues(variantValueIds, exportType) {
   values.forEach(value => {
     tempVariant = {
       Id: helper.getValue(value, 'Variant__c'),
-      Name: helper.getValue(value, 'Variant__r').Name,
+      Name: helper.getValue(value, 'Variant__r').Name
     };
     if (returnMap.has(tempVariant)) {
       returnMap.set(tempVariant, [...returnMap.get(tempVariant), value]);
@@ -622,7 +616,7 @@ async function addExportColumns(
       if (col !== 'Id') {
         exportColumns = [
           ...exportColumns,
-          { fieldName: col, label: col, type: 'text' },
+          { fieldName: col, label: col, type: 'text' }
         ];
       }
     });
@@ -645,8 +639,8 @@ async function addExportColumns(
               {
                 fieldName: col,
                 label: templateHeaders[i],
-                type: 'text',
-              },
+                type: 'text'
+              }
             ];
           }
         });
@@ -658,8 +652,8 @@ async function addExportColumns(
           {
             fieldName: templateHeaders[i],
             label: templateHeaders[i],
-            type: 'text',
-          },
+            type: 'text'
+          }
         ];
       }
     }

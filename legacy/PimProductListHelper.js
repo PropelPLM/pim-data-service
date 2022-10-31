@@ -17,7 +17,7 @@ async function PimProductListHelper(reqBody, pHelper, pService) {
   /** PIM repo ProductService.productStructureByCategory start */
   let pqlBuilder = {
     objectType: 'CATEGORY',
-    objectId: categoryId,
+    objectId: categoryId
   };
 
   // PIM repo ProductPQLHelper.getRecordByCategory()
@@ -115,19 +115,13 @@ async function PimProductListHelper(reqBody, pHelper, pService) {
   let templateHeaders;
   if (reqBody.options.isTemplateExport && reqBody.templateVersionData) {
     // parse headers and fields and store them in a map
-    const templateRows = reqBody.templateVersionData.split('\n');
+    const templateRows = reqBody.templateVersionData.split(/\r?\n/);
     templateHeaders = templateRows[0].split(',');
     templateFields = templateRows[1].split(',');
     for (let i = 0; i < templateFields.length; i++) {
       if (templateFields[i].includes(ATTRIBUTE_FLAG)) {
-        // remove PROPEL_ATT() flag temporarily to remove double quotes or consecutive double quotes
-        templateFields[i] = templateFields[i].split('"');
-        templateFields[i] =
-          templateFields[i][Math.floor(templateFields[i].length / 2)];
-        if (templateFields[i].includes(ATTRIBUTE_FLAG)) {
-          templateFields[i] = templateFields[i].slice(11, -1);
-        }
-        templateFields[i] = 'PROPEL_ATT(' + templateFields[i] + ')';
+        // remove double quotes (note the 3 different kinds of double quotes in the regex)
+        templateFields[i] = templateFields[i].replace(/["“”]+/g, '');
       }
     }
   }
@@ -150,7 +144,7 @@ async function getRecordByCategory(reqBody, pqlBuilder, isPrimaryCategory) {
   let cm = {
     allChildrenIds: new Set(),
     allParentIds: new Set(),
-    startingCategoryId: pqlBuilder.objectId,
+    startingCategoryId: pqlBuilder.objectId
   };
   isPrimaryCategory = await getCategoryPrimaryStatus(pqlBuilder.objectId);
   let childrenIds = await getAllChildrenIds(cm);
@@ -215,8 +209,8 @@ async function categoryChildrenQuery(pParentIds) {
       `
       )
     );
-  } catch (errorMsg) {
-    console.error(errorMsg);
+  } catch (err) {
+    console.error(err);
   }
 }
 
@@ -443,7 +437,7 @@ async function getVariantMap(productsList) {
                 ...variantMap.get(
                   helper.getValue(attribute, 'Overwritten_Variant_Value__c')
                 ),
-                attribute,
+                attribute
               ]
             );
           } else {
@@ -491,7 +485,7 @@ async function addExportColumns(
   const defaultColumns = new Map([
     ['Product ID', 'Product_ID'],
     ['Title', 'Title'],
-    ['Category Name', 'Category__r.Name'],
+    ['Category Name', 'Category__r.Name']
   ]);
   let exportColumns = [];
   let templateHeaderValueMap = new Map();
@@ -502,7 +496,7 @@ async function addExportColumns(
       exportColumns.push({
         fieldName: defaultColumns.get(defaultCol),
         label: defaultCol,
-        type: 'text',
+        type: 'text'
       });
     });
   }
@@ -548,7 +542,7 @@ async function addExportColumns(
       exportColumns.push({
         fieldName: helper.getValue(attr, 'Primary_Key__c'),
         label: helper.getValue(attr, 'Label__c'),
-        type: 'text',
+        type: 'text'
       });
     });
   } else {
@@ -567,7 +561,7 @@ async function addExportColumns(
         exportColumns.push({
           fieldName: helper.getValue(attr, 'Primary_Key__c'),
           label: helper.getValue(attr, 'Label__c'),
-          type: 'text',
+          type: 'text'
         });
       });
     } else if (templateFields && templateFields.length > 0) {
@@ -586,7 +580,7 @@ async function addExportColumns(
           exportColumns.push({
             fieldName: defaultColumns.get(field),
             label: templateHeaders[i],
-            type: 'text',
+            type: 'text'
           });
         } else if (isAttributeField && !isDefaultColumn) {
           // value specified in template is a field's value, and col in template is an attribute column
@@ -596,7 +590,7 @@ async function addExportColumns(
               exportColumns.push({
                 fieldName: helper.getValue(colAttr, 'Primary_Key__c'),
                 label: templateHeaders[i],
-                type: 'text',
+                type: 'text'
               });
             }
           });
@@ -606,7 +600,7 @@ async function addExportColumns(
           exportColumns.push({
             fieldName: templateHeaders[i],
             label: templateHeaders[i],
-            type: 'text',
+            type: 'text'
           });
         }
       }
