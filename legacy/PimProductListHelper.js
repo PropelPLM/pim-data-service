@@ -533,7 +533,7 @@ async function addExportColumns(
       helper.namespaceQuery(
         `select Id, Label__c, Primary_Key__c
         from Attribute_Label__c
-        where Attribute_Classification__c = 'Product' AND Id IN (${columnAttributeIds})`
+        where Classification__c = 'Product' AND Id IN (${columnAttributeIds})`
       )
     );
 
@@ -551,7 +551,7 @@ async function addExportColumns(
       helper.namespaceQuery(
         `select Id, Label__c, Primary_Key__c
       from Attribute_Label__c
-      where Attribute_Classification__c = 'Product' order by Primary_Key__c`
+      where Classification__c = 'Product' order by Primary_Key__c`
       )
     );
 
