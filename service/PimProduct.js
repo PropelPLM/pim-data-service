@@ -17,7 +17,9 @@ class PimProduct {
       const formatedNames = this.productNames.join(',')
 
       const result = await this.helper.connection.simpleQuery(this.helper.namespaceQuery(
-        `select Id, Name, (select Id, Name from Variants__r) from Product__c where Name in (${formatedNames})`
+        `select Id, Name, 
+          (select Id, Name from ${this.helper.namespace('Variants__r')}) 
+          from Product__c where Name in (${formatedNames})`
       ))
       this.products = result.records
     } catch(error) {
