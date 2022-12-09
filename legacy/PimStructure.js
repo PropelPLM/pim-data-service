@@ -39,55 +39,17 @@ async function PimStructure(reqBody, isListPageExport) {
     let baseProduct = productVariantValueMapList[0];
     let exportRecords = [baseProduct];
 
-    /** get product's linked attribute labels start */
-    const excludedLabelIds = reqBody.excludedLabelIds;
-    let linkedLabelIds = [];
-    const linkedGroupIds = reqBody.linkedGroupIds
+    /** get product's appearing attribute labels start */
+    const appearingLabelIds = reqBody.appearingLabelIds
       .map(id => `'${id}'`)
       .join(',');
-    const linkedGroups = await service.simpleQuery(
-      helper.namespaceQuery(
-        `select Id, Name,
-      (select
-        Id,
-        Name,
-        Default_Value__c,
-        Is_Searchable__c,
-        Label__c,
-        Mandatory__c,
-        Max_Value__c,
-        Min_Value__c,
-        Order__c,
-        Attribute_Group__c,
-        Picklist_Values__c,
-        Primary_Key__c,
-        Type__c,
-        UOM__c
-        from Attribute_Labels__r order by Order__c )
-      from Attribute_Group__c
-      where Id in (${linkedGroupIds})`
-      )
-    );
-    // add child attributes of linked attribute groups (following logic of PIM repo's ProductDetailController.generateLayout())
-    linkedGroups.forEach(attrGroup => {
-      if (helper.getValue(attrGroup, 'Attribute_Labels__r')) {
-        helper
-          .getValue(attrGroup, 'Attribute_Labels__r')
-          .records.forEach(attrLabel => {
-            if (!excludedLabelIds.includes(attrLabel.Id)) {
-              linkedLabelIds.push(attrLabel.Id);
-            }
-          });
-      }
-    });
-    // add linked attribute labels and their values to base product
-    linkedLabelIds = linkedLabelIds.map(id => `'${id}'`).join(',');
-    const linkedLabels = await service.simpleQuery(
+    // add appearing attribute labels and their values to base product
+    const appearingLabels = await service.simpleQuery(
       helper.namespaceQuery(`select Id, Name
       from Attribute_Label__c
-      where Id IN (${linkedLabelIds})`)
+      where Id IN (${appearingLabelIds})`)
     );
-    const linkedValues = await service.simpleQuery(
+    const appearingValues = await service.simpleQuery(
       helper.namespaceQuery(
         `select
           Id,
@@ -97,13 +59,13 @@ async function PimStructure(reqBody, isListPageExport) {
           Value__c
         from Attribute_Value__c
         where (
-          Attribute_Label__c IN (${linkedLabelIds}) AND
+          Attribute_Label__c IN (${appearingLabelIds}) AND
           Overwritten_Variant_Value__c = null)`
       )
     );
-    linkedLabels.forEach(label => {
+    appearingLabels.forEach(label => {
       // add the base product's attribute values
-      linkedValues.forEach(val => {
+      appearingValues.forEach(val => {
         if (
           helper.getValue(val, 'Attribute_Label__c') === label.Id &&
           helper.getValue(val, 'Product__c') === exportRecords[0].get('Id')
@@ -117,7 +79,7 @@ async function PimStructure(reqBody, isListPageExport) {
         exportRecords[0].set(label.Name, null);
       }
     });
-    /** get product's linked attribute labels end */
+    /** get product's appearing attribute labels end */
     let valuesList = [];
 
     if (exportType === 'currentVariant') {
@@ -147,7 +109,7 @@ async function PimStructure(reqBody, isListPageExport) {
             where (
               Overwritten_Variant_Value__c IN (${valuesIdList}) AND
               Product__c IN (${recordIds}) AND
-              Attribute_Label__c IN (${linkedLabelIds})
+              Attribute_Label__c IN (${appearingLabelIds})
             )`
           )
         );
@@ -164,7 +126,7 @@ async function PimStructure(reqBody, isListPageExport) {
           if (overwrittenValues.length > 0) {
             overwrittenValues.forEach(overwrittenValue => {
               let affectedLabelName;
-              linkedLabels.forEach(label => {
+              appearingLabels.forEach(label => {
                 if (
                   label.Id ===
                   helper.getValue(overwrittenValue, 'Attribute_Label__c')
@@ -223,7 +185,7 @@ async function PimStructure(reqBody, isListPageExport) {
           where (
             Overwritten_Variant_Value__c IN (${valuesIdList}) AND
             Product__c IN (${recordIds}) AND
-            Attribute_Label__c IN (${linkedLabelIds})
+            Attribute_Label__c IN (${appearingLabelIds})
           )`
         )
       );
@@ -269,7 +231,7 @@ async function PimStructure(reqBody, isListPageExport) {
         if (overwrittenValues.length > 0) {
           overwrittenValues.forEach(overwrittenValue => {
             let affectedLabelName;
-            linkedLabels.forEach(label => {
+            appearingLabels.forEach(label => {
               if (
                 label.Id ===
                 helper.getValue(overwrittenValue, 'Attribute_Label__c')
@@ -301,8 +263,8 @@ async function PimStructure(reqBody, isListPageExport) {
         exportType,
         productVariantValueMapList,
         recordIds,
-        linkedLabelIds,
-        linkedLabels,
+        appearingLabelIds,
+        appearingLabels,
         currentVariantName
       );
       exportRecordsAndCols = [filledInData];
@@ -379,8 +341,8 @@ async function fillInInheritedData(
   exportType,
   productVariantValueMapList,
   recordIds,
-  linkedLabelIds,
-  linkedLabels,
+  appearingLabelIds,
+  appearingLabels,
   currentVariantName
 ) {
   if (exportType === 'currentVariant') {
@@ -418,7 +380,7 @@ async function fillInInheritedData(
         where (
           Overwritten_Variant_Value__c IN (${valuesIdList}) AND
           Product__c IN (${recordIds}) AND
-          Attribute_Label__c IN (${linkedLabelIds})
+          Attribute_Label__c IN (${appearingLabelIds})
         )`
       )
     );
@@ -464,7 +426,7 @@ async function fillInInheritedData(
       if (overwrittenValues.length > 0) {
         overwrittenValues.forEach(overwrittenValue => {
           let affectedLabelName;
-          linkedLabels.forEach(label => {
+          appearingLabels.forEach(label => {
             if (
               label.Id ===
               helper.getValue(overwrittenValue, 'Attribute_Label__c')
