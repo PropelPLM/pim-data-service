@@ -7,6 +7,7 @@ const ForceService = require('./ForceService');
 let helper;
 let service;
 const ATTRIBUTE_FLAG = 'PROPEL_ATT';
+const DA_TYPE = 'DigitalAsset';
 
 // fetch the PIM products and variants here so we dont have to do it in Apex
 async function PimStructure(reqBody, isListPageExport) {
@@ -54,6 +55,7 @@ async function PimStructure(reqBody, isListPageExport) {
         `select
           Id,
           Attribute_Label__c,
+          Attribute_Label_Type__c,
           Overwritten_Variant_Value__c,
           Product__c,
           Value__c
@@ -63,6 +65,7 @@ async function PimStructure(reqBody, isListPageExport) {
           Overwritten_Variant_Value__c = null)`
       )
     );
+    let attributeValueValue;
     appearingLabels.forEach(label => {
       // add the base product's attribute values
       appearingValues.forEach(val => {
@@ -70,7 +73,16 @@ async function PimStructure(reqBody, isListPageExport) {
           helper.getValue(val, 'Attribute_Label__c') === label.Id &&
           helper.getValue(val, 'Product__c') === exportRecords[0].get('Id')
         ) {
-          exportRecords[0].set(label.Name, helper.getValue(val, 'Value__c'));
+          attributeValueValue = helper.getValue(val, 'Value__c');
+          if (helper.getValue(val, 'Attribute_Label_Type__c') === DA_TYPE) {
+            // show url of Digital Asset data page instead of the Digital Asset object's recordid
+            attributeValueValue = convertDAToUrl(
+              reqBody.instanceUrl,
+              namespace,
+              attributeValueValue
+            );
+          }
+          exportRecords[0].set(label.Name, attributeValueValue);
         }
       });
 
@@ -104,7 +116,7 @@ async function PimStructure(reqBody, isListPageExport) {
         valuesIdList = valuesIdList.map(id => `'${id}'`).join(',');
         const overwrittenValues = await service.simpleQuery(
           helper.namespaceQuery(
-            `select Id, Attribute_Label__c, Value__c, Product__c, Overwritten_Variant_Value__c
+            `select Id, Attribute_Label__c, Attribute_Label_Type__c, Value__c, Product__c, Overwritten_Variant_Value__c
             from Attribute_Value__c
             where (
               Overwritten_Variant_Value__c IN (${valuesIdList}) AND
@@ -138,7 +150,17 @@ async function PimStructure(reqBody, isListPageExport) {
                 overwrittenValue,
                 'Overwritten_Variant_Value__c'
               );
-              const newValue = helper.getValue(overwrittenValue, 'Value__c');
+              let newValue = helper.getValue(overwrittenValue, 'Value__c');
+              if (
+                helper.getValue(overwrittenValue, 'Attribute_Label_Type__c') ===
+                DA_TYPE
+              ) {
+                newValue = convertDAToUrl(
+                  reqBody.instanceUrl,
+                  namespace,
+                  newValue
+                );
+              }
               // update the currentVariant object with the overwritten values
               if (valuesList[i][0].Id === affectedVariantValue) {
                 currentVariant.set(affectedLabelName, newValue);
@@ -180,7 +202,7 @@ async function PimStructure(reqBody, isListPageExport) {
       valuesIdList = valuesIdList.map(id => `'${id}'`).join(',');
       const overwrittenValues = await service.simpleQuery(
         helper.namespaceQuery(
-          `select Id, Attribute_Label__c, Value__c, Product__c, Overwritten_Variant_Value__c
+          `select Id, Attribute_Label__c, Attribute_Label_Type__c, Value__c, Product__c, Overwritten_Variant_Value__c
           from Attribute_Value__c
           where (
             Overwritten_Variant_Value__c IN (${valuesIdList}) AND
@@ -243,7 +265,17 @@ async function PimStructure(reqBody, isListPageExport) {
               overwrittenValue,
               'Overwritten_Variant_Value__c'
             );
-            const newValue = helper.getValue(overwrittenValue, 'Value__c');
+            let newValue = helper.getValue(overwrittenValue, 'Value__c');
+            if (
+              helper.getValue(overwrittenValue, 'Attribute_Label_Type__c') ===
+              DA_TYPE
+            ) {
+              newValue = convertDAToUrl(
+                reqBody.instanceUrl,
+                namespace,
+                newValue
+              );
+            }
             // update the newVariant object with the overwritten values
             if (val.Id === affectedVariantValue) {
               newVariant.set(affectedLabelName, newValue);
@@ -265,7 +297,8 @@ async function PimStructure(reqBody, isListPageExport) {
         recordIds,
         appearingLabelIds,
         appearingLabels,
-        currentVariantName
+        currentVariantName,
+        reqBody
       );
       exportRecordsAndCols = [filledInData];
     } else {
@@ -343,7 +376,8 @@ async function fillInInheritedData(
   recordIds,
   appearingLabelIds,
   appearingLabels,
-  currentVariantName
+  currentVariantName,
+  reqBody
 ) {
   if (exportType === 'currentVariant') {
     exportType = 'allVariants';
@@ -375,7 +409,7 @@ async function fillInInheritedData(
     valuesIdList = valuesIdList.map(id => `'${id}'`).join(',');
     const overwrittenValues = await service.simpleQuery(
       helper.namespaceQuery(
-        `select Id, Attribute_Label__c, Value__c, Product__c, Overwritten_Variant_Value__c
+        `select Id, Attribute_Label__c, Attribute_Label_Type__c, Value__c, Product__c, Overwritten_Variant_Value__c
         from Attribute_Value__c
         where (
           Overwritten_Variant_Value__c IN (${valuesIdList}) AND
@@ -438,7 +472,17 @@ async function fillInInheritedData(
             overwrittenValue,
             'Overwritten_Variant_Value__c'
           );
-          const newValue = helper.getValue(overwrittenValue, 'Value__c');
+          let newValue = helper.getValue(overwrittenValue, 'Value__c');
+          if (
+            helper.getValue(overwrittenValue, 'Attribute_Label_Type__c') ===
+            DA_TYPE
+          ) {
+            newValue = convertDAToUrl(
+              reqBody.instanceUrl,
+              reqBody.namespace,
+              newValue
+            );
+          }
           // update the newVariant object with the overwritten values
           if (val.Id === affectedVariantValue) {
             newVariant.set(affectedLabelName, newValue);
@@ -627,6 +671,17 @@ async function addExportColumns(
     });
   }
   return [...exportRecordsAndCols, exportColumns];
+}
+
+function convertDAToUrl(instanceUrl, namespace, sobjectId) {
+  return (
+    instanceUrl +
+    '/lightning/r/' +
+    namespace +
+    'Digital_Asset__c/' +
+    sobjectId +
+    '/view'
+  );
 }
 
 module.exports = PimStructure;
