@@ -3,6 +3,7 @@ const PimProductService = require('./PimProductService');
 const PimProductListHelper = require('./PimProductListHelper');
 const PimExportHelper = require('./PimExportHelper');
 const ForceService = require('./ForceService');
+const { prependCDNToViewLink } = require('./utils');
 
 let helper;
 let service;
@@ -65,32 +66,52 @@ async function PimStructure(reqBody, isListPageExport) {
           Overwritten_Variant_Value__c = null)`
       )
     );
-    let attributeValueValue;
-    appearingLabels.forEach(label => {
-      // add the base product's attribute values
-      appearingValues.forEach(val => {
-        if (
-          helper.getValue(val, 'Attribute_Label__c') === label.Id &&
-          helper.getValue(val, 'Product__c') === exportRecords[0].get('Id')
-        ) {
-          attributeValueValue = helper.getValue(val, 'Value__c');
-          if (helper.getValue(val, 'Attribute_Label_Type__c') === DA_TYPE) {
-            // show url of Digital Asset data page instead of the Digital Asset object's recordid
-            attributeValueValue = convertDAToUrl(
-              reqBody.instanceUrl,
-              namespace,
-              attributeValueValue
-            );
-          }
-          exportRecords[0].set(label.Name, attributeValueValue);
-        }
-      });
 
-      if (!exportRecords[0].has(label.Name)) {
-        // add null value to the base product map
-        exportRecords[0].set(label.Name, null);
+    const digitalAssetList = await service.simpleQuery(
+      helper.namespaceQuery(
+        `select Id, View_Link__c
+        from Digital_Asset__c`
+      )
+    );
+    const digitalAssetMap = new Map(
+      digitalAssetList.map(asset => {
+        return [asset.Id, helper.getValue(asset, 'View_Link__c')];
+      })
+    );
+
+    let attributeValueValue;
+    for (let i = 0; i < appearingLabels.length; i++) {
+      // add the base product's attribute values
+      for (let j = 0; j < appearingValues.length; j++) {
+        if (
+          helper.getValue(appearingValues[j], 'Attribute_Label__c') ===
+            appearingLabels[i].Id &&
+          helper.getValue(appearingValues[j], 'Product__c') ===
+            exportRecords[0].get('Id')
+        ) {
+          attributeValueValue = helper.getValue(appearingValues[j], 'Value__c');
+          if (
+            helper.getValue(appearingValues[j], 'Attribute_Label_Type__c') ===
+            DA_TYPE
+          ) {
+            // get view_link__c field of Digital_Asset__c object with id of attributeValueValue
+            const viewLink = digitalAssetMap.get(attributeValueValue);
+            if (viewLink) {
+              // if value is already complete url, add it to the map, else prepend the CDN url to the partial url then add to map
+              attributeValueValue = viewLink.includes('https')
+                ? viewLink
+                : await prependCDNToViewLink(viewLink, reqBody);
+            }
+          }
+          exportRecords[0].set(appearingLabels[i].Name, attributeValueValue);
+        }
       }
-    });
+
+      if (!exportRecords[0].has(appearingLabels[i].Name)) {
+        // add null value to the base product map
+        exportRecords[0].set(appearingLabels[i].Name, null);
+      }
+    }
     /** get product's appearing attribute labels end */
     let valuesList = [];
 
@@ -136,36 +157,41 @@ async function PimStructure(reqBody, isListPageExport) {
 
           // add any overwritten values
           if (overwrittenValues.length > 0) {
-            overwrittenValues.forEach(overwrittenValue => {
+            for (let i = 0; i < overwrittenValues.length; i++) {
               let affectedLabelName;
               appearingLabels.forEach(label => {
                 if (
                   label.Id ===
-                  helper.getValue(overwrittenValue, 'Attribute_Label__c')
+                  helper.getValue(overwrittenValues[i], 'Attribute_Label__c')
                 ) {
                   affectedLabelName = label.Name;
                 }
               });
               const affectedVariantValue = helper.getValue(
-                overwrittenValue,
+                overwrittenValues[i],
                 'Overwritten_Variant_Value__c'
               );
-              let newValue = helper.getValue(overwrittenValue, 'Value__c');
+              let newValue = helper.getValue(overwrittenValues[i], 'Value__c');
               if (
-                helper.getValue(overwrittenValue, 'Attribute_Label_Type__c') ===
-                DA_TYPE
+                helper.getValue(
+                  overwrittenValues[i],
+                  'Attribute_Label_Type__c'
+                ) === DA_TYPE
               ) {
-                newValue = convertDAToUrl(
-                  reqBody.instanceUrl,
-                  namespace,
-                  newValue
-                );
+                // get view_link__c field of Digital_Asset__c object with id of attributeValueValue
+                const viewLink = digitalAssetMap.get(attributeValueValue);
+                if (viewLink) {
+                  // if value is already complete url, add it to the map, else prepend the CDN url to the partial url then add to map
+                  newValue = viewLink.includes('https')
+                    ? viewLink
+                    : await prependCDNToViewLink(viewLink, reqBody);
+                }
               }
               // update the currentVariant object with the overwritten values
               if (valuesList[i][0].Id === affectedVariantValue) {
                 currentVariant.set(affectedLabelName, newValue);
               }
-            });
+            }
           }
         }
         currentVariantName = currentVariant.get('Product_ID');
@@ -214,9 +240,9 @@ async function PimStructure(reqBody, isListPageExport) {
 
       let currValue;
       let isFirstLevelVariant;
-      valuesList.forEach(val => {
+      for (let i = 0; i < valuesList.length; i++) {
         newVariant = new Map();
-        currValue = val;
+        currValue = valuesList[i];
         isFirstLevelVariant = true;
         while (true) {
           // add variant value's Product ID
@@ -251,39 +277,44 @@ async function PimStructure(reqBody, isListPageExport) {
 
         // add any overwritten values
         if (overwrittenValues.length > 0) {
-          overwrittenValues.forEach(overwrittenValue => {
+          for (let j = 0; j < overwrittenValues.length; i++) {
             let affectedLabelName;
             appearingLabels.forEach(label => {
               if (
                 label.Id ===
-                helper.getValue(overwrittenValue, 'Attribute_Label__c')
+                helper.getValue(overwrittenValues[j], 'Attribute_Label__c')
               ) {
                 affectedLabelName = label.Name;
               }
             });
             const affectedVariantValue = helper.getValue(
-              overwrittenValue,
+              overwrittenValues[j],
               'Overwritten_Variant_Value__c'
             );
-            let newValue = helper.getValue(overwrittenValue, 'Value__c');
+            let newValue = helper.getValue(overwrittenValues[j], 'Value__c');
             if (
-              helper.getValue(overwrittenValue, 'Attribute_Label_Type__c') ===
-              DA_TYPE
+              helper.getValue(
+                overwrittenValues[j],
+                'Attribute_Label_Type__c'
+              ) === DA_TYPE
             ) {
-              newValue = convertDAToUrl(
-                reqBody.instanceUrl,
-                namespace,
-                newValue
-              );
+              // get view_link__c field of Digital_Asset__c object with id of attributeValueValue
+              const viewLink = digitalAssetMap.get(attributeValueValue);
+              if (viewLink) {
+                // if value is already complete url, add it to the map, else prepend the CDN url to the partial url then add to map
+                newValue = viewLink.includes('https')
+                  ? viewLink
+                  : await prependCDNToViewLink(viewLink, reqBody);
+              }
             }
             // update the newVariant object with the overwritten values
-            if (val.Id === affectedVariantValue) {
+            if (valuesList[i].Id === affectedVariantValue) {
               newVariant.set(affectedLabelName, newValue);
             }
-          });
+          }
         }
         exportRecords.push(newVariant);
-      });
+      }
     } else {
       throw 'Invalid Export Type';
     }
@@ -298,7 +329,8 @@ async function PimStructure(reqBody, isListPageExport) {
         appearingLabelIds,
         appearingLabels,
         currentVariantName,
-        reqBody
+        reqBody,
+        digitalAssetMap
       );
       exportRecordsAndCols = [filledInData];
     } else {
@@ -377,7 +409,8 @@ async function fillInInheritedData(
   appearingLabelIds,
   appearingLabels,
   currentVariantName,
-  reqBody
+  reqBody,
+  digitalAssetMap
 ) {
   if (exportType === 'currentVariant') {
     exportType = 'allVariants';
@@ -421,9 +454,9 @@ async function fillInInheritedData(
 
     let currValue;
     let isFirstLevelVariant;
-    valuesList.forEach(val => {
+    for (let i = 0; i < valuesList.length; i++) {
       newVariant = new Map();
-      currValue = val;
+      currValue = valuesList[i];
       isFirstLevelVariant = true;
       while (true) {
         // add variant value's Product ID
@@ -458,39 +491,42 @@ async function fillInInheritedData(
 
       // add any overwritten values
       if (overwrittenValues.length > 0) {
-        overwrittenValues.forEach(overwrittenValue => {
+        for (let j = 0; j < overwrittenValues.length; j++) {
           let affectedLabelName;
           appearingLabels.forEach(label => {
             if (
               label.Id ===
-              helper.getValue(overwrittenValue, 'Attribute_Label__c')
+              helper.getValue(overwrittenValues[j], 'Attribute_Label__c')
             ) {
               affectedLabelName = label.Name;
             }
           });
           const affectedVariantValue = helper.getValue(
-            overwrittenValue,
+            overwrittenValues[j],
             'Overwritten_Variant_Value__c'
           );
-          let newValue = helper.getValue(overwrittenValue, 'Value__c');
+          let newValue = helper.getValue(overwrittenValues[j], 'Value__c');
           if (
-            helper.getValue(overwrittenValue, 'Attribute_Label_Type__c') ===
+            helper.getValue(overwrittenValues[j], 'Attribute_Label_Type__c') ===
             DA_TYPE
           ) {
-            newValue = convertDAToUrl(
-              reqBody.instanceUrl,
-              reqBody.namespace,
-              newValue
-            );
+            // get view_link__c field of Digital_Asset__c object with id of attributeValueValue
+            const viewLink = digitalAssetMap.get(attributeValueValue);
+            if (viewLink) {
+              // if value is already complete url, add it to the map, else prepend the CDN url to the partial url then add to map
+              newValue = viewLink.includes('https')
+                ? viewLink
+                : await prependCDNToViewLink(viewLink, reqBody);
+            }
           }
           // update the newVariant object with the overwritten values
-          if (val.Id === affectedVariantValue) {
+          if (valuesList[i].Id === affectedVariantValue) {
             newVariant.set(affectedLabelName, newValue);
           }
-        });
+        }
       }
       exportRecords.push(newVariant);
-    });
+    }
     exportType = 'currentVariant';
   }
 
