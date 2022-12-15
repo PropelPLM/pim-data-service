@@ -1,5 +1,7 @@
 var http = require('https');
 var fs = require('fs');
+const PimExportHelper = require('./PimExportHelper');
+const ForceService = require('./ForceService');
 
 module.exports = {
   postToChatter,
@@ -9,6 +11,7 @@ module.exports = {
   removeFileFromDisk,
   validateNamespaceForPath,
   validateNamespaceForField,
+  prependCDNToViewLink
 };
 /**
  * Function that send zip file to salesforce chatter via chatter api
@@ -30,7 +33,7 @@ function postToChatter(
     sessionId,
     hostUrl: hostname,
     shouldPostToUser,
-    communityId,
+    communityId
   } = reqBody;
   let subjectId = shouldPostToUser ? 'me' : recordId;
 
@@ -51,8 +54,8 @@ function postToChatter(
       'Content-Type': errorMessage
         ? 'application/json; charset=UTF-8'
         : 'multipart/form-data; boundary=' + boundary,
-      Authorization: 'OAuth ' + sessionId,
-    },
+      Authorization: 'OAuth ' + sessionId
+    }
   };
   // console.log(options)
 
@@ -69,7 +72,7 @@ function postToChatter(
     '},',
     '"feedElementType":"FeedItem",',
     `"subjectId":"${subjectId}"`,
-    '}',
+    '}'
   ].join(CRLF);
   // console.log(errorPostData)
   // Request
@@ -100,11 +103,11 @@ function postToChatter(
     `Content-Disposition: form-data; name="feedElementFileUpload"; filename="${fileName}"`,
     'Content-Type: application/octet-stream; charset=ISO-8859-1',
     '',
-    '',
+    ''
   ].join(CRLF);
 
   // Execute request
-  var req = new http.request(options, (res) => {
+  var req = new http.request(options, res => {
     console.log('response: ', res.statusCode, res.statusMessage);
     if (callback) {
       callback();
@@ -153,8 +156,8 @@ function sendConfirmationEmail(response) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: 'OAuth ' + sessionId,
-    },
+      Authorization: 'OAuth ' + sessionId
+    }
   };
   // Execute request
   var req = new http.request(options, function (res) {
@@ -209,7 +212,7 @@ function cleanString(value) {
 }
 
 function removeFileFromDisk(nameOnDisk) {
-  fs.unlink(nameOnDisk, (e) => {
+  fs.unlink(nameOnDisk, e => {
     if (e) {
       console.log('unlink error:', e);
     }
@@ -230,4 +233,24 @@ function validateNamespaceForField(namespace) {
   } else {
     return '';
   }
+}
+
+async function prependCDNToViewLink(viewLink, reqBody) {
+  const service = new ForceService(reqBody.hostUrl, reqBody.sessionId);
+  const helper = new PimExportHelper(reqBody.namespace);
+  const CDN_METADATA_NAME = 'CloudfrontDistribution';
+
+  if (viewLink !== null || !viewLink.isEmpty()) {
+    const prefix = await service.simpleQuery(
+      helper.namespaceQuery(
+        `select Id, Value__c
+        from Configuration__mdt
+        where DeveloperName = '${CDN_METADATA_NAME}'`
+      )
+    );
+    if (prefix.length > 0) {
+      return helper.getValue(prefix[0], 'Value__c') + viewLink;
+    }
+  }
+  return viewLink;
 }
