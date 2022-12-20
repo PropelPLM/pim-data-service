@@ -277,7 +277,7 @@ async function PimStructure(reqBody, isListPageExport) {
 
         // add any overwritten values
         if (overwrittenValues.length > 0) {
-          for (let j = 0; j < overwrittenValues.length; i++) {
+          for (let j = 0; j < overwrittenValues.length; j++) {
             let affectedLabelName;
             appearingLabels.forEach(label => {
               if (
