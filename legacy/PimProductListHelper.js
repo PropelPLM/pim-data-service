@@ -1,9 +1,11 @@
 const PimProductManager = require('./PimProductManager');
 const PimProductService = require('./PimProductService');
+const { prependCDNToViewLink } = require('./utils');
 
 let helper;
 let service;
 const ATTRIBUTE_FLAG = 'PROPEL_ATT';
+const DA_TYPE = 'DigitalAsset';
 
 async function PimProductListHelper(reqBody, pHelper, pService) {
   helper = pHelper;
@@ -77,7 +79,8 @@ async function PimProductListHelper(reqBody, pHelper, pService) {
       attributeResults = await getResultForProductMap(
         productMap,
         variantValueIds,
-        productsList
+        productsList,
+        reqBody
       );
     }
 
@@ -348,69 +351,123 @@ async function getProductMap(productsList) {
 async function getResultForProductMap(
   productMap,
   variantValueIds,
-  productsList
+  productsList,
+  reqBody
 ) {
   let results = new Map();
   let tempMap = new Map();
   let variantToAttributeMap = await getVariantMap(productsList);
+  const digitalAssetList = await service.simpleQuery(
+    helper.namespaceQuery(
+      `select Id, View_Link__c
+      from Digital_Asset__c`
+    )
+  );
+  const digitalAssetMap = new Map(
+    digitalAssetList.map(asset => {
+      return [asset.Id, helper.getValue(asset, 'View_Link__c')];
+    })
+  );
 
-  Array.from(productMap.values()).forEach(product => {
+  for (let product of Array.from(productMap.values())) {
     tempMap = new Map();
     if (helper.getValue(product, 'Attributes__r') !== null) {
-      helper.getValue(product, 'Attributes__r').records.forEach(attribute => {
+      for (let attribute of helper.getValue(product, 'Attributes__r').records) {
         if (
           helper.getValue(attribute, 'Overwritten_Variant_Value__c') === null &&
           helper.getValue(attribute, 'Attribute_Label__r') !== null
         ) {
+          let attributeValueValue = helper.getValue(attribute, 'Value__c');
+          // replace digital asset id with CDN url if Attribute_Label__c is of Type__c 'DigitalAsset'
+          if (
+            helper.getValue(attribute, 'Attribute_Label__r.Type__c') === DA_TYPE
+          ) {
+            // get view_link__c field of Digital_Asset__c object with id of attributeValueValue
+            const viewLink = digitalAssetMap.get(attributeValueValue);
+            if (viewLink) {
+              // if value is already complete url, add it to the map, else prepend the CDN url to the partial url then add to map
+              attributeValueValue = viewLink.includes('https')
+                ? viewLink
+                : await prependCDNToViewLink(viewLink, reqBody);
+            }
+          }
           tempMap.set(
             helper.getValue(attribute, 'Attribute_Label__r.Primary_Key__c'),
-            helper.getValue(attribute, 'Value__c')
+            attributeValueValue
           );
         }
-      });
+      }
     }
     results.set(product.Id, tempMap);
-  });
+  }
 
   let variantValueDetailMap = await getVariantValueDetailMap(productsList);
   let tempVariantValue;
   let tempVariantMap = new Map();
   variantValueIds = variantValueIds.replace(/'/g, '').split(',');
-  variantValueIds.forEach(vvId => {
+  for (let vvId of variantValueIds) {
     tempVariantValue = variantValueDetailMap.get(vvId);
     tempVariantMap = new Map(
       results.get(helper.getValue(tempVariantValue, 'Variant__r.Product__c'))
     );
     if (helper.getValue(tempVariantValue, 'Parent_Value_Path__c')) {
       // Variant has a parent variant, traverse the parent path
-      helper
+      for (let pathVVId of helper
         .getValue(tempVariantValue, 'Parent_Value_Path__c')
-        .split(',')
-        .forEach(pathVVId => {
-          // for each parent, add their overwritten attribute values
-          if (variantToAttributeMap.has(pathVVId)) {
-            variantToAttributeMap.get(pathVVId).forEach(attribute => {
-              tempVariantMap.set(
-                helper.getValue(attribute, 'Attribute_Label__r.Primary_Key__c'),
-                helper.getValue(attribute, 'Value__c')
-              );
-            });
+        .split(',')) {
+        // for each parent, add their overwritten attribute values
+        if (variantToAttributeMap.has(pathVVId)) {
+          for (let attribute of variantToAttributeMap.get(pathVVId)) {
+            let attributeValueValue = helper.getValue(attribute, 'Value__c');
+            // replace digital asset id with CDN url if Attribute_Label__c is of Type__c 'DigitalAsset'
+            if (
+              helper.getValue(attribute, 'Attribute_Label__r.Type__c') ===
+              DA_TYPE
+            ) {
+              // get view_link__c field of Digital_Asset__c object with id of attributeValueValue
+              const viewLink = digitalAssetMap.get(attributeValueValue);
+              if (viewLink) {
+                // if value is already complete url, add it to the map, else prepend the CDN url to the partial url then add to map
+                attributeValueValue = viewLink.includes('https')
+                  ? viewLink
+                  : await prependCDNToViewLink(viewLink, reqBody);
+              }
+            }
+            tempVariantMap.set(
+              helper.getValue(attribute, 'Attribute_Label__r.Primary_Key__c'),
+              attributeValueValue
+            );
           }
-        });
+        }
+      }
     }
 
     if (variantToAttributeMap.has(vvId)) {
-      variantToAttributeMap.get(vvId).forEach(attribute => {
+      for (let attribute of variantToAttributeMap.get(vvId)) {
         if (helper.getValue(attribute, 'Attribute_Label__r')) {
+          let attributeValueValue = helper.getValue(attribute, 'Value__c');
+          // replace digital asset id with CDN url if Attribute_Label__c is of Type__c 'DigitalAsset'
+          if (
+            helper.getValue(attribute, 'Attribute_Label__r.Type__c') === DA_TYPE
+          ) {
+            // get view_link__c field of Digital_Asset__c object with id of attributeValueValue
+            const viewLink = digitalAssetMap.get(attributeValueValue);
+            if (viewLink) {
+              // if value is already complete url, add it to the map, else prepend the CDN url to the partial url then add to map
+              attributeValueValue = viewLink.includes('https')
+                ? viewLink
+                : await prependCDNToViewLink(viewLink, reqBody);
+            }
+          }
           tempVariantMap.set(
             helper.getValue(attribute, 'Attribute_Label__r.Primary_Key__c'),
-            helper.getValue(attribute, 'Value__c')
+            attributeValueValue
           );
         }
-      });
+      }
     }
     results.set(vvId, tempVariantMap);
-  });
+  }
   return results;
 }
 
