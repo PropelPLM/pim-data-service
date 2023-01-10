@@ -2,15 +2,16 @@ var http = require('https');
 var fs = require('fs');
 const PimExportHelper = require('./PimExportHelper');
 const ForceService = require('./ForceService');
+const DA_DOWNLOAD_DETAIL_KEY = 'DA_DOWNLOAD_DETAIL_KEY';
 
 class DADownloadDetails {
   static helper;
   constructor(asset, namespace) {
     if (this.helper == null) this.helper = new PimExportHelper(namespace);
 
-    this.fileName = helper.getValue(asset, 'Name');
-    this.fileId = helper.getValue(asset, 'External_File_Id__c');
-    this.key = helper.getValue(asset, 'View_Link__c');
+    this.fileName = this.helper.getValue(asset, 'Name');
+    this.fileId = this.helper.getValue(asset, 'External_File_Id__c');
+    this.key = this.helper.getValue(asset, 'View_Link__c');
   }
 }
 
@@ -24,6 +25,7 @@ module.exports = {
   validateNamespaceForField,
   prependCDNToViewLink,
   DADownloadDetails,
+  DA_DOWNLOAD_DETAIL_KEY
 };
 /**
  * Function that send zip file to salesforce chatter via chatter api
