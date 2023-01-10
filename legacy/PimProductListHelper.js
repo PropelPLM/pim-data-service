@@ -62,8 +62,9 @@ async function PimProductListHelper(reqBody, pHelper, pService) {
 
     let attributeResults = new Map();
     if (variantValueIds.size > 0) {
-      variantValueIds = Array.from(variantValueIds);
-      variantValueIds = variantValueIds.map(id => `'${id}'`).join(',');
+      const stringifiedQuotedVariantValueIds = Array.from(variantValueIds)
+        .map(id => `'${id}'`)
+        .join(',');
       let variantValues = await service.queryExtend(
         helper.namespaceQuery(
           `select Id, Variant__r.Product__c
@@ -71,27 +72,28 @@ async function PimProductListHelper(reqBody, pHelper, pService) {
           where Id IN (${service.QUERY_LIST})
         `
         ),
-        variantValueIds.split(',')
+        stringifiedQuotedVariantValueIds.split(',')
       );
       variantValues.forEach(value => {
         productIdSet.add(helper.getValue(value, 'Variant__r.Product__c'));
       });
-      const productIds = Array.from(productIdSet)
-        .map(id => `'${id}'`)
-        .join(',');
-      let productsList = await PimProductManager(productIds, helper, service);
-      let productMap = await getProductMap(productsList);
-      attributeResults = await getResultForProductMap(
-        productMap,
-        variantValueIds,
-        productsList,
-        reqBody
-      );
     }
-  
+
+    const productIds = Array.from(productIdSet)
+      .map(id => `'${id}'`)
+      .join(',');
+    let productsList = await PimProductManager(productIds, helper, service);
+    let productMap = await getProductMap(productsList);
+    attributeResults = await getResultForProductMap(
+      productMap,
+      variantValueIds,
+      productsList,
+      reqBody
+    );
+
     if (attributeResults.has(DA_DOWNLOAD_DETAIL_KEY)) {
-        daDownloadDetailsList = attributeResults.get(DA_DOWNLOAD_DETAIL_KEY);
-        attributeResults.delete(DA_DOWNLOAD_DETAIL_KEY);
+      daDownloadDetailsList = attributeResults.get(DA_DOWNLOAD_DETAIL_KEY);
+      attributeResults.delete(DA_DOWNLOAD_DETAIL_KEY);
     }
 
     // sort the export records to the same format as product list page
@@ -423,7 +425,6 @@ async function getResultForProductMap(
   let variantValueDetailMap = await getVariantValueDetailMap(productsList);
   let tempVariantValue;
   let tempVariantMap = new Map();
-  variantValueIds = variantValueIds?.replace(/'/g, '').split(',');
   for (let vvId of variantValueIds) {
     tempVariantValue = variantValueDetailMap.get(vvId);
     tempVariantMap = new Map(
