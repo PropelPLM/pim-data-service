@@ -3,6 +3,17 @@ var fs = require('fs');
 const PimExportHelper = require('./PimExportHelper');
 const ForceService = require('./ForceService');
 
+class DADownloadDetails {
+  static helper;
+  constructor(asset, namespace) {
+    if (this.helper == null) this.helper = new PimExportHelper(namespace);
+
+    this.fileName = helper.getValue(asset, 'Name');
+    this.fileId = helper.getValue(asset, 'External_File_Id__c');
+    this.key = helper.getValue(asset, 'View_Link__c');
+  }
+}
+
 module.exports = {
   postToChatter,
   getNestedField,
@@ -11,7 +22,8 @@ module.exports = {
   removeFileFromDisk,
   validateNamespaceForPath,
   validateNamespaceForField,
-  prependCDNToViewLink
+  prependCDNToViewLink,
+  DADownloadDetails,
 };
 /**
  * Function that send zip file to salesforce chatter via chatter api
