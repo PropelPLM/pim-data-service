@@ -9,7 +9,7 @@ class DADownloadDetails {
   constructor(asset, namespace) {
     if (this.helper == null) this.helper = new PimExportHelper(namespace);
 
-    this.fileName = this.helper.getValue(asset, 'Name');
+    this.fileName = asset.Name;
     this.fileId = this.helper.getValue(asset, 'External_File_Id__c');
     this.key = this.helper.getValue(asset, 'View_Link__c');
   }
