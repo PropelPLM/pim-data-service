@@ -21,9 +21,24 @@ async function PimStructure(reqBody, isListPageExport) {
   helper = new PimExportHelper(namespace);
   let currentVariantName;
 
+  let templateFields;
+  let templateHeaders;
+
+  if (reqBody.options.isTemplateExport) {
+    ({ templateFields, templateHeaders } = getTemplateHeadersAndFields(
+      reqBody.templateVersionData
+    ));
+  }
+
   if (isListPageExport) {
     // export is from product list page
-    exportRecordsAndCols = await PimProductListHelper(reqBody, helper, service);
+    exportRecordsAndCols = await PimProductListHelper(
+      reqBody,
+      helper,
+      service,
+      templateFields,
+      templateHeaders
+    );
     return exportRecordsAndCols;
   } else {
     // export is from product data page
@@ -353,20 +368,7 @@ async function PimStructure(reqBody, isListPageExport) {
     } else {
       exportRecordsAndCols = [exportRecords];
     }
-    let templateFields;
-    let templateHeaders;
-    if (reqBody.options.isTemplateExport && reqBody.templateVersionData) {
-      // parse headers and fields and store them in a map
-      const templateRows = reqBody.templateVersionData.split(/\r?\n/);
-      templateHeaders = templateRows[0].split(',');
-      templateFields = templateRows[1].split(',');
-      for (let i = 0; i < templateFields.length; i++) {
-        if (templateFields[i].includes(ATTRIBUTE_FLAG)) {
-          // remove double quotes (note the 3 different kinds of double quotes in the regex)
-          templateFields[i] = templateFields[i].replace(/["“”]+/g, '');
-        }
-      }
-    }
+
     return {
       daDownloadDetailsList,
       recordsAndCols: await addExportColumns(
@@ -377,6 +379,28 @@ async function PimStructure(reqBody, isListPageExport) {
       )
     };
   }
+}
+
+function getTemplateHeadersAndFields(templateVersionData) {
+  function removeDoubleQuotes(str) {
+    // note the 3 different kinds of double quotes in the regex
+    return str.replace(/["“”]+/g, '');
+  }
+
+  let templateFields;
+  let templateHeaders;
+
+  if (!templateVersionData) return { templateFields, templateHeaders };
+
+  const templateRows = templateVersionData.split(/\r?\n/);
+  templateHeaders = templateRows?.[0]?.split(',') || [];
+  templateFields = templateRows?.[1]?.split(',') || [];
+  return {
+    templateFields: templateFields
+      .filter(field => field.includes(ATTRIBUTE_FLAG))
+      .map(attrField => removeDoubleQuotes(attrField)),
+    templateHeaders
+  };
 }
 
 // PIM repo ProductService.getVariantAndVariantValues
