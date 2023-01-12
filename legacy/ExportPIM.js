@@ -14,7 +14,7 @@ async function LegacyExportPIM(req) {
   }
   let daDownloadDetailsList, recordsAndCols;
   try {
-    ({daDownloadDetailsList, recordsAndCols} = await PimStructure(reqBody, isListPageExport));
+    ({daDownloadDetailsList, recordsAndCols} = await new PimStructure().build(reqBody, isListPageExport));
   } catch (err) {
     console.log('error: ', err);
   }
