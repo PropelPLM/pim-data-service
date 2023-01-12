@@ -1,6 +1,10 @@
 const PimProductManager = require('./PimProductManager');
 const PimProductService = require('./PimProductService');
-const { prependCDNToViewLink } = require('./utils');
+const {
+  DA_DOWNLOAD_DETAIL_KEY,
+  DADownloadDetails,
+  prependCDNToViewLink
+} = require('./utils');
 
 let helper;
 let service;
@@ -11,6 +15,7 @@ async function PimProductListHelper(reqBody, pHelper, pService) {
   helper = pHelper;
   service = pService;
 
+  let daDownloadDetailsList;
   const recordIds = reqBody.recordIds;
   const vvIds = reqBody.variantValueIds;
   const categoryId = reqBody.categoryId;
@@ -57,8 +62,9 @@ async function PimProductListHelper(reqBody, pHelper, pService) {
 
     let attributeResults = new Map();
     if (variantValueIds.size > 0) {
-      variantValueIds = Array.from(variantValueIds);
-      variantValueIds = variantValueIds.map(id => `'${id}'`).join(',');
+      const stringifiedQuotedVariantValueIds = Array.from(variantValueIds)
+        .map(id => `'${id}'`)
+        .join(',');
       let variantValues = await service.queryExtend(
         helper.namespaceQuery(
           `select Id, Variant__r.Product__c
@@ -66,22 +72,28 @@ async function PimProductListHelper(reqBody, pHelper, pService) {
           where Id IN (${service.QUERY_LIST})
         `
         ),
-        variantValueIds.split(',')
+        stringifiedQuotedVariantValueIds.split(',')
       );
       variantValues.forEach(value => {
         productIdSet.add(helper.getValue(value, 'Variant__r.Product__c'));
       });
-      const productIds = Array.from(productIdSet)
-        .map(id => `'${id}'`)
-        .join(',');
-      let productsList = await PimProductManager(productIds, helper, service);
-      let productMap = await getProductMap(productsList);
-      attributeResults = await getResultForProductMap(
-        productMap,
-        variantValueIds,
-        productsList,
-        reqBody
-      );
+    }
+
+    const productIds = Array.from(productIdSet)
+      .map(id => `'${id}'`)
+      .join(',');
+    let productsList = await PimProductManager(productIds, helper, service);
+    let productMap = await getProductMap(productsList);
+    attributeResults = await getResultForProductMap(
+      productMap,
+      variantValueIds,
+      productsList,
+      reqBody
+    );
+
+    if (attributeResults.has(DA_DOWNLOAD_DETAIL_KEY)) {
+      daDownloadDetailsList = attributeResults.get(DA_DOWNLOAD_DETAIL_KEY);
+      attributeResults.delete(DA_DOWNLOAD_DETAIL_KEY);
     }
 
     // sort the export records to the same format as product list page
@@ -129,12 +141,15 @@ async function PimProductListHelper(reqBody, pHelper, pService) {
     }
   }
 
-  return await addExportColumns(
-    reqBody,
-    templateFields,
-    templateHeaders,
-    exportRecordsAndColumns
-  );
+  return {
+    daDownloadDetailsList,
+    recordsAndCols: await addExportColumns(
+      reqBody,
+      templateFields,
+      templateHeaders,
+      exportRecordsAndColumns
+    )
+  };
 }
 
 // PIM repo ProductPQLHelper.getRecordByCategory()
@@ -356,47 +371,53 @@ async function getResultForProductMap(
 ) {
   let results = new Map();
   let tempMap = new Map();
+  const daDownloadDetailsList = [];
   let variantToAttributeMap = await getVariantMap(productsList);
   const digitalAssetList = await service.simpleQuery(
     helper.namespaceQuery(
-      `select Id, View_Link__c
+      `select Id, Name, External_File_Id__c, View_Link__c
       from Digital_Asset__c`
     )
   );
   const digitalAssetMap = new Map(
     digitalAssetList.map(asset => {
-      return [asset.Id, helper.getValue(asset, 'View_Link__c')];
+      return [asset.Id, asset];
     })
   );
+  console.log({ digitalAssetMap });
 
   for (let product of Array.from(productMap.values())) {
     tempMap = new Map();
-    if (helper.getValue(product, 'Attributes__r') !== null) {
-      for (let attribute of helper.getValue(product, 'Attributes__r').records) {
-        if (
-          helper.getValue(attribute, 'Overwritten_Variant_Value__c') === null &&
-          helper.getValue(attribute, 'Attribute_Label__r') !== null
-        ) {
-          let attributeValueValue = helper.getValue(attribute, 'Value__c');
-          // replace digital asset id with CDN url if Attribute_Label__c is of Type__c 'DigitalAsset'
-          if (
-            helper.getValue(attribute, 'Attribute_Label__r.Type__c') === DA_TYPE
-          ) {
-            // get view_link__c field of Digital_Asset__c object with id of attributeValueValue
-            const viewLink = digitalAssetMap.get(attributeValueValue);
-            if (viewLink) {
-              // if value is already complete url, add it to the map, else prepend the CDN url to the partial url then add to map
-              attributeValueValue = viewLink.includes('https')
-                ? viewLink
-                : await prependCDNToViewLink(viewLink, reqBody);
-            }
-          }
-          tempMap.set(
-            helper.getValue(attribute, 'Attribute_Label__r.Primary_Key__c'),
-            attributeValueValue
-          );
+    if (helper.getValue(product, 'Attributes__r') === null) continue;
+
+    for (let attribute of helper.getValue(product, 'Attributes__r').records) {
+      console.log({ attribute });
+
+      if (
+        helper.getValue(attribute, 'Overwritten_Variant_Value__c') !== null ||
+        helper.getValue(attribute, 'Attribute_Label__r') === null
+      )  continue;
+
+      let attrValValue = helper.getValue(attribute, 'Value__c');
+      // replace digital asset id with CDN url if Attribute_Label__c is of Type__c 'DigitalAsset'
+      if (
+        helper.getValue(attribute, 'Attribute_Label__r.Type__c') === DA_TYPE
+      ) {
+        const digitalAsset = digitalAssetMap.get(attrValValue);
+        // get view_link__c field of Digital_Asset__c object with id of attrValValue
+        if (digitalAsset) {
+          daDownloadDetailsList.push(new DADownloadDetails(digitalAsset, reqBody.namespace));
+          const viewLink = helper.getValue(digitalAsset, 'View_Link__c');
+          // if value is already complete url, add it to the map, else prepend the CDN url to the partial url then add to map
+          attrValValue = viewLink.includes('https')
+            ? viewLink
+            : await prependCDNToViewLink(viewLink, reqBody);
         }
       }
+      tempMap.set(
+        helper.getValue(attribute, 'Attribute_Label__r.Primary_Key__c'),
+        attrValValue
+      );
     }
     results.set(product.Id, tempMap);
   }
@@ -404,7 +425,6 @@ async function getResultForProductMap(
   let variantValueDetailMap = await getVariantValueDetailMap(productsList);
   let tempVariantValue;
   let tempVariantMap = new Map();
-  variantValueIds = variantValueIds.replace(/'/g, '').split(',');
   for (let vvId of variantValueIds) {
     tempVariantValue = variantValueDetailMap.get(vvId);
     tempVariantMap = new Map(
@@ -416,58 +436,67 @@ async function getResultForProductMap(
         .getValue(tempVariantValue, 'Parent_Value_Path__c')
         .split(',')) {
         // for each parent, add their overwritten attribute values
-        if (variantToAttributeMap.has(pathVVId)) {
+        if (!variantToAttributeMap.has(pathVVId)) continue;
+        
           for (let attribute of variantToAttributeMap.get(pathVVId)) {
-            let attributeValueValue = helper.getValue(attribute, 'Value__c');
-            // replace digital asset id with CDN url if Attribute_Label__c is of Type__c 'DigitalAsset'
-            if (
-              helper.getValue(attribute, 'Attribute_Label__r.Type__c') ===
-              DA_TYPE
-            ) {
-              // get view_link__c field of Digital_Asset__c object with id of attributeValueValue
-              const viewLink = digitalAssetMap.get(attributeValueValue);
-              if (viewLink) {
-                // if value is already complete url, add it to the map, else prepend the CDN url to the partial url then add to map
-                attributeValueValue = viewLink.includes('https')
-                  ? viewLink
-                  : await prependCDNToViewLink(viewLink, reqBody);
-              }
-            }
-            tempVariantMap.set(
-              helper.getValue(attribute, 'Attribute_Label__r.Primary_Key__c'),
-              attributeValueValue
-            );
-          }
-        }
-      }
-    }
-
-    if (variantToAttributeMap.has(vvId)) {
-      for (let attribute of variantToAttributeMap.get(vvId)) {
-        if (helper.getValue(attribute, 'Attribute_Label__r')) {
-          let attributeValueValue = helper.getValue(attribute, 'Value__c');
+          let attrValValue = helper.getValue(attribute, 'Value__c');
           // replace digital asset id with CDN url if Attribute_Label__c is of Type__c 'DigitalAsset'
           if (
-            helper.getValue(attribute, 'Attribute_Label__r.Type__c') === DA_TYPE
+            helper.getValue(attribute, 'Attribute_Label__r.Type__c') ===
+            DA_TYPE
           ) {
-            // get view_link__c field of Digital_Asset__c object with id of attributeValueValue
-            const viewLink = digitalAssetMap.get(attributeValueValue);
-            if (viewLink) {
+            const digitalAsset = digitalAssetMap.get(attrValValue);
+            // get view_link__c field of Digital_Asset__c object with id of attrValValue
+            if (digitalAsset) {
+              daDownloadDetailsList.push(new DADownloadDetails(digitalAsset, reqBody.namespace));
+              const viewLink = helper.getValue(digitalAsset, 'View_Link__c');
               // if value is already complete url, add it to the map, else prepend the CDN url to the partial url then add to map
-              attributeValueValue = viewLink.includes('https')
+              attrValValue = viewLink.includes('https')
                 ? viewLink
                 : await prependCDNToViewLink(viewLink, reqBody);
             }
           }
           tempVariantMap.set(
             helper.getValue(attribute, 'Attribute_Label__r.Primary_Key__c'),
-            attributeValueValue
+            attrValValue
           );
         }
       }
     }
+
+    if (variantToAttributeMap.has(vvId)) {
+      for (let attribute of variantToAttributeMap.get(vvId)) {
+        if (!helper.getValue(attribute, 'Attribute_Label__r')) continue;
+
+        let attrValValue = helper.getValue(attribute, 'Value__c');
+        // replace digital asset id with CDN url if Attribute_Label__c is of Type__c 'DigitalAsset'
+        if (
+          helper.getValue(attribute, 'Attribute_Label__r.Type__c') === DA_TYPE
+        ) {
+          const digitalAsset = digitalAssetMap.get(attrValValue);
+          // get view_link__c field of Digital_Asset__c object with id of attrValValue
+          if (digitalAsset) {
+            daDownloadDetailsList.push(new DADownloadDetails(digitalAsset, reqBody.namespace));
+            const viewLink = helper.getValue(digitalAsset, 'View_Link__c');
+            // if value is already complete url, add it to the map, else prepend the CDN url to the partial url then add to map
+            attrValValue = viewLink.includes('https')
+              ? viewLink
+              : await prependCDNToViewLink(viewLink, reqBody);
+          }
+        }
+        tempVariantMap.set(
+          helper.getValue(attribute, 'Attribute_Label__r.Primary_Key__c'),
+          attrValValue
+        );
+      }
+    }
     results.set(vvId, tempVariantMap);
   }
+
+  if (daDownloadDetailsList.length > 0) {
+    results.set(DA_DOWNLOAD_DETAIL_KEY, daDownloadDetailsList);
+  }
+
   return results;
 }
 

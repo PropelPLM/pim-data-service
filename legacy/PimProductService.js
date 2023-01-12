@@ -14,7 +14,7 @@ async function getResultForProductStructure(productsList) {
   let variantStructure = await getVariantStructure(productsList);
   let tempMap;
   let variantsList = [];
-  Array.from(productMap.values()).forEach((product) => {
+  Array.from(productMap.values()).forEach(product => {
     tempMap = new Map();
     tempMap.set('Id', product.Id);
     tempMap.set('Product_ID', product.Name);
@@ -27,7 +27,7 @@ async function getResultForProductStructure(productsList) {
 
     variantsList = variantStructure.get(product.Id);
     if (variantsList != null) {
-      variantsList.forEach((variant) => {
+      variantsList.forEach(variant => {
         if (helper.getValue(variant, 'Variant_Values__r') != null) {
           let value;
           for (
@@ -53,7 +53,7 @@ async function getResultForProductStructure(productsList) {
             tempMap.set('Category__c', helper.getValue(product, 'Category__c'));
             productVariantValueMapList = [
               ...productVariantValueMapList,
-              tempMap,
+              tempMap
             ];
           }
         }
@@ -66,7 +66,7 @@ async function getResultForProductStructure(productsList) {
 // PIM repo ProductManager.getProductMap
 async function getProductMap(productsList) {
   let productMap = new Map();
-  productsList.forEach((product) => {
+  productsList.forEach(product => {
     productMap.set(product.Id, product);
   });
   return productMap;
@@ -76,10 +76,10 @@ async function getProductMap(productsList) {
 async function getVariantStructure(productsList) {
   let productsIds = [];
   let variantsList = [];
-  productsList.forEach((product) => {
+  productsList.forEach(product => {
     productsIds.push(product.Id);
   });
-  productsIds = productsIds.map((id) => `'${id}'`).join(',');
+  productsIds = productsIds.map(id => `'${id}'`).join(',');
   if (productsIds.length > 0) {
     variantsList = await service.simpleQuery(
       helper.namespaceQuery(
@@ -101,13 +101,13 @@ async function getVariantStructure(productsList) {
   }
 
   let variantStructure = new Map();
-  variantsList.forEach((variant) => {
+  variantsList.forEach(variant => {
     if (!variantStructure.has(helper.getValue(variant, 'Product__c'))) {
       variantStructure.set(helper.getValue(variant, 'Product__c'), []);
     }
     variantStructure.set(helper.getValue(variant, 'Product__c'), [
       ...variantStructure.get(helper.getValue(variant, 'Product__c')),
-      variant,
+      variant
     ]);
   });
   return variantStructure;

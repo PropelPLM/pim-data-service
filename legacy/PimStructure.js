@@ -3,7 +3,7 @@ const PimProductService = require('./PimProductService');
 const PimProductListHelper = require('./PimProductListHelper');
 const PimExportHelper = require('./PimExportHelper');
 const ForceService = require('./ForceService');
-const { prependCDNToViewLink } = require('./utils');
+const { DADownloadDetails, prependCDNToViewLink } = require('./utils');
 
 let helper;
 let service;
@@ -67,44 +67,49 @@ async function PimStructure(reqBody, isListPageExport) {
       )
     );
 
+    const daDownloadDetailsList = [];
     const digitalAssetList = await service.simpleQuery(
       helper.namespaceQuery(
-        `select Id, View_Link__c
+        `select Id, Name, External_File_Id__c, View_Link__c
         from Digital_Asset__c`
       )
     );
     const digitalAssetMap = new Map(
       digitalAssetList.map(asset => {
-        return [asset.Id, helper.getValue(asset, 'View_Link__c')];
+        return [asset.Id, asset];
       })
     );
 
-    let attributeValueValue;
+    let attrValValue;
     for (let i = 0; i < appearingLabels.length; i++) {
       // add the base product's attribute values
       for (let j = 0; j < appearingValues.length; j++) {
         if (
-          helper.getValue(appearingValues[j], 'Attribute_Label__c') ===
-            appearingLabels[i].Id &&
-          helper.getValue(appearingValues[j], 'Product__c') ===
+          helper.getValue(appearingValues[j], 'Attribute_Label__c') !==
+            appearingLabels[i].Id ||
+          helper.getValue(appearingValues[j], 'Product__c') !==
             exportRecords[0].get('Id')
+        )
+          continue;
+        attrValValue = helper.getValue(appearingValues[j], 'Value__c');
+        if (
+          helper.getValue(appearingValues[j], 'Attribute_Label_Type__c') ===
+          DA_TYPE
         ) {
-          attributeValueValue = helper.getValue(appearingValues[j], 'Value__c');
-          if (
-            helper.getValue(appearingValues[j], 'Attribute_Label_Type__c') ===
-            DA_TYPE
-          ) {
-            // get view_link__c field of Digital_Asset__c object with id of attributeValueValue
-            const viewLink = digitalAssetMap.get(attributeValueValue);
-            if (viewLink) {
-              // if value is already complete url, add it to the map, else prepend the CDN url to the partial url then add to map
-              attributeValueValue = viewLink.includes('https')
-                ? viewLink
-                : await prependCDNToViewLink(viewLink, reqBody);
-            }
+          const digitalAsset = digitalAssetMap.get(attrValValue);
+          // get view_link__c field of Digital_Asset__c object with id of attrValValue
+          if (digitalAsset) {
+            daDownloadDetailsList.push(
+              new DADownloadDetails(digitalAsset, reqBody.namespace)
+            );
+            const viewLink = helper.getValue(digitalAsset, 'View_Link__c');
+            // if value is already complete url, add it to the map, else prepend the CDN url to the partial url then add to map
+            attrValValue = viewLink.includes('https')
+              ? viewLink
+              : await prependCDNToViewLink(viewLink, reqBody);
           }
-          exportRecords[0].set(appearingLabels[i].Name, attributeValueValue);
         }
+        exportRecords[0].set(appearingLabels[i].Name, attrValValue);
       }
 
       if (!exportRecords[0].has(appearingLabels[i].Name)) {
@@ -178,9 +183,16 @@ async function PimStructure(reqBody, isListPageExport) {
                   'Attribute_Label_Type__c'
                 ) === DA_TYPE
               ) {
-                // get view_link__c field of Digital_Asset__c object with id of attributeValueValue
-                const viewLink = digitalAssetMap.get(attributeValueValue);
-                if (viewLink) {
+                const digitalAsset = digitalAssetMap.get(attrValValue);
+                // get view_link__c field of Digital_Asset__c object with id of attrValValue
+                if (digitalAsset) {
+                  daDownloadDetailsList.push(
+                    new DADownloadDetails(digitalAsset, reqBody.namespace)
+                  );
+                  const viewLink = helper.getValue(
+                    digitalAsset,
+                    'View_Link__c'
+                  );
                   // if value is already complete url, add it to the map, else prepend the CDN url to the partial url then add to map
                   newValue = viewLink.includes('https')
                     ? viewLink
@@ -298,9 +310,13 @@ async function PimStructure(reqBody, isListPageExport) {
                 'Attribute_Label_Type__c'
               ) === DA_TYPE
             ) {
-              // get view_link__c field of Digital_Asset__c object with id of attributeValueValue
-              const viewLink = digitalAssetMap.get(attributeValueValue);
-              if (viewLink) {
+              const digitalAsset = digitalAssetMap.get(attrValValue);
+              // get view_link__c field of Digital_Asset__c object with id of attrValValue
+              if (digitalAsset) {
+                daDownloadDetailsList.push(
+                  new DADownloadDetails(digitalAsset, reqBody.namespace)
+                );
+                const viewLink = helper.getValue(digitalAsset, 'View_Link__c');
                 // if value is already complete url, add it to the map, else prepend the CDN url to the partial url then add to map
                 newValue = viewLink.includes('https')
                   ? viewLink
@@ -330,7 +346,8 @@ async function PimStructure(reqBody, isListPageExport) {
         appearingLabels,
         currentVariantName,
         reqBody,
-        digitalAssetMap
+        digitalAssetMap,
+        daDownloadDetailsList
       );
       exportRecordsAndCols = [filledInData];
     } else {
@@ -350,12 +367,15 @@ async function PimStructure(reqBody, isListPageExport) {
         }
       }
     }
-    return await addExportColumns(
-      productVariantValueMapList,
-      templateFields,
-      templateHeaders,
-      exportRecordsAndCols
-    );
+    return {
+      daDownloadDetailsList,
+      recordsAndCols: await addExportColumns(
+        reqBody,
+        templateFields,
+        templateHeaders,
+        exportRecordsAndColumns
+      )
+    };
   }
 }
 
@@ -410,7 +430,8 @@ async function fillInInheritedData(
   appearingLabels,
   currentVariantName,
   reqBody,
-  digitalAssetMap
+  digitalAssetMap,
+  daDownloadDetailsList
 ) {
   if (exportType === 'currentVariant') {
     exportType = 'allVariants';
@@ -510,9 +531,13 @@ async function fillInInheritedData(
             helper.getValue(overwrittenValues[j], 'Attribute_Label_Type__c') ===
             DA_TYPE
           ) {
-            // get view_link__c field of Digital_Asset__c object with id of attributeValueValue
-            const viewLink = digitalAssetMap.get(attributeValueValue);
-            if (viewLink) {
+            const digitalAsset = digitalAssetMap.get(attrValValue);
+            // get view_link__c field of Digital_Asset__c object with id of attrValValue
+            if (digitalAsset) {
+              daDownloadDetailsList.push(
+                new DADownloadDetails(digitalAsset, reqBody.namespace)
+              );
+              const viewLink = helper.getValue(digitalAsset, 'View_Link__c');
               // if value is already complete url, add it to the map, else prepend the CDN url to the partial url then add to map
               newValue = viewLink.includes('https')
                 ? viewLink
