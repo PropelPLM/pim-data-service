@@ -20,7 +20,7 @@ async function LegacyExportPIM(req) {
   }
 
   const baseFileName = createBaseFileName();
-  const filename = 'Product-Export_' + baseFileName + '.csv';
+  const filename = `Product-Export_${baseFileName}.csv`;
 
   sendDADownloadRequests(baseFileName, daDownloadDetailsList, reqBody.sessionId, reqBody.hostUrl);
 
@@ -125,11 +125,11 @@ function createBaseFileName() {
 
 async function sendDADownloadRequests(zipFileName, daDownloadDetailsList, sessionId, hostName) {
   if (!daDownloadDetailsList || !daDownloadDetailsList.length) return;
-  zipFileName = 'Digital_Asset-Export_' + zipFileName + '.zip';
+  zipFileName = `Digital_Asset-Export_${zipFileName}.zip`;
 
-  const payload = JSON.stringify({ 
-    platform: 'aws', 
-    zipFileName, 
+  const payload = JSON.stringify({
+    platform: 'aws',
+    zipFileName,
     daDownloadDetailsList,
     hostName,
     sessionId,
