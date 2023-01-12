@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node index.js",
     "test": "mocha",
+    "test:watch": "mocha --watch",
     "-----------local-tests-----------": "",
     "categoryimport": "node ./local/testImportCategory.js",
     "productimport": "node ./local/testImportProduct.js",
