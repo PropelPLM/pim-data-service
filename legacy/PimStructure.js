@@ -3,7 +3,7 @@ const PimProductService = require('./PimProductService');
 const PimProductListHelper = require('./PimProductListHelper');
 const PimExportHelper = require('./PimExportHelper');
 const ForceService = require('./ForceService');
-const { DADownloadDetails, prependCDNToViewLink } = require('./utils');
+const { parseDigitalAssetAttrVal } = require('./utils');
 
 let helper;
 let service;
@@ -114,18 +114,12 @@ class PimStructure {
             helper.getValue(appearingValues[j], 'Attribute_Label_Type__c') ===
             DA_TYPE
           ) {
-            const digitalAsset = digitalAssetMap.get(attrValValue);
-            // get view_link__c field of Digital_Asset__c object with id of attrValValue
-            if (digitalAsset) {
-              daDownloadDetailsList.push(
-                new DADownloadDetails(digitalAsset, reqBody.namespace)
-              );
-              const viewLink = helper.getValue(digitalAsset, 'View_Link__c');
-              // if value is already complete url, add it to the map, else prepend the CDN url to the partial url then add to map
-              attrValValue = viewLink.includes('https')
-                ? viewLink
-                : await prependCDNToViewLink(viewLink, reqBody);
-            }
+            attrValValue = await parseDigitalAssetAttrVal(
+              digitalAssetMap,
+              attrValValue,
+              helper,
+              daDownloadDetailsList
+            );
           }
           exportRecords[0].set(appearingLabels[i].Name, attrValValue);
         }
@@ -204,21 +198,13 @@ class PimStructure {
                     'Attribute_Label_Type__c'
                   ) === DA_TYPE
                 ) {
-                  const digitalAsset = digitalAssetMap.get(attrValValue);
-                  // get view_link__c field of Digital_Asset__c object with id of attrValValue
-                  if (digitalAsset) {
-                    daDownloadDetailsList.push(
-                      new DADownloadDetails(digitalAsset, reqBody.namespace)
-                    );
-                    const viewLink = helper.getValue(
-                      digitalAsset,
-                      'View_Link__c'
-                    );
-                    // if value is already complete url, add it to the map, else prepend the CDN url to the partial url then add to map
-                    newValue = viewLink.includes('https')
-                      ? viewLink
-                      : await prependCDNToViewLink(viewLink, reqBody);
-                  }
+                  attrValValue = await parseDigitalAssetAttrVal(
+                    digitalAssetMap,
+                    attrValValue,
+                    daDownloadDetailsList,
+                    helper,
+                    reqBody
+                  );
                 }
                 // update the currentVariant object with the overwritten values
                 if (valuesList[i][0].Id === affectedVariantValue) {
@@ -331,21 +317,13 @@ class PimStructure {
                   'Attribute_Label_Type__c'
                 ) === DA_TYPE
               ) {
-                const digitalAsset = digitalAssetMap.get(attrValValue);
-                // get view_link__c field of Digital_Asset__c object with id of attrValValue
-                if (digitalAsset) {
-                  daDownloadDetailsList.push(
-                    new DADownloadDetails(digitalAsset, reqBody.namespace)
-                  );
-                  const viewLink = helper.getValue(
-                    digitalAsset,
-                    'View_Link__c'
-                  );
-                  // if value is already complete url, add it to the map, else prepend the CDN url to the partial url then add to map
-                  newValue = viewLink.includes('https')
-                    ? viewLink
-                    : await prependCDNToViewLink(viewLink, reqBody);
-                }
+                attrValValue = await parseDigitalAssetAttrVal(
+                  digitalAssetMap,
+                  attrValValue,
+                  daDownloadDetailsList,
+                  helper,
+                  reqBody
+                );
               }
               // update the newVariant object with the overwritten values
               if (valuesList[i].Id === affectedVariantValue) {
@@ -544,18 +522,13 @@ class PimStructure {
                 'Attribute_Label_Type__c'
               ) === DA_TYPE
             ) {
-              const digitalAsset = digitalAssetMap.get(attrValValue);
-              // get view_link__c field of Digital_Asset__c object with id of attrValValue
-              if (digitalAsset) {
-                daDownloadDetailsList.push(
-                  new DADownloadDetails(digitalAsset, reqBody.namespace)
-                );
-                const viewLink = helper.getValue(digitalAsset, 'View_Link__c');
-                // if value is already complete url, add it to the map, else prepend the CDN url to the partial url then add to map
-                newValue = viewLink.includes('https')
-                  ? viewLink
-                  : await prependCDNToViewLink(viewLink, reqBody);
-              }
+              attrValValue = await parseDigitalAssetAttrVal(
+                digitalAssetMap,
+                attrValValue,
+                daDownloadDetailsList,
+                helper,
+                reqBody
+              );
             }
             // update the newVariant object with the overwritten values
             if (valuesList[i].Id === affectedVariantValue) {

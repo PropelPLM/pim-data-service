@@ -1,10 +1,6 @@
 const PimProductManager = require('./PimProductManager');
 const PimProductService = require('./PimProductService');
-const {
-  DA_DOWNLOAD_DETAIL_KEY,
-  DADownloadDetails,
-  prependCDNToViewLink
-} = require('./utils');
+const { DA_DOWNLOAD_DETAIL_KEY, parseDigitalAssetAttrVal } = require('./utils');
 
 let helper;
 let service;
@@ -374,7 +370,6 @@ async function getResultForProductMap(
       return [asset.Id, asset];
     })
   );
-  console.log({ digitalAssetMap });
 
   for (let product of Array.from(productMap.values())) {
     tempMap = new Map();
@@ -394,18 +389,13 @@ async function getResultForProductMap(
       if (
         helper.getValue(attribute, 'Attribute_Label__r.Type__c') === DA_TYPE
       ) {
-        const digitalAsset = digitalAssetMap.get(attrValValue);
-        // get view_link__c field of Digital_Asset__c object with id of attrValValue
-        if (digitalAsset) {
-          daDownloadDetailsList.push(
-            new DADownloadDetails(digitalAsset, reqBody.namespace)
-          );
-          const viewLink = helper.getValue(digitalAsset, 'View_Link__c');
-          // if value is already complete url, add it to the map, else prepend the CDN url to the partial url then add to map
-          attrValValue = viewLink.includes('https')
-            ? viewLink
-            : await prependCDNToViewLink(viewLink, reqBody);
-        }
+        attrValValue = await parseDigitalAssetAttrVal(
+          digitalAssetMap,
+          attrValValue,
+          daDownloadDetailsList,
+          helper,
+          reqBody
+        );
       }
       tempMap.set(
         helper.getValue(attribute, 'Attribute_Label__r.Primary_Key__c'),
@@ -437,18 +427,13 @@ async function getResultForProductMap(
           if (
             helper.getValue(attribute, 'Attribute_Label__r.Type__c') === DA_TYPE
           ) {
-            const digitalAsset = digitalAssetMap.get(attrValValue);
-            // get view_link__c field of Digital_Asset__c object with id of attrValValue
-            if (digitalAsset) {
-              daDownloadDetailsList.push(
-                new DADownloadDetails(digitalAsset, reqBody.namespace)
-              );
-              const viewLink = helper.getValue(digitalAsset, 'View_Link__c');
-              // if value is already complete url, add it to the map, else prepend the CDN url to the partial url then add to map
-              attrValValue = viewLink.includes('https')
-                ? viewLink
-                : await prependCDNToViewLink(viewLink, reqBody);
-            }
+            attrValValue = await parseDigitalAssetAttrVal(
+              digitalAssetMap,
+              attrValValue,
+              daDownloadDetailsList,
+              helper,
+              reqBody
+            );
           }
           tempVariantMap.set(
             helper.getValue(attribute, 'Attribute_Label__r.Primary_Key__c'),
@@ -467,18 +452,13 @@ async function getResultForProductMap(
         if (
           helper.getValue(attribute, 'Attribute_Label__r.Type__c') === DA_TYPE
         ) {
-          const digitalAsset = digitalAssetMap.get(attrValValue);
-          // get view_link__c field of Digital_Asset__c object with id of attrValValue
-          if (digitalAsset) {
-            daDownloadDetailsList.push(
-              new DADownloadDetails(digitalAsset, reqBody.namespace)
-            );
-            const viewLink = helper.getValue(digitalAsset, 'View_Link__c');
-            // if value is already complete url, add it to the map, else prepend the CDN url to the partial url then add to map
-            attrValValue = viewLink.includes('https')
-              ? viewLink
-              : await prependCDNToViewLink(viewLink, reqBody);
-          }
+          attrValValue = await parseDigitalAssetAttrVal(
+            digitalAssetMap,
+            attrValValue,
+            daDownloadDetailsList,
+            helper,
+            reqBody
+          );
         }
         tempVariantMap.set(
           helper.getValue(attribute, 'Attribute_Label__r.Primary_Key__c'),

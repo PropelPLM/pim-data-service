@@ -24,6 +24,7 @@ module.exports = {
   validateNamespaceForPath,
   validateNamespaceForField,
   prependCDNToViewLink,
+  parseDigitalAssetAttrVal,
   DADownloadDetails,
   DA_DOWNLOAD_DETAIL_KEY
 };
@@ -267,4 +268,25 @@ async function prependCDNToViewLink(viewLink, reqBody) {
     }
   }
   return viewLink;
+}
+
+async function parseDigitalAssetAttrVal(
+  digitalAssetMap,
+  attrValValue,
+  daDownloadDetailsList,
+  helper,
+  reqBody
+) {
+  const digitalAsset = digitalAssetMap?.get(attrValValue);
+  if (!digitalAsset) return attrValValue;
+
+  daDownloadDetailsList.push(
+    new DADownloadDetails(digitalAsset, reqBody.namespace)
+  );
+  const viewLink = helper.getValue(digitalAsset, 'View_Link__c');
+  // if value is already complete url, add it to the map, else prepend the CDN url to the partial url then add to map
+  attrValValue = viewLink.includes('https')
+    ? viewLink
+    : await module.exports.prependCDNToViewLink(viewLink, reqBody);
+  return attrValValue;
 }
