@@ -61,7 +61,7 @@ describe('Utils tests', () => {
         assert.equal(parsed, dummy_link);
       });
 
-      it('a legit link', async () => {
+      it('legit link', async () => {
         const helper = {
           getValue: () => {
             return `https${dummy_link}`;
@@ -78,6 +78,25 @@ describe('Utils tests', () => {
         assert.equal(daDownloadDetailsList.length, 1);
         assert.equal(parsed, `https${dummy_link}`);
       });
+    });
+  });
+
+  describe('prepareIdsForSOQL - enclose ids within quotes to be used in SOQL', () => {
+    const idArray = ['dummy_id_1', 'dummy_id_2'];
+    const idSet = new Set(idArray);
+
+    it('array of ids', done => {
+      const ids = utils.prepareIdsForSOQL(idArray).split(',');
+      assert.equal(ids.length, 2);
+      ids.forEach(id => assert.equal(id.substring(0, 1), "'"));
+      done();
+    });
+
+    it('set of ids', done => {
+      const ids = utils.prepareIdsForSOQL(idSet).split(',');
+      assert.equal(ids.length, 2);
+      ids.forEach(id => assert.equal(id.substring(0, 1), "'"));
+      done();
     });
   });
 });
