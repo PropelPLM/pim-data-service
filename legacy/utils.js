@@ -15,6 +15,8 @@ class DADownloadDetails {
   }
 }
 
+const ATTRIBUTE_FLAG = 'PROPEL_ATT';
+
 module.exports = {
   postToChatter,
   getNestedField,
@@ -26,6 +28,7 @@ module.exports = {
   prependCDNToViewLink,
   parseDigitalAssetAttrVal,
   DADownloadDetails,
+  ATTRIBUTE_FLAG,
   DA_DOWNLOAD_DETAIL_KEY
 };
 /**

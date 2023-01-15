@@ -1,10 +1,13 @@
 const PimProductManager = require('./PimProductManager');
 const PimProductService = require('./PimProductService');
-const { DA_DOWNLOAD_DETAIL_KEY, parseDigitalAssetAttrVal } = require('./utils');
+const {
+  ATTRIBUTE_FLAG,
+  DA_DOWNLOAD_DETAIL_KEY,
+  parseDigitalAssetAttrVal
+} = require('./utils');
 
 let helper;
 let service;
-const ATTRIBUTE_FLAG = 'PROPEL_ATT';
 const DA_TYPE = 'DigitalAsset';
 
 async function PimProductListHelper(

@@ -3,11 +3,10 @@ const PimProductService = require('./PimProductService');
 const PimProductListHelper = require('./PimProductListHelper');
 const PimExportHelper = require('./PimExportHelper');
 const ForceService = require('./ForceService');
-const { parseDigitalAssetAttrVal } = require('./utils');
+const { ATTRIBUTE_FLAG, parseDigitalAssetAttrVal } = require('./utils');
 
 let helper;
 let service;
-const ATTRIBUTE_FLAG = 'PROPEL_ATT';
 const DA_TYPE = 'DigitalAsset';
 
 class PimStructure {
@@ -664,18 +663,15 @@ class PimStructure {
     templateHeaders,
     exportRecordsAndCols
   ) {
-    let exportColumns = [];
+    let exportColumns;
     let templateHeaderValueMap = new Map();
     if (!templateFields || templateFields.length === 0) {
       // if not template export, push all attribute columns
-      Array.from(productVariantValueMapList[0].keys()).forEach(col => {
-        if (col !== 'Id') {
-          exportColumns = [
-            ...exportColumns,
-            { fieldName: col, label: col, type: 'text' }
-          ];
-        }
-      });
+      exportColumns = Array.from(productVariantValueMapList[0].keys())
+        .filter(col => col !== 'Id')
+        .map(col => {
+          return { fieldName: col, label: col, type: 'text' };
+        });
     } else if (templateFields && templateFields.length > 0) {
       // template export
       let field;
@@ -720,7 +716,7 @@ class PimStructure {
         });
       });
     }
-    return [...exportRecordsAndCols, exportColumns];
+    return [...exportRecordsAndCols, exportColumns || []];
   }
 
   convertDAToUrl(instanceUrl, namespace, sobjectId) {
