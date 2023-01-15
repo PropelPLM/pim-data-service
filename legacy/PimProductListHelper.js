@@ -3,6 +3,7 @@ const PimProductService = require('./PimProductService');
 const {
   ATTRIBUTE_FLAG,
   DA_DOWNLOAD_DETAIL_KEY,
+  prepareIdsForSOQL,
   parseDigitalAssetAttrVal
 } = require('./utils');
 
@@ -67,9 +68,8 @@ async function PimProductListHelper(
 
     let attributeResults = new Map();
     if (variantValueIds.size > 0) {
-      const stringifiedQuotedVariantValueIds = Array.from(variantValueIds)
-        .map(id => `'${id}'`)
-        .join(',');
+      const stringifiedQuotedVariantValueIds =
+        prepareIdsForSOQL(variantValueIds);
       let variantValues = await service.queryExtend(
         helper.namespaceQuery(
           `select Id, Variant__r.Product__c
@@ -84,9 +84,7 @@ async function PimProductListHelper(
       });
     }
 
-    const productIds = Array.from(productIdSet)
-      .map(id => `'${id}'`)
-      .join(',');
+    const productIds = prepareIdsForSOQL(productIdSet);
     let productsList = await PimProductManager(productIds, helper, service);
     let productMap = await getProductMap(productsList);
     attributeResults = await getResultForProductMap(
@@ -166,8 +164,7 @@ async function getRecordByCategory(reqBody, pqlBuilder, isPrimaryCategory) {
 }
 
 async function getCategoryPrimaryStatus(categoryId) {
-  let categoryIdList = [categoryId];
-  categoryIdList = categoryIdList.map(id => `'${id}'`).join(',');
+  const categoryIdList = prepareIdsForSOQL([categoryId]);
   const categoryList = await service.simpleQuery(
     helper.namespaceQuery(
       `select Id, Is_Primary__c
@@ -207,7 +204,7 @@ async function categoryChildrenQuery(pParentIds) {
     pParentIds.forEach(id => {
       listParentIds.push(id);
     });
-    listParentIds = listParentIds.map(id => `'${id}'`).join(',');
+    listParentIds = prepareIdsForSOQL(listParentIds);
     return await service.simpleQuery(
       helper.namespaceQuery(
         `select Id, Name, Parent__c
@@ -230,7 +227,7 @@ async function buildStructureWithCategoryIds(pCategoryIds) {
   pCategoryIds.forEach(id => {
     listCategoryIds.push(id);
   });
-  listCategoryIds = listCategoryIds.map(id => `'${id}'`).join(',');
+  listCategoryIds = prepareIdsForSOQL(listCategoryIds);
   // return productsList
   return await service.simpleQuery(
     helper.namespaceQuery(
@@ -283,7 +280,7 @@ async function buildStructureWithSecondaryCategoryIds(pCategoryIds) {
   pCategoryIds.forEach(id => {
     listCategoryIds.push(id);
   });
-  listCategoryIds = listCategoryIds.map(id => `'${id}'`).join(',');
+  listCategoryIds = prepareIdsForSOQL(listCategoryIds);
   let links = await service.simpleQuery(
     helper.namespaceQuery(
       `select Id, Product__c
@@ -297,7 +294,7 @@ async function buildStructureWithSecondaryCategoryIds(pCategoryIds) {
     links.forEach(link => {
       productIds.push(helper.getValue(link, 'Product__c'));
     });
-    productIds = productIds.map(id => `'${id}'`).join(',');
+    productIds = prepareIdsForSOQL(productIds);
     // return productsList
     return await service.simpleQuery(
       helper.namespaceQuery(
@@ -525,7 +522,7 @@ async function getVariantValueDetailMap(productsList) {
   productsList.forEach(product => {
     productIdList.push(product.Id);
   });
-  productIdList = productIdList.map(id => `'${id}'`).join(',');
+  productIdList = prepareIdsForSOQL(productIdList);
   let variantValueMap = new Map();
   const variantValueList = await service.simpleQuery(
     helper.namespaceQuery(
@@ -577,7 +574,7 @@ async function addExportColumns(
     });
   }
   if (linkedGroups.length > 0) {
-    linkedGroups = linkedGroups.map(id => `'${id}'`).join(',');
+    linkedGroups = prepareIdsForSOQL(linkedGroups);
     linkedGroupsChildren = await service.simpleQuery(
       helper.namespaceQuery(
         `select Id, Name, Attribute_Group__c
@@ -591,7 +588,7 @@ async function addExportColumns(
   }
   if (columnAttributeIds.size > 0) {
     columnAttributeIds = Array.from(columnAttributeIds);
-    columnAttributeIds = columnAttributeIds.map(id => `'${id}'`).join(',');
+    columnAttributeIds = prepareIdsForSOQL(columnAttributeIds);
 
     // get SOQL query for Label__c of all attribute labels
     const columnAttributes = await service.simpleQuery(

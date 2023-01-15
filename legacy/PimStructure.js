@@ -17,7 +17,7 @@ class PimStructure {
     service = new ForceService(reqBody.hostUrl, reqBody.sessionId);
 
     let exportRecordsAndCols = [];
-    const recordIds = reqBody.recordIds.map(id => `'${id}'`).join(',');
+    const recordIds = prepareIdsForSOQL(reqBody.recordIds);
     const exportType = reqBody.exportType;
     const namespace = reqBody.namespace;
     helper = new PimExportHelper(namespace);
@@ -59,9 +59,7 @@ class PimStructure {
       let exportRecords = [baseProduct];
 
       /** get product's appearing attribute labels start */
-      const appearingLabelIds = reqBody.appearingLabelIds
-        .map(id => `'${id}'`)
-        .join(',');
+      const appearingLabelIds = prepareIdsForSOQL(reqBody.appearingLabelIds);
       // add appearing attribute labels and their values to base product
       const appearingLabels = await service.simpleQuery(
         helper.namespaceQuery(`select Id, Name
@@ -132,9 +130,7 @@ class PimStructure {
       let valuesList = [];
 
       if (exportType === 'currentVariant') {
-        let variantValuePath = reqBody.variantValuePath
-          .map(id => `'${id}'`)
-          .join(',');
+        let variantValuePath = prepareIdsForSOQL(reqBody.variantValuePath);
         if (variantValuePath.length > 0) {
           // get Variant__c object and Variant_Value__c object for every variant value in current variant
           const variantAndValueMap = await getVariantAndVariantValues(
@@ -150,7 +146,7 @@ class PimStructure {
           valuesList.forEach(val => {
             valuesIdList.push(val[0].Id);
           });
-          valuesIdList = valuesIdList.map(id => `'${id}'`).join(',');
+          valuesIdList = prepareIdsForSOQL(valuesIdList);
           const overwrittenValues = await service.simpleQuery(
             helper.namespaceQuery(
               `select Id, Attribute_Label__c, Attribute_Label_Type__c, Value__c, Product__c, Overwritten_Variant_Value__c
@@ -243,7 +239,7 @@ class PimStructure {
         valuesList.forEach(val => {
           valuesIdList.push(val.Id);
         });
-        valuesIdList = valuesIdList.map(id => `'${id}'`).join(',');
+        valuesIdList = prepareIdsForSOQL(valuesIdList);
         const overwrittenValues = await service.simpleQuery(
           helper.namespaceQuery(
             `select Id, Attribute_Label__c, Attribute_Label_Type__c, Value__c, Product__c, Overwritten_Variant_Value__c
@@ -374,9 +370,7 @@ class PimStructure {
       valueIds.push(id);
     });
     valueIds =
-      exportType === 'allVariants'
-        ? valueIds.map(id => `'${id}'`).join(',')
-        : valueIds;
+      exportType === 'allVariants' ? prepareIdsForSOQL(valueIds) : valueIds;
     let returnMap = new Map();
     let values = await service.simpleQuery(
       helper.namespaceQuery(
@@ -448,7 +442,7 @@ class PimStructure {
       valuesList.forEach(val => {
         valuesIdList.push(val.Id);
       });
-      valuesIdList = valuesIdList.map(id => `'${id}'`).join(',');
+      valuesIdList = prepareIdsForSOQL(valuesIdList);
       const overwrittenValues = await service.simpleQuery(
         helper.namespaceQuery(
           `select Id, Attribute_Label__c, Attribute_Label_Type__c, Value__c, Product__c, Overwritten_Variant_Value__c

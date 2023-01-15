@@ -22,6 +22,7 @@ module.exports = {
   getNestedField,
   sendConfirmationEmail,
   cleanString,
+  prepareIdsForSOQL,
   removeFileFromDisk,
   validateNamespaceForPath,
   validateNamespaceForField,
@@ -292,4 +293,12 @@ async function parseDigitalAssetAttrVal(
     ? viewLink
     : await module.exports.prependCDNToViewLink(viewLink, reqBody);
   return attrValValue;
+}
+
+function prepareIdsForSOQL(idList) {
+  if (!Array.isArray(idList)) {
+    idList = Array.from(idList);
+  }
+
+  return idList.map(id => `'${id}'`).join(',');
 }

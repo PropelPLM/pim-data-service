@@ -79,7 +79,7 @@ async function getVariantStructure(productsList) {
   productsList.forEach(product => {
     productsIds.push(product.Id);
   });
-  productsIds = productsIds.map(id => `'${id}'`).join(',');
+  productsIds = prepareIdsForSOQL(productsIds);
   if (productsIds.length > 0) {
     variantsList = await service.simpleQuery(
       helper.namespaceQuery(
