@@ -358,7 +358,7 @@ class PimStructure {
       return {
         daDownloadDetailsList,
         recordsAndCols: await addExportColumns(
-          reqBody,
+          productVariantValueMapList,
           templateFields,
           templateHeaders,
           exportRecordsAndColumns
