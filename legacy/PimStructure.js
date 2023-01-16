@@ -370,7 +370,7 @@ async function PimStructure(reqBody, isListPageExport) {
     return {
       daDownloadDetailsList,
       recordsAndCols: await addExportColumns(
-        reqBody,
+        productVariantValueMapList,
         templateFields,
         templateHeaders,
         exportRecordsAndColumns
