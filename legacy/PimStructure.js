@@ -3,7 +3,6 @@ const PimProductService = require('./PimProductService');
 const PimProductListHelper = require('./PimProductListHelper');
 const PimExportHelper = require('./PimExportHelper');
 const ForceService = require('./ForceService');
-const { prependCDNToViewLink } = require('./utils');
 const https = require('https');
 const { DADownloadDetails, prependCDNToViewLink } = require('./utils');
 
