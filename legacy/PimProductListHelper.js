@@ -1,6 +1,5 @@
 const PimProductManager = require('./PimProductManager');
 const PimProductService = require('./PimProductService');
-const { prependCDNToViewLink } = require('./utils');
 const https = require('https');
 const {
   DA_DOWNLOAD_DETAIL_KEY,
@@ -162,7 +161,7 @@ async function PimProductListHelper(reqBody, pHelper, pService) {
     // non-csv template exports will have their exported files posted to chatter by Aspose from propel-document-java
     return [exportRecordsAndColumns];
   }
-  
+
   return {
     daDownloadDetailsList,
     recordsAndCols: await addExportColumns(
@@ -418,7 +417,8 @@ async function getResultForProductMap(
       if (
         helper.getValue(attribute, 'Overwritten_Variant_Value__c') !== null ||
         helper.getValue(attribute, 'Attribute_Label__r') === null
-      )  continue;
+      )
+        continue;
 
       let attrValValue = helper.getValue(attribute, 'Value__c');
       // replace digital asset id with CDN url if Attribute_Label__c is of Type__c 'DigitalAsset'
@@ -428,7 +428,9 @@ async function getResultForProductMap(
         const digitalAsset = digitalAssetMap.get(attrValValue);
         // get view_link__c field of Digital_Asset__c object with id of attrValValue
         if (digitalAsset) {
-          daDownloadDetailsList.push(new DADownloadDetails(digitalAsset, reqBody.namespace));
+          daDownloadDetailsList.push(
+            new DADownloadDetails(digitalAsset, reqBody.namespace)
+          );
           const viewLink = helper.getValue(digitalAsset, 'View_Link__c');
           // if value is already complete url, add it to the map, else prepend the CDN url to the partial url then add to map
           attrValValue = viewLink.includes('https')
@@ -459,18 +461,19 @@ async function getResultForProductMap(
         .split(',')) {
         // for each parent, add their overwritten attribute values
         if (!variantToAttributeMap.has(pathVVId)) continue;
-        
-          for (let attribute of variantToAttributeMap.get(pathVVId)) {
+
+        for (let attribute of variantToAttributeMap.get(pathVVId)) {
           let attrValValue = helper.getValue(attribute, 'Value__c');
           // replace digital asset id with CDN url if Attribute_Label__c is of Type__c 'DigitalAsset'
           if (
-            helper.getValue(attribute, 'Attribute_Label__r.Type__c') ===
-            DA_TYPE
+            helper.getValue(attribute, 'Attribute_Label__r.Type__c') === DA_TYPE
           ) {
             const digitalAsset = digitalAssetMap.get(attrValValue);
             // get view_link__c field of Digital_Asset__c object with id of attrValValue
             if (digitalAsset) {
-              daDownloadDetailsList.push(new DADownloadDetails(digitalAsset, reqBody.namespace));
+              daDownloadDetailsList.push(
+                new DADownloadDetails(digitalAsset, reqBody.namespace)
+              );
               const viewLink = helper.getValue(digitalAsset, 'View_Link__c');
               // if value is already complete url, add it to the map, else prepend the CDN url to the partial url then add to map
               attrValValue = viewLink.includes('https')
@@ -498,7 +501,9 @@ async function getResultForProductMap(
           const digitalAsset = digitalAssetMap.get(attrValValue);
           // get view_link__c field of Digital_Asset__c object with id of attrValValue
           if (digitalAsset) {
-            daDownloadDetailsList.push(new DADownloadDetails(digitalAsset, reqBody.namespace));
+            daDownloadDetailsList.push(
+              new DADownloadDetails(digitalAsset, reqBody.namespace)
+            );
             const viewLink = helper.getValue(digitalAsset, 'View_Link__c');
             // if value is already complete url, add it to the map, else prepend the CDN url to the partial url then add to map
             attrValValue = viewLink.includes('https')
