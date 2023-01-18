@@ -17,6 +17,11 @@ async function LegacyExportPIM(req) {
   } catch (err) {
     console.log('error: ', err);
   }
+  if (recordsAndCols.length !== 2) {
+    // non CSV template export, exported file will be written to chatter by Aspose
+    return;
+  }
+  
   let csvString = convertArrayOfObjectsToCSV(
     recordsAndCols[0],
     recordsAndCols[1]
