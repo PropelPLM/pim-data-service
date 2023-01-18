@@ -141,7 +141,6 @@ async function PimProductListHelper(reqBody, pHelper, pService) {
     // non CSV template export (e.g. XLSX) - make call to propel-document-java for aspose cells to modify the XLSX template
     await callAsposeToExport(
       reqBody.sessionId,
-      reqBody.namespace,
       reqBody.hostUrl,
       reqBody.templateId,
       reqBody.templateContentVersionId,
@@ -557,7 +556,6 @@ async function getVariantValueDetailMap(productsList) {
 
 async function callAsposeToExport(
   sessionId,
-  namespace,
   hostUrl,
   templateId,
   templateContentVersionId,
@@ -589,7 +587,6 @@ async function callAsposeToExport(
 
   let data = JSON.stringify({
     sessionId: sessionId,
-    namespace: namespace,
     hostUrl: hostUrl,
     templateId: templateId,
     templateContentVersionId: templateContentVersionId,
