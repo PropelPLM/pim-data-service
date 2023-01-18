@@ -1,5 +1,6 @@
 var fs = require('fs');
 var crypto = require('crypto');
+const https = require('https');
 
 const PimStructure = require('./PimStructure');
 const { postToChatter } = require('./utils');
@@ -11,17 +12,23 @@ async function LegacyExportPIM(req) {
   if (reqBody.recordIds.length == 0) {
     return 'Error';
   }
-  let recordsAndCols;
+  let daDownloadDetailsList, recordsAndCols;
   try {
-    recordsAndCols = await PimStructure(reqBody, isListPageExport);
+    ({daDownloadDetailsList, recordsAndCols} = await PimStructure(reqBody, isListPageExport));
   } catch (err) {
     console.log('error: ', err);
   }
+  
   if (recordsAndCols.length !== 2) {
     // non CSV template export, exported file will be written to chatter by Aspose
     return;
   }
-  
+
+  const baseFileName = createBaseFileName();
+  const filename = `Product-Export_${baseFileName}.csv`;
+
+  sendDADownloadRequests(baseFileName, daDownloadDetailsList, reqBody.sessionId, reqBody.hostUrl);
+
   let csvString = convertArrayOfObjectsToCSV(
     recordsAndCols[0],
     recordsAndCols[1]
@@ -30,27 +37,6 @@ async function LegacyExportPIM(req) {
     return 'Error';
   }
 
-  // Create empty csv file
-  let date = new Date();
-  const year = date.getFullYear();
-  const month = ('0' + (date.getMonth() + 1)).slice(-2);
-  const day = ('0' + date.getDate()).slice(-2);
-  const hour = ('0' + date.getHours()).slice(-2);
-  const minutes = ('0' + date.getMinutes()).slice(-2);
-  const seconds = ('0' + date.getSeconds()).slice(-2);
-
-  const filename =
-    'Product-Export_' +
-    year +
-    '-' +
-    month +
-    '-' +
-    day +
-    '_' +
-    hour +
-    minutes +
-    seconds +
-    '.csv';
   const nameOnDisk = crypto.randomBytes(20).toString('hex') + filename;
   const file = fs.createWriteStream(nameOnDisk);
   reqBody.shouldPostToUser = true;
@@ -120,6 +106,55 @@ function convertArrayOfObjectsToCSV(records, columns) {
     csvStringResult += lineDivider;
   }
   return csvStringResult;
+}
+
+function createBaseFileName() {
+  let date = new Date();
+  const year = date.getFullYear();
+  const month = ('0' + (date.getMonth() + 1)).slice(-2);
+  const day = ('0' + date.getDate()).slice(-2);
+  const hour = ('0' + date.getHours()).slice(-2);
+  const minutes = ('0' + date.getMinutes()).slice(-2);
+  const seconds = ('0' + date.getSeconds()).slice(-2);
+
+  return year +
+    '-' +
+    month +
+    '-' +
+    day +
+    '_' +
+    hour +
+    minutes +
+    seconds;
+}
+
+async function sendDADownloadRequests(zipFileName, daDownloadDetailsList, sessionId, hostName) {
+  if (!daDownloadDetailsList || !daDownloadDetailsList.length) return;
+  zipFileName = `Digital_Asset-Export_${zipFileName}.zip`;
+
+  const payload = JSON.stringify({
+    platform: 'aws',
+    zipFileName,
+    daDownloadDetailsList,
+    hostName,
+    sessionId,
+    salesforceUrl: hostName
+  });
+  const options = {
+    hostname: 'cloud-doc-stateless.herokuapp.com',
+    path: '/platform/files/download/',
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Content-Length': Buffer.byteLength(payload),
+    }
+  };
+  const request = https.request(options, (res) => {
+    console.log({res})
+  });
+  request.write(payload);
+  request.end();
+  console.log('Payload sent: ', payload);
 }
 
 function escapeString(str) {
