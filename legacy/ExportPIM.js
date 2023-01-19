@@ -18,6 +18,11 @@ async function LegacyExportPIM(req) {
   } catch (err) {
     console.log('error: ', err);
   }
+  
+  if (recordsAndCols.length !== 2) {
+    // non CSV template export, exported file will be written to chatter by Aspose
+    return;
+  }
 
   const baseFileName = createBaseFileName();
   const filename = `Product-Export_${baseFileName}.csv`;

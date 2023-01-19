@@ -3,6 +3,7 @@ const PimProductService = require('./PimProductService');
 const PimProductListHelper = require('./PimProductListHelper');
 const PimExportHelper = require('./PimExportHelper');
 const ForceService = require('./ForceService');
+const https = require('https');
 const { DADownloadDetails, prependCDNToViewLink } = require('./utils');
 
 let helper;
@@ -356,7 +357,7 @@ async function PimStructure(reqBody, isListPageExport) {
     let templateFields;
     let templateHeaders;
     if (reqBody.options.isTemplateExport && reqBody.templateVersionData) {
-      // parse headers and fields and store them in a map
+      // CSV template export - parse headers and fields and store them in a map
       const templateRows = reqBody.templateVersionData.split(/\r?\n/);
       templateHeaders = templateRows[0].split(',');
       templateFields = templateRows[1].split(',');
@@ -366,6 +367,23 @@ async function PimStructure(reqBody, isListPageExport) {
           templateFields[i] = templateFields[i].replace(/["“”]+/g, '');
         }
       }
+    } else if (
+      reqBody.options.isTemplateExport &&
+      !reqBody.templateVersionData &&
+      reqBody.templateContentVersionId
+    ) {
+      // non CSV template export (e.g. XLSX) - make call to propel-document-java for aspose cells to modify the XLSX template
+      await callAsposeToExport(
+        reqBody.sessionId,
+        reqBody.hostUrl,
+        reqBody.templateId,
+        reqBody.templateContentVersionId,
+        exportRecordsAndCols[0],
+        productVariantValueMapList[0]
+      );
+
+      // non-csv template exports will have their exported files posted to chatter by Aspose from propel-document-java
+      return [exportRecordsAndCols];
     }
     return {
       daDownloadDetailsList,
@@ -669,6 +687,43 @@ async function createVariantValueTree(valuesList, baseProduct) {
   return childMap;
 }
 
+async function callAsposeToExport(
+  sessionId,
+  hostUrl,
+  templateId,
+  templateContentVersionId,
+  detailPageData,
+  productVariantValueMap
+) {
+  const options = {
+    hostname: 'propel-document-java-staging.herokuapp.com',
+    path: '/v2/pimTemplateExport',
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  };
+  let data = JSON.stringify({
+    sessionId: sessionId,
+    hostUrl: hostUrl,
+    templateId: templateId,
+    templateContentVersionId: templateContentVersionId,
+    detailPageData: detailPageData.map(recordMap =>
+      Object.fromEntries(recordMap)
+    ),
+    productVariantValueMap: Object.fromEntries(productVariantValueMap)
+  });
+  const req = https
+    .request(options, res => {
+      console.log('Status Code:', res.statusCode);
+    })
+    .on('error', err => {
+      console.log('Error: ', err.message);
+    });
+  req.write(data);
+  req.end();
+}
+
 async function addExportColumns(
   productVariantValueMapList,
   templateFields,
@@ -690,17 +745,18 @@ async function addExportColumns(
   } else if (templateFields && templateFields.length > 0) {
     // template export
     let field;
+    //
     for (let i = 0; i < templateFields.length; i++) {
       field = templateFields[i];
       if (field.includes(ATTRIBUTE_FLAG)) {
         // template specifies that the column's rows should contain a field's value
-        field = field.slice(11, -1);
+        field = field.slice(11, -1); // removes the attribute flag
         Array.from(productVariantValueMapList[0].keys()).forEach(col => {
           const isMatchingColAndField =
             (field !== 'Product ID' && field === col) ||
             (col === 'Product_ID' && field === 'Product ID');
           if (col !== 'Id' && isMatchingColAndField) {
-            // push columns specified in template
+            // find the matching column and add the columns specified in template
             exportColumns = [
               ...exportColumns,
               {
@@ -732,17 +788,6 @@ async function addExportColumns(
     });
   }
   return [...exportRecordsAndCols, exportColumns];
-}
-
-function convertDAToUrl(instanceUrl, namespace, sobjectId) {
-  return (
-    instanceUrl +
-    '/lightning/r/' +
-    namespace +
-    'Digital_Asset__c/' +
-    sobjectId +
-    '/view'
-  );
 }
 
 module.exports = PimStructure;
