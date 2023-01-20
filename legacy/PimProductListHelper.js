@@ -405,15 +405,12 @@ async function getResultForProductMap(
       return [asset.Id, asset];
     })
   );
-  console.log({ digitalAssetMap });
 
   for (let product of Array.from(productMap.values())) {
     tempMap = new Map();
     if (helper.getValue(product, 'Attributes__r') === null) continue;
 
     for (let attribute of helper.getValue(product, 'Attributes__r').records) {
-      console.log({ attribute });
-
       if (
         helper.getValue(attribute, 'Overwritten_Variant_Value__c') !== null ||
         helper.getValue(attribute, 'Attribute_Label__r') === null
