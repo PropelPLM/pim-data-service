@@ -19,7 +19,7 @@ async function LegacyExportPIM(req) {
     console.log('error: ', err);
   }
   
-  if (recordsAndCols.length !== 2) {
+  if (recordsAndCols == null || recordsAndCols.length !== 2) {
     // non CSV template export, exported file will be written to chatter by Aspose
     return;
   }
