@@ -156,6 +156,8 @@ async function PimProductListHelper(reqBody, pHelper, pService) {
       reqBody.hostUrl,
       reqBody.templateId,
       reqBody.templateContentVersionId,
+      'xlsx',
+      reqBody.exportFormat,
       exportRecordsAndColumns[0]
     );
     // non-csv template exports will have their exported files posted to chatter by Aspose from propel-document-java
@@ -405,15 +407,12 @@ async function getResultForProductMap(
       return [asset.Id, asset];
     })
   );
-  console.log({ digitalAssetMap });
 
   for (let product of Array.from(productMap.values())) {
     tempMap = new Map();
     if (helper.getValue(product, 'Attributes__r') === null) continue;
 
     for (let attribute of helper.getValue(product, 'Attributes__r').records) {
-      console.log({ attribute });
-
       if (
         helper.getValue(attribute, 'Overwritten_Variant_Value__c') !== null ||
         helper.getValue(attribute, 'Attribute_Label__r') === null
@@ -593,6 +592,8 @@ async function callAsposeToExport(
   hostUrl,
   templateId,
   templateContentVersionId,
+  templateFormat,
+  exportFormat,
   listPageData
 ) {
   const options = {
@@ -626,7 +627,9 @@ async function callAsposeToExport(
     templateContentVersionId: templateContentVersionId,
     listPageData: listPageData.map(recordMap => Object.fromEntries(recordMap)),
     labelToPrimaryKeyMap: Object.fromEntries(labelToPrimaryKeyMap),
-    defaultColumns: Object.fromEntries(DEFAULT_COLUMNS)
+    defaultColumns: Object.fromEntries(DEFAULT_COLUMNS),
+    templateFormat: templateFormat,
+    exportFormat: exportFormat
   });
   const req = https
     .request(options, res => {

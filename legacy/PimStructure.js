@@ -378,6 +378,8 @@ async function PimStructure(reqBody, isListPageExport) {
         reqBody.hostUrl,
         reqBody.templateId,
         reqBody.templateContentVersionId,
+        'xlsx',
+        reqBody.exportFormat,
         exportRecordsAndCols[0],
         productVariantValueMapList[0]
       );
@@ -391,7 +393,7 @@ async function PimStructure(reqBody, isListPageExport) {
         productVariantValueMapList,
         templateFields,
         templateHeaders,
-        exportRecordsAndColumns
+        exportRecordsAndCols
       )
     };
   }
@@ -692,6 +694,8 @@ async function callAsposeToExport(
   hostUrl,
   templateId,
   templateContentVersionId,
+  templateFormat,
+  exportFormat,
   detailPageData,
   productVariantValueMap
 ) {
@@ -711,7 +715,9 @@ async function callAsposeToExport(
     detailPageData: detailPageData.map(recordMap =>
       Object.fromEntries(recordMap)
     ),
-    productVariantValueMap: Object.fromEntries(productVariantValueMap)
+    productVariantValueMap: Object.fromEntries(productVariantValueMap),
+    templateFormat: templateFormat,
+    exportFormat: exportFormat
   });
   const req = https
     .request(options, res => {

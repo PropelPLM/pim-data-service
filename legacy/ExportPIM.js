@@ -3,7 +3,7 @@ var crypto = require('crypto');
 const https = require('https');
 
 const PimStructure = require('./PimStructure');
-const { postToChatter } = require('./utils');
+const { postToChatter, sendCsvToAsposeCells } = require('./utils');
 
 async function LegacyExportPIM(req) {
   const reqBody = req.body;
@@ -18,8 +18,8 @@ async function LegacyExportPIM(req) {
   } catch (err) {
     console.log('error: ', err);
   }
-  
-  if (recordsAndCols.length !== 2) {
+
+  if (recordsAndCols?.length !== 2) {
     // non CSV template export, exported file will be written to chatter by Aspose
     return;
   }
@@ -37,18 +37,23 @@ async function LegacyExportPIM(req) {
     return 'Error';
   }
 
-  const nameOnDisk = crypto.randomBytes(20).toString('hex') + filename;
-  const file = fs.createWriteStream(nameOnDisk);
-  reqBody.shouldPostToUser = true;
-  reqBody.communityId = null;
-  file.write(csvString, () => {
-    try {
-      postToChatter(filename, nameOnDisk, reqBody.recordIds[0], reqBody);
-    } catch (err) {
-      console.log('error: ', err);
-    }
-  });
-
+  if (reqBody.exportFormat == 'csv') {
+    // CSV -> CSV export (both template and non-template)
+    const nameOnDisk = crypto.randomBytes(20).toString('hex') + filename;
+    const file = fs.createWriteStream(nameOnDisk);
+    reqBody.shouldPostToUser = true;
+    reqBody.communityId = null;
+    file.write(csvString, () => {
+      try {
+        postToChatter(filename, nameOnDisk, reqBody.recordIds[0], reqBody);
+      } catch (err) {
+        console.log('error: ', err);
+      }
+    });
+  } else if (reqBody.exportFormat == 'xlsx') {
+    // CSV -> XLSX export OR XLSX non template export
+    sendCsvToAsposeCells(csvString, reqBody.sessionId, reqBody.hostUrl, reqBody.templateId);
+  }
   return csvString;
 }
 
