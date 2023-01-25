@@ -168,7 +168,8 @@ async function PimProductListHelper(reqBody, pHelper, pService) {
       reqBody,
       templateFields,
       templateHeaders,
-      exportRecordsAndColumns
+      exportRecordsAndColumns,
+      DEFAULT_COLUMNS
     )
   };
 }

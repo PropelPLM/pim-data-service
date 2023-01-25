@@ -391,7 +391,7 @@ async function PimStructure(reqBody, isListPageExport) {
         productVariantValueMapList,
         templateFields,
         templateHeaders,
-        exportRecordsAndColumns
+        exportRecordsAndCols
       )
     };
   }
