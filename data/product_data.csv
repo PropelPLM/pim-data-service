@@ -1,5 +1,4 @@
-product_id,parent_id,v_level,manufacturer_id,lifecycle_stage,release_status,active_quality_issues,highest_level_product_id,category_id,variant_0,variant_1,variant_2
-Mikes_Parent_12,,0,Manufacture-id -Printer Parent-1,In Progress,Not Released,None,,83988,Color,Size,Shipping
-Mikes_child_12,Mikes_Parent_12,1,Manufacture-id -DR-Printer child-1-1,,,,Mikes_Parent_12,83988,Blue,,,
-Mikes_grandchild_12,Mikes_child_12,2,Manufacture-id -DR-Printer grandchild-1-11-6,Complete,In Review,,Mikes_Parent_12,83988,,Small,
-Mikes_grand_grandchild_12,Mikes_grandchild_12,3,Manufacture-id -DR-Printer grandchild-1-11-6,Complete,In Review,,Mikes_Parent_12,83988,,,ground
+product_id,parent_id,v_level,manufacturer_id,lifecycle_stage,release_status,active_quality_issues,highest_level_product_id,category_id,variant_0,variant_1,
+Try_test,,0,Manufacture-id -Printer Parent-1,In Progress,Not Released,None,,11011,,,
+Try_test_child,Try_test,1,Manufacture-id -DR-Printer child-1-1,,,,Try_test,11011,black,,
+Try_test_grandchild,Try_test_child,2,Manufacture-id -DR-Printer grandchild-1-11-6,Complete,In Review,,Try_test,11011,,small,
