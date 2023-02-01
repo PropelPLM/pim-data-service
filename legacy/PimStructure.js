@@ -5,6 +5,7 @@ const PimExportHelper = require('./PimExportHelper');
 const ForceService = require('./ForceService');
 const https = require('https');
 const { DADownloadDetails, prependCDNToViewLink } = require('./utils');
+const { get } = require('express/lib/response');
 
 let helper;
 let service;
@@ -741,10 +742,10 @@ async function addExportColumns(
   if (!templateFields || templateFields.length === 0) {
     // if not template export, push all attribute columns
     Array.from(productVariantValueMapList[0].keys()).forEach(col => {
-      if (col !== 'Id') {
+      if (col !== 'Id' && col !== 'Category__c') {
         exportColumns = [
           ...exportColumns,
-          { fieldName: col, label: col, type: 'text' }
+          { fieldName: col, label: getLabelForColumn(col), type: 'text' }
         ];
       }
     });
@@ -794,6 +795,15 @@ async function addExportColumns(
     });
   }
   return [...exportRecordsAndCols, exportColumns];
+}
+
+function getLabelForColumn(col) {
+  switch (col) {
+    case 'Category__r.Name':
+      return 'Category';
+    default:
+      return col;
+  }
 }
 
 module.exports = PimStructure;
