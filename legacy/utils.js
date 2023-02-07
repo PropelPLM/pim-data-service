@@ -296,9 +296,13 @@ async function parseDigitalAssetAttrVal(
 }
 
 function prepareIdsForSOQL(idList) {
-  if (!Array.isArray(idList)) {
-    idList = Array.from(idList);
-  }
+  try {
+    if (!Array.isArray(idList)) {
+      idList = Array.from(idList);
+    }
 
-  return idList.map(id => `'${id}'`).join(',');
+    return idList.map(id => `'${id}'`).join(',');
+  } catch (err) {
+    throw new Error(`Cannot get list of Ids for query from input: ${idList}`);
+  }
 }
