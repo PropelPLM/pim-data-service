@@ -164,24 +164,24 @@ async function PimStructure(reqBody, isListPageExport) {
 
           // add any overwritten values
           if (overwrittenValues.length > 0) {
-            for (let i = 0; i < overwrittenValues.length; i++) {
+            for (let j = 0; j < overwrittenValues.length; j++) {
               let affectedLabelName;
               appearingLabels.forEach(label => {
                 if (
                   label.Id ===
-                  helper.getValue(overwrittenValues[i], 'Attribute_Label__c')
+                  helper.getValue(overwrittenValues[j], 'Attribute_Label__c')
                 ) {
                   affectedLabelName = label.Name;
                 }
               });
               const affectedVariantValue = helper.getValue(
-                overwrittenValues[i],
+                overwrittenValues[j],
                 'Overwritten_Variant_Value__c'
               );
-              let newValue = helper.getValue(overwrittenValues[i], 'Value__c');
+              let newValue = helper.getValue(overwrittenValues[j], 'Value__c');
               if (
                 helper.getValue(
-                  overwrittenValues[i],
+                  overwrittenValues[j],
                   'Attribute_Label_Type__c'
                 ) === DA_TYPE
               ) {
