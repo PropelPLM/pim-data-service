@@ -1,5 +1,6 @@
 const PimProductManager = require('./PimProductManager');
 const PimProductService = require('./PimProductService');
+const https = require('https');
 const {
   ATTRIBUTE_FLAG,
   DA_DOWNLOAD_DETAIL_KEY,
@@ -10,6 +11,11 @@ const {
 let helper;
 let service;
 const DA_TYPE = 'DigitalAsset';
+const DEFAULT_COLUMNS = new Map([
+  ['Product ID', 'Product_ID'],
+  ['Title', 'Title'],
+  ['Category Name', 'Category__r.Name']
+]);
 
 async function PimProductListHelper(
   reqBody,
@@ -128,13 +134,34 @@ async function PimProductListHelper(
     }
   }
 
+  // THIS CALL NEEDS TO HAPPEN AFTER exportRecordsAndColumns IS SET
+  // } else if (
+  //   reqBody.options.isTemplateExport &&
+  //   !reqBody.templateVersionData &&
+  //   reqBody.templateContentVersionId
+  // ) {
+  //   // non CSV template export (e.g. XLSX) - make call to propel-document-java for aspose cells to modify the XLSX template
+  //   await callAsposeToExport(
+  //     reqBody.sessionId,
+  //     reqBody.hostUrl,
+  //     reqBody.templateId,
+  //     reqBody.templateContentVersionId,
+  //     'xlsx',
+  //     reqBody.exportFormat,
+  //     exportRecordsAndColumns[0]
+  //   );
+  //   // non-csv template exports will have their exported files posted to chatter by Aspose from propel-document-java
+  //   return;
+  // }
+
   return {
     daDownloadDetailsList,
     recordsAndCols: await addExportColumns(
       reqBody,
       templateFields,
       templateHeaders,
-      exportRecordsAndColumns
+      exportRecordsAndColumns,
+      DEFAULT_COLUMNS
     )
   };
 }
@@ -376,8 +403,6 @@ async function getResultForProductMap(
     if (helper.getValue(product, 'Attributes__r') === null) continue;
 
     for (let attribute of helper.getValue(product, 'Attributes__r').records) {
-      console.log({ attribute });
-
       if (
         helper.getValue(attribute, 'Overwritten_Variant_Value__c') !== null ||
         helper.getValue(attribute, 'Attribute_Label__r') === null
@@ -537,18 +562,68 @@ async function getVariantValueDetailMap(productsList) {
   return variantValueMap;
 }
 
+async function callAsposeToExport(
+  sessionId,
+  hostUrl,
+  templateId,
+  templateContentVersionId,
+  templateFormat,
+  exportFormat,
+  listPageData
+) {
+  const options = {
+    hostname: 'propel-document-java-staging.herokuapp.com',
+    path: '/v2/pimTemplateExport',
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  };
+  const columnAttributes = await service.simpleQuery(
+    helper.namespaceQuery(
+      `select Id, Label__c, Primary_Key__c
+      from Attribute_Label__c
+      where Classification__c = 'Product' order by Primary_Key__c`
+    )
+  );
+  const labelToPrimaryKeyMap = new Map(
+    columnAttributes.map(label => {
+      return [
+        helper.getValue(label, 'Label__c'),
+        helper.getValue(label, 'Primary_Key__c')
+      ];
+    })
+  );
+
+  let data = JSON.stringify({
+    sessionId: sessionId,
+    hostUrl: hostUrl,
+    templateId: templateId,
+    templateContentVersionId: templateContentVersionId,
+    listPageData: listPageData.map(recordMap => Object.fromEntries(recordMap)),
+    labelToPrimaryKeyMap: Object.fromEntries(labelToPrimaryKeyMap),
+    defaultColumns: Object.fromEntries(DEFAULT_COLUMNS),
+    templateFormat: templateFormat,
+    exportFormat: exportFormat
+  });
+  const req = https
+    .request(options, res => {
+      console.log('Status Code:', res.statusCode);
+    })
+    .on('error', err => {
+      console.log('Error: ', err.message);
+    });
+  req.write(data);
+  req.end();
+}
+
 async function addExportColumns(
   reqBody,
   templateFields,
   templateHeaders,
-  exportRecordsAndColumns
+  exportRecordsAndColumns,
+  defaultColumns
 ) {
-  // Map of col's <label, fieldName>
-  const defaultColumns = new Map([
-    ['Product ID', 'Product_ID'],
-    ['Title', 'Title'],
-    ['Category Name', 'Category__r.Name']
-  ]);
   let exportColumns = [];
   let templateHeaderValueMap = new Map();
 

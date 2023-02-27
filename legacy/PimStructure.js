@@ -4,6 +4,8 @@ const PimProductListHelper = require('./PimProductListHelper');
 const PimExportHelper = require('./PimExportHelper');
 const ForceService = require('./ForceService');
 const { ATTRIBUTE_FLAG, parseDigitalAssetAttrVal } = require('./utils');
+const https = require('https');
+const { get } = require('express/lib/response');
 
 let helper;
 let service;
@@ -31,6 +33,27 @@ class PimStructure {
         reqBody.templateVersionData
       ));
     }
+
+    // THIS CALL NEEDS TO HAPPEN AFTER exportRecordsAndColumns IS SET
+    // else if (
+    //   reqBody.options.isTemplateExport &&
+    //   !reqBody.templateVersionData &&
+    //   reqBody.templateContentVersionId
+    // ) {
+    //   // non CSV template export (e.g. XLSX) - make call to propel-document-java for aspose cells to modify the XLSX template
+    //   await callAsposeToExport(
+    //     reqBody.sessionId,
+    //     reqBody.hostUrl,
+    //     reqBody.templateId,
+    //     reqBody.templateContentVersionId,
+    //     'xlsx',
+    //     reqBody.exportFormat,
+    //     exportRecordsAndCols[0],
+    //     productVariantValueMapList[0]
+    //   );
+    //   // non-csv template exports will have their exported files posted to chatter by Aspose from propel-document-java
+    //   return;
+    // }
 
     if (isListPageExport) {
       // export is from product list page
@@ -744,6 +767,47 @@ class PimStructure {
         .map(attrField => removeDoubleQuotes(attrField)),
       templateHeaders
     };
+  }
+
+  async callAsposeToExport(
+    sessionId,
+    hostUrl,
+    templateId,
+    templateContentVersionId,
+    templateFormat,
+    exportFormat,
+    detailPageData,
+    productVariantValueMap
+  ) {
+    const options = {
+      hostname: 'propel-document-java-staging.herokuapp.com',
+      path: '/v2/pimTemplateExport',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    };
+    let data = JSON.stringify({
+      sessionId: sessionId,
+      hostUrl: hostUrl,
+      templateId: templateId,
+      templateContentVersionId: templateContentVersionId,
+      detailPageData: detailPageData.map(recordMap =>
+        Object.fromEntries(recordMap)
+      ),
+      productVariantValueMap: Object.fromEntries(productVariantValueMap),
+      templateFormat: templateFormat,
+      exportFormat: exportFormat
+    });
+    const req = https
+      .request(options, res => {
+        console.log('Status Code:', res.statusCode);
+      })
+      .on('error', err => {
+        console.log('Error: ', err.message);
+      });
+    req.write(data);
+    req.end();
   }
 }
 

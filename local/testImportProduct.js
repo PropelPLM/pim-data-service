@@ -1,10 +1,10 @@
 const fs = require('fs')
 const ImportProduct = require('../lib/ImportProduct');
 // replace with your test org metadata
-const hostUrl = "pim-uat.my.salesforce.com"
-const namespace = "PIM"
+const hostUrl = "paas-espresso-3568-dev-ed.scratch.my.salesforce.com"
+const namespace = ""
 const orgId = "00D8c00000868mL"
-const sessionId = "00D8c00000868mL!AR0AQPCnxBX27z2PLFtfRhddeAPKZdl7wkPv3q0bF.zPufapVb2uUGVbhWQH.6a0otHhlzhMcbiOldFZuWZtbEDmSXfAmfot"
+const sessionId = "00DDP000005yxZa!ARIAQE8Ty0cwFI51CqiK2VEoT7vBL2e5LO.ZTtcqcczwoBmgXIfS5SRZhuKgVfUWKQNgMQA_m_WrX.Z..yTKopbjUwug1Ipz"
 
 function productTest() {
   let treq = {

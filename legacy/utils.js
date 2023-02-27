@@ -30,6 +30,7 @@ module.exports = {
   parseDigitalAssetAttrVal,
   DADownloadDetails,
   ATTRIBUTE_FLAG,
+  sendCsvToAsposeCells,
   DA_DOWNLOAD_DETAIL_KEY
 };
 /**
@@ -305,4 +306,32 @@ function prepareIdsForSOQL(idList) {
   } catch (err) {
     throw new Error(`Cannot get list of Ids for query from input: ${idList}`);
   }
+}
+
+function sendCsvToAsposeCells(csvString, sessionId, hostUrl, templateId) {
+  const options = {
+    hostname: 'propel-document-java-staging.herokuapp.com',
+    path: '/v2/pimTemplateExport',
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  };
+  let data = JSON.stringify({
+    sessionId: sessionId,
+    hostUrl: hostUrl,
+    templateId: templateId,
+    templateFormat: 'csv',
+    exportFormat: 'xlsx',
+    csvString: csvString
+  });
+  const req = http
+    .request(options, res => {
+      console.log('Status Code:', res.statusCode);
+    })
+    .on('error', err => {
+      console.log('Error: ', err.message);
+    });
+  req.write(data);
+  req.end();
 }
