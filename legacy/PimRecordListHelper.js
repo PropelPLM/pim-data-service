@@ -3,6 +3,7 @@ const PimRecordService = require('./PimRecordService');
 const {
   ATTRIBUTE_FLAG,
   DA_DOWNLOAD_DETAIL_KEY,
+  PRODUCT_TYPE,
   prepareIdsForSOQL,
   parseDigitalAssetAttrVal
 } = require('./utils');
@@ -10,7 +11,6 @@ const {
 let helper;
 let service;
 const DA_TYPE = 'DigitalAsset';
-const PRODUCT_TYPE = 'Product';
 const DEFAULT_COLUMNS = new Map([
   ['Product ID', 'Product_ID'],
   ['Title', 'Title'],
@@ -610,6 +610,7 @@ async function addExportColumns(
 
     // add these attributes as columns to export
     columnAttributes.forEach(attr => {
+      console.log({ attr });
       exportColumns.push({
         fieldName: helper.getValue(attr, 'Primary_Key__c'),
         label: helper.getValue(attr, 'Label__c'),

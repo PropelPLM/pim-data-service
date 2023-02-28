@@ -8,6 +8,7 @@ const DEFAULT_COLUMNS = new Map([
   ['Title', 'Title'],
   ['Category Name', 'Category__r.Name']
 ]);
+const PRODUCT_TYPE = 'Product';
 
 class DADownloadDetails {
   static helper;
@@ -23,21 +24,22 @@ class DADownloadDetails {
 const ATTRIBUTE_FLAG = 'PROPEL_ATT';
 
 module.exports = {
-  postToChatter,
-  getNestedField,
-  sendConfirmationEmail,
+  callAsposeToExport,
   cleanString,
+  getNestedField,
+  parseDigitalAssetAttrVal,
+  postToChatter,
+  prependCDNToViewLink,
   prepareIdsForSOQL,
   removeFileFromDisk,
+  sendConfirmationEmail,
+  sendCsvToAsposeCells,
   validateNamespaceForPath,
   validateNamespaceForField,
-  prependCDNToViewLink,
-  parseDigitalAssetAttrVal,
   DADownloadDetails,
   ATTRIBUTE_FLAG,
-  callAsposeToExport,
-  sendCsvToAsposeCells,
-  DA_DOWNLOAD_DETAIL_KEY
+  DA_DOWNLOAD_DETAIL_KEY,
+  PRODUCT_TYPE
 };
 /**
  * Function that send zip file to salesforce chatter via chatter api
@@ -308,7 +310,7 @@ function prepareIdsForSOQL(idList) {
       idList = Array.from(idList);
     }
 
-    return idList.map(id => `'${id}'`).join(',');
+    return idList.length ? idList.map(id => `'${id}'`).join(',') : "''";
   } catch (err) {
     throw new Error(`Cannot get list of Ids for query from input: ${idList}`);
   }
