@@ -1,17 +1,27 @@
+const { prepareIdsForSOQL } = require('./utils');
+
 let helper;
 let service;
 
-async function PimProductService(productsList, pHelper, pService) {
+async function PimRecordService(
+  recordList,
+  pHelper,
+  pService,
+  isProduct = true
+) {
   helper = pHelper;
   service = pService;
-  return await getResultForProductStructure(productsList);
+  return await getResultForProductStructure(recordList, isProduct);
 }
 
-// PIM repo ProductService.getResultForProductStructure(productsList)
-async function getResultForProductStructure(productsList) {
+// PIM repo ProductService.getResultForProductStructure(recordList)
+// returns List of products and variants pointing to Maps
+async function getResultForProductStructure(recordList, isProduct) {
   let productVariantValueMapList = [],
-    productMap = getProductMap(productsList),
-    variantStructure = await getVariantStructure(productsList),
+    recordMap = getRecordMap(recordList);
+
+  if (!isProduct) return recordMap;
+  let variantStructure = await getVariantStructure(recordList),
     productVariants,
     variantValues;
 
@@ -35,15 +45,16 @@ async function getResultForProductStructure(productsList) {
 }
 
 // PIM repo ProductManager.getProductMap
-function getProductMap(productsList) {
-  let productMap = new Map();
-  productsList.forEach(product => {
-    productMap.set(product.Id, product);
+function getRecordMap(recordList) {
+  let recordMap = new Map();
+  recordList.forEach(record => {
+    recordMap.set(record.Id, record);
   });
-  return productMap;
+  return recordMap;
 }
 
 // PIM repo ProductManager.getVariantStructure
+// returns Map<Product: List[Variants]>
 async function getVariantStructure(productsList) {
   const productsIds = prepareIdsForSOQL(productsList);
   const variantStructure = new Map();
@@ -103,4 +114,4 @@ function populateRecordDetailsMap(helper, record, parentProduct) {
   return tempMap;
 }
 
-module.exports = PimProductService;
+module.exports = PimRecordService;
