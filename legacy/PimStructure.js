@@ -546,10 +546,8 @@ class PimStructure {
         valuesList,
         baseProduct
       ),
-      filledInExportRecords = [exportRecords.shift()];
-
-    // loop through base product's data
-    let baseProductData = new Map();
+      filledInExportRecords = [exportRecords.shift()],
+      baseProductData = new Map();
     Array.from(baseProduct.keys()).forEach(key => {
       if (baseProduct.get(key) != null && baseProduct.get(key) != '') {
         // baseProduct has value for that attribute
