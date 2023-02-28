@@ -19,15 +19,14 @@ async function LegacyExportPIM(req) {
     console.log('error: ', err);
   }
 
+  const baseFileName = createBaseFileName();
+  const filename = `Product-Export_${baseFileName}.csv`;
+  
+  sendDADownloadRequests(baseFileName, daDownloadDetailsList, reqBody.sessionId, reqBody.hostUrl);
   if (recordsAndCols?.length !== 2) {
     // non CSV template export, exported file will be written to chatter by Aspose
     return;
   }
-
-  const baseFileName = createBaseFileName();
-  const filename = `Product-Export_${baseFileName}.csv`;
-
-  sendDADownloadRequests(baseFileName, daDownloadDetailsList, reqBody.sessionId, reqBody.hostUrl);
 
   let csvString = convertArrayOfObjectsToCSV(
     recordsAndCols[0],
