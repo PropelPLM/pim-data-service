@@ -1,11 +1,14 @@
-const PimProductManager = require('./PimProductManager');
-const PimProductService = require('./PimProductService');
-const PimProductListHelper = require('./PimProductListHelper');
+const PimRecordManager = require('./PimRecordManager');
+const PimRecordService = require('./PimRecordService');
+const PimRecordListHelper = require('./PimRecordListHelper');
 const PimExportHelper = require('./PimExportHelper');
 const ForceService = require('./ForceService');
-const { ATTRIBUTE_FLAG, parseDigitalAssetAttrVal } = require('./utils');
-const https = require('https');
-const { get } = require('express/lib/response');
+const {
+  ATTRIBUTE_FLAG,
+  callAsposeToExport,
+  parseDigitalAssetAttrVal,
+  prepareIdsForSOQL
+} = require('./utils');
 
 let helper;
 let service;
@@ -18,7 +21,7 @@ class PimStructure {
   async build(reqBody, isListPageExport) {
     service = new ForceService(reqBody.hostUrl, reqBody.sessionId);
 
-    let exportRecordsAndCols = [];
+    let exportRecordsColsAndAssets = {};
     const recordIds = prepareIdsForSOQL(reqBody.recordIds);
     const exportType = reqBody.exportType;
     const namespace = reqBody.namespace;
@@ -27,97 +30,53 @@ class PimStructure {
 
     let templateFields;
     let templateHeaders;
+    let useAspose;
+    const asposeInput = { reqBody };
 
     if (reqBody.options.isTemplateExport) {
-      ({ templateFields, templateHeaders } = getTemplateHeadersAndFields(
-        reqBody.templateVersionData
-      ));
+      if (reqBody.templateVersionData) {
+        ({ templateFields, templateHeaders } = getTemplateHeadersAndFields(
+          reqBody.templateVersionData
+        ));
+      } else if (reqBody.templateContentVersionId) {
+        useAspose = true;
+      }
     }
 
-    // THIS CALL NEEDS TO HAPPEN AFTER exportRecordsAndColumns IS SET
-    // else if (
-    //   reqBody.options.isTemplateExport &&
-    //   !reqBody.templateVersionData &&
-    //   reqBody.templateContentVersionId
-    // ) {
-    //   // non CSV template export (e.g. XLSX) - make call to propel-document-java for aspose cells to modify the XLSX template
-    //   await callAsposeToExport(
-    //     reqBody.sessionId,
-    //     reqBody.hostUrl,
-    //     reqBody.templateId,
-    //     reqBody.templateContentVersionId,
-    //     'xlsx',
-    //     reqBody.exportFormat,
-    //     exportRecordsAndCols[0],
-    //     productVariantValueMapList[0]
-    //   );
-    //   // non-csv template exports will have their exported files posted to chatter by Aspose from propel-document-java
-    //   return;
-    // }
-
     if (isListPageExport) {
-      // export is from product list page
-      exportRecordsAndCols = await PimProductListHelper(
+      // export is from list page
+      exportRecordsColsAndAssets = await PimRecordListHelper(
         reqBody,
         helper,
         service,
         templateFields,
         templateHeaders
       );
-      return exportRecordsAndCols;
+      Object.assign(asposeInput, {
+        listPageData: exportRecordsColsAndAssets?.recordsAndCols[0]
+      });
     } else {
-      // export is from product data page
+      // export is from detail data page
       /** PIM repo ProductService.getProductById start */
       // PIM repo ProductManager.buildWithProductIds
-      let productsList = await PimProductManager(recordIds, helper, service);
+      let recordList = await PimRecordManager(recordIds, helper, service);
 
       // PIM repo ProductService.getResultForProductStructure(productsList)
-      let productVariantValueMapList = await PimProductService(
-        productsList,
+      let productVariantValueMapList = await PimRecordService(
+        recordList,
         helper,
         service
       );
       /** PIM repo ProductService.getProductById end */
-      let baseProduct = productVariantValueMapList[0];
-      let exportRecords = [baseProduct];
+      let baseRecord = productVariantValueMapList[0];
+      let exportRecords = [baseRecord];
 
-      /** get product's appearing attribute labels start */
-      const appearingLabelIds = prepareIdsForSOQL(reqBody.appearingLabelIds);
-      // add appearing attribute labels and their values to base product
-      const appearingLabels = await service.simpleQuery(
-        helper.namespaceQuery(`select Id, Name
-        from Attribute_Label__c
-        where Id IN (${appearingLabelIds})`)
-      );
-      const appearingValues = await service.simpleQuery(
-        helper.namespaceQuery(
-          `select
-            Id,
-            Attribute_Label__c,
-            Attribute_Label_Type__c,
-            Overwritten_Variant_Value__c,
-            Product__c,
-            Value__c
-          from Attribute_Value__c
-          where (
-            Attribute_Label__c IN (${appearingLabelIds}) AND
-            Overwritten_Variant_Value__c = null)`
-        )
-      );
-
+      const { appearingLabels, appearingValues, digitalAssetMap } =
+        parseOccurringAttrLabelsValuesAndDigitalAssets(
+          reqBody.appearingLabelIds,
+          service
+        );
       const daDownloadDetailsList = [];
-      const digitalAssetList = await service.simpleQuery(
-        helper.namespaceQuery(
-          `select Id, Name, External_File_Id__c, View_Link__c
-          from Digital_Asset__c`
-        )
-      );
-      const digitalAssetMap = new Map(
-        digitalAssetList.map(asset => {
-          return [asset.Id, asset];
-        })
-      );
-
       let attrValValue;
       for (let i = 0; i < appearingLabels.length; i++) {
         // add the base product's attribute values
@@ -126,6 +85,8 @@ class PimStructure {
             helper.getValue(appearingValues[j], 'Attribute_Label__c') !==
               appearingLabels[i].Id ||
             helper.getValue(appearingValues[j], 'Product__c') !==
+              exportRecords[0].get('Id') ||
+            helper.getValue(appearingValues[j], 'Digital_Asset__c') !==
               exportRecords[0].get('Id')
           )
             continue;
@@ -150,24 +111,124 @@ class PimStructure {
         }
       }
       /** get product's appearing attribute labels end */
-      let valuesList = [];
 
-      if (exportType === 'currentVariant') {
-        let variantValuePath = prepareIdsForSOQL(reqBody.variantValuePath);
-        if (variantValuePath.length > 0) {
-          // get Variant__c object and Variant_Value__c object for every variant value in current variant
-          const variantAndValueMap = await getVariantAndVariantValues(
-            variantValuePath,
+      if (product) {
+        let valuesList = [];
+
+        if (exportType === 'currentVariant') {
+          let variantValuePath = prepareIdsForSOQL(reqBody.variantValuePath);
+          if (variantValuePath.length > 0) {
+            // get Variant__c object and Variant_Value__c object for every variant value in current variant
+            const variantAndValueMap = await getVariantAndVariantValues(
+              variantValuePath,
+              exportType,
+              namespace
+            );
+
+            let currentVariant = new Map();
+            const varList = Array.from(variantAndValueMap.keys());
+            valuesList = Array.from(variantAndValueMap.values()); // note: this is an array of arrays
+            let valuesIdList = [];
+            valuesList.forEach(val => {
+              valuesIdList.push(val[0].Id);
+            });
+            valuesIdList = prepareIdsForSOQL(valuesIdList);
+            const overwrittenValues = await service.simpleQuery(
+              helper.namespaceQuery(
+                `select Id, Attribute_Label__c, Attribute_Label_Type__c, Value__c, Product__c, Overwritten_Variant_Value__c
+                from Attribute_Value__c
+                where (
+                  Overwritten_Variant_Value__c IN (${valuesIdList}) AND
+                  Product__c IN (${recordIds}) AND
+                  Attribute_Label__c IN (${appearingLabelIds})
+                )`
+              )
+            );
+
+            // add variant values to the current variant product
+            for (let i = 0; i < varList.length; i++) {
+              currentVariant.set('Product_ID', valuesList[i][0].Name);
+              currentVariant.set(
+                varList[i].Name,
+                helper.getValue(valuesList[i][0], 'Label__c')
+              );
+
+              // add any overwritten values
+              if (overwrittenValues.length > 0) {
+                for (let i = 0; i < overwrittenValues.length; i++) {
+                  let affectedLabelName;
+                  appearingLabels.forEach(label => {
+                    if (
+                      label.Id ===
+                      helper.getValue(
+                        overwrittenValues[i],
+                        'Attribute_Label__c'
+                      )
+                    ) {
+                      affectedLabelName = label.Name;
+                    }
+                  });
+                  const affectedVariantValue = helper.getValue(
+                    overwrittenValues[i],
+                    'Overwritten_Variant_Value__c'
+                  );
+                  let newValue = helper.getValue(
+                    overwrittenValues[i],
+                    'Value__c'
+                  );
+                  if (
+                    helper.getValue(
+                      overwrittenValues[i],
+                      'Attribute_Label_Type__c'
+                    ) === DA_TYPE
+                  ) {
+                    attrValValue = await parseDigitalAssetAttrVal(
+                      digitalAssetMap,
+                      attrValValue,
+                      daDownloadDetailsList,
+                      helper,
+                      reqBody
+                    );
+                  }
+                  // update the currentVariant object with the overwritten values
+                  if (valuesList[i][0].Id === affectedVariantValue) {
+                    currentVariant.set(affectedLabelName, newValue);
+                  }
+                }
+              }
+            }
+            currentVariantName = currentVariant.get('Product_ID');
+            exportRecords.push(currentVariant);
+          }
+        } else if (exportType === 'allVariants') {
+          let variantValueIds = '';
+          // get ids of all variant values as comma separated String (skip first element since that is a product, not variant)
+          for (let i = 1; i < productVariantValueMapList.length; i++) {
+            if (i === 1) {
+              variantValueIds += String(
+                productVariantValueMapList[i].get('Id')
+              );
+            } else {
+              variantValueIds +=
+                ', ' + String(productVariantValueMapList[i].get('Id'));
+            }
+          }
+
+          // add a new entry in exportRecords for each possible variant
+          const variantAndValueListMap = await getVariantAndVariantValues(
+            variantValueIds,
             exportType,
             namespace
           );
-
-          let currentVariant = new Map();
-          const varList = Array.from(variantAndValueMap.keys());
-          valuesList = Array.from(variantAndValueMap.values()); // note: this is an array of arrays
+          let newVariant = new Map();
+          let varList = Array.from(variantAndValueListMap.keys());
+          valuesList = [];
+          Array.from(variantAndValueListMap.values()).forEach(valList => {
+            valuesList.push.apply(valuesList, valList); // flatten array
+          });
           let valuesIdList = [];
           valuesList.forEach(val => {
-            valuesIdList.push(val[0].Id);
+            valuesIdList.push(val.Id);
           });
           valuesIdList = prepareIdsForSOQL(valuesIdList);
           const overwrittenValues = await service.simpleQuery(
@@ -182,37 +243,70 @@ class PimStructure {
             )
           );
 
-          // add variant values to the current variant product
-          for (let i = 0; i < varList.length; i++) {
-            currentVariant.set('Product_ID', valuesList[i][0].Name);
-            currentVariant.set(
-              varList[i].Name,
-              helper.getValue(valuesList[i][0], 'Label__c')
-            );
+          let currValue;
+          let isFirstLevelVariant;
+          for (let i = 0; i < valuesList.length; i++) {
+            newVariant = new Map();
+            currValue = valuesList[i];
+            isFirstLevelVariant = true;
+            while (true) {
+              // add variant value's Product ID
+              if (isFirstLevelVariant) {
+                newVariant.set('Product_ID', currValue.Name);
+                isFirstLevelVariant = false;
+              }
+              // add Variant__c's Label
+              for (let j = 0; j < varList.length; j++) {
+                if (
+                  varList[j].Id === helper.getValue(currValue, 'Variant__c')
+                ) {
+                  newVariant.set(
+                    varList[j].Name,
+                    helper.getValue(currValue, 'Label__c')
+                  );
+                }
+              }
+              // loop through the parent value path to repeat this iteratively
+              if (
+                helper.getValue(currValue, 'Parent_Variant_Value__c') != null
+              ) {
+                for (const parentValue of valuesList) {
+                  if (
+                    parentValue.Id ===
+                    helper.getValue(currValue, 'Parent_Variant_Value__c')
+                  ) {
+                    currValue = parentValue;
+                    break;
+                  }
+                }
+              } else {
+                break;
+              }
+            }
 
             // add any overwritten values
             if (overwrittenValues.length > 0) {
-              for (let i = 0; i < overwrittenValues.length; i++) {
+              for (let j = 0; j < overwrittenValues.length; j++) {
                 let affectedLabelName;
                 appearingLabels.forEach(label => {
                   if (
                     label.Id ===
-                    helper.getValue(overwrittenValues[i], 'Attribute_Label__c')
+                    helper.getValue(overwrittenValues[j], 'Attribute_Label__c')
                   ) {
                     affectedLabelName = label.Name;
                   }
                 });
                 const affectedVariantValue = helper.getValue(
-                  overwrittenValues[i],
+                  overwrittenValues[j],
                   'Overwritten_Variant_Value__c'
                 );
                 let newValue = helper.getValue(
-                  overwrittenValues[i],
+                  overwrittenValues[j],
                   'Value__c'
                 );
                 if (
                   helper.getValue(
-                    overwrittenValues[i],
+                    overwrittenValues[j],
                     'Attribute_Label_Type__c'
                   ) === DA_TYPE
                 ) {
@@ -224,157 +318,37 @@ class PimStructure {
                     reqBody
                   );
                 }
-                // update the currentVariant object with the overwritten values
-                if (valuesList[i][0].Id === affectedVariantValue) {
-                  currentVariant.set(affectedLabelName, newValue);
+                // update the newVariant object with the overwritten values
+                if (valuesList[i].Id === affectedVariantValue) {
+                  newVariant.set(affectedLabelName, newValue);
                 }
               }
             }
+            exportRecords.push(newVariant);
           }
-          currentVariantName = currentVariant.get('Product_ID');
-          exportRecords.push(currentVariant);
+        } else {
+          throw 'Invalid Export Type';
         }
-      } else if (exportType === 'allVariants') {
-        let variantValueIds = '';
-        // get ids of all variant values as comma separated String (skip first element since that is a product, not variant)
-        for (let i = 1; i < productVariantValueMapList.length; i++) {
-          if (i === 1) {
-            variantValueIds += String(productVariantValueMapList[i].get('Id'));
-          } else {
-            variantValueIds +=
-              ', ' + String(productVariantValueMapList[i].get('Id'));
-          }
-        }
-
-        // add a new entry in exportRecords for each possible variant
-        const variantAndValueListMap = await getVariantAndVariantValues(
-          variantValueIds,
-          exportType,
-          namespace
-        );
-        let newVariant = new Map();
-        let varList = Array.from(variantAndValueListMap.keys());
-        valuesList = [];
-        Array.from(variantAndValueListMap.values()).forEach(valList => {
-          valuesList.push.apply(valuesList, valList); // flatten array
-        });
-        let valuesIdList = [];
-        valuesList.forEach(val => {
-          valuesIdList.push(val.Id);
-        });
-        valuesIdList = prepareIdsForSOQL(valuesIdList);
-        const overwrittenValues = await service.simpleQuery(
-          helper.namespaceQuery(
-            `select Id, Attribute_Label__c, Attribute_Label_Type__c, Value__c, Product__c, Overwritten_Variant_Value__c
-            from Attribute_Value__c
-            where (
-              Overwritten_Variant_Value__c IN (${valuesIdList}) AND
-              Product__c IN (${recordIds}) AND
-              Attribute_Label__c IN (${appearingLabelIds})
-            )`
-          )
-        );
-
-        let currValue;
-        let isFirstLevelVariant;
-        for (let i = 0; i < valuesList.length; i++) {
-          newVariant = new Map();
-          currValue = valuesList[i];
-          isFirstLevelVariant = true;
-          while (true) {
-            // add variant value's Product ID
-            if (isFirstLevelVariant) {
-              newVariant.set('Product_ID', currValue.Name);
-              isFirstLevelVariant = false;
-            }
-            // add Variant__c's Label
-            for (let j = 0; j < varList.length; j++) {
-              if (varList[j].Id === helper.getValue(currValue, 'Variant__c')) {
-                newVariant.set(
-                  varList[j].Name,
-                  helper.getValue(currValue, 'Label__c')
-                );
-              }
-            }
-            // loop through the parent value path to repeat this iteratively
-            if (helper.getValue(currValue, 'Parent_Variant_Value__c') != null) {
-              for (const parentValue of valuesList) {
-                if (
-                  parentValue.Id ===
-                  helper.getValue(currValue, 'Parent_Variant_Value__c')
-                ) {
-                  currValue = parentValue;
-                  break;
-                }
-              }
-            } else {
-              break;
-            }
-          }
-
-          // add any overwritten values
-          if (overwrittenValues.length > 0) {
-            for (let j = 0; j < overwrittenValues.length; j++) {
-              let affectedLabelName;
-              appearingLabels.forEach(label => {
-                if (
-                  label.Id ===
-                  helper.getValue(overwrittenValues[j], 'Attribute_Label__c')
-                ) {
-                  affectedLabelName = label.Name;
-                }
-              });
-              const affectedVariantValue = helper.getValue(
-                overwrittenValues[j],
-                'Overwritten_Variant_Value__c'
-              );
-              let newValue = helper.getValue(overwrittenValues[j], 'Value__c');
-              if (
-                helper.getValue(
-                  overwrittenValues[j],
-                  'Attribute_Label_Type__c'
-                ) === DA_TYPE
-              ) {
-                attrValValue = await parseDigitalAssetAttrVal(
-                  digitalAssetMap,
-                  attrValValue,
-                  daDownloadDetailsList,
-                  helper,
-                  reqBody
-                );
-              }
-              // update the newVariant object with the overwritten values
-              if (valuesList[i].Id === affectedVariantValue) {
-                newVariant.set(affectedLabelName, newValue);
-              }
-            }
-          }
-          exportRecords.push(newVariant);
-        }
-      } else {
-        throw 'Invalid Export Type';
+        exportRecordsAndColumns = reqBody.isInherited
+          ? [
+              await fillInInheritedData(
+                baseProduct,
+                exportRecords,
+                valuesList,
+                exportType,
+                productVariantValueMapList,
+                recordIds,
+                appearingLabelIds,
+                appearingLabels,
+                currentVariantName,
+                reqBody,
+                digitalAssetMap,
+                daDownloadDetailsList
+              )
+            ]
+          : [exportRecords];
       }
-      if (reqBody.isInherited) {
-        const filledInData = await fillInInheritedData(
-          baseProduct,
-          exportRecords,
-          valuesList,
-          exportType,
-          productVariantValueMapList,
-          recordIds,
-          appearingLabelIds,
-          appearingLabels,
-          currentVariantName,
-          reqBody,
-          digitalAssetMap,
-          daDownloadDetailsList
-        );
-        exportRecordsAndCols = [filledInData];
-      } else {
-        exportRecordsAndCols = [exportRecords];
-      }
-
-      return {
+      exportRecordsColsAndAssets = {
         daDownloadDetailsList,
         recordsAndCols: await addExportColumns(
           productVariantValueMapList,
@@ -383,7 +357,16 @@ class PimStructure {
           exportRecordsAndColumns
         )
       };
+      Object.assign(asposeInput, {
+        detailPageData: exportRecordsColsAndAssets?.recordsAndCols[0],
+        baseRecord
+      });
     }
+    if (useAspose) {
+      await callAsposeToExport(asposeInput);
+      return { daDownloadDetailsList };
+    }
+    return exportRecordsColsAndAssets;
   }
 
   // PIM repo ProductService.getVariantAndVariantValues
@@ -678,7 +661,7 @@ class PimStructure {
     productVariantValueMapList,
     templateFields,
     templateHeaders,
-    exportRecordsAndCols
+    exportRecordsAndColumns
   ) {
     let exportColumns;
     let templateHeaderValueMap = new Map();
@@ -728,12 +711,12 @@ class PimStructure {
       }
       // populate export records with raw values specified in the template
       Array.from(templateHeaderValueMap.keys()).forEach(header => {
-        exportRecordsAndCols[0].forEach(recordMap => {
+        exportRecordsAndColumns[0].forEach(recordMap => {
           recordMap.set(header, templateHeaderValueMap.get(header));
         });
       });
     }
-    return [...exportRecordsAndCols, exportColumns || []];
+    return [...exportRecordsAndColumns, exportColumns || []];
   }
 
   convertDAToUrl(instanceUrl, namespace, sobjectId) {
@@ -769,45 +752,49 @@ class PimStructure {
     };
   }
 
-  async callAsposeToExport(
-    sessionId,
-    hostUrl,
-    templateId,
-    templateContentVersionId,
-    templateFormat,
-    exportFormat,
-    detailPageData,
-    productVariantValueMap
+  async parseOccurringAttrLabelsValuesAndDigitalAssets(
+    appearingLabelIds,
+    service
   ) {
-    const options = {
-      hostname: 'propel-document-java-staging.herokuapp.com',
-      path: '/v2/pimTemplateExport',
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      }
+    appearingLabelIds = prepareIdsForSOQL(appearingLabelIds);
+    // add appearing attribute labels and their values to base product
+    const appearingLabels = await service.simpleQuery(
+      helper.namespaceQuery(`select Id, Name
+      from Attribute_Label__c
+      where Id IN (${appearingLabelIds})`)
+    );
+    const appearingValues = await service.simpleQuery(
+      helper.namespaceQuery(
+        `select
+          Id,
+          Attribute_Label__c,
+          Attribute_Label_Type__c,
+          Overwritten_Variant_Value__c,
+          Product__c,
+          Digital_Asset__c,
+          Value__c
+        from Attribute_Value__c
+        where (
+          Attribute_Label__c IN (${appearingLabelIds}) AND
+          Overwritten_Variant_Value__c = null)`
+      )
+    );
+
+    const digitalAssetList = await service.simpleQuery(
+      helper.namespaceQuery(
+        `select Id, Name, External_File_Id__c, View_Link__c
+        from Digital_Asset__c`
+      )
+    );
+    return {
+      appearingLabels,
+      appearingValues,
+      digitalAssetMap: new Map(
+        digitalAssetList.map(asset => {
+          return [asset.Id, asset];
+        })
+      )
     };
-    let data = JSON.stringify({
-      sessionId: sessionId,
-      hostUrl: hostUrl,
-      templateId: templateId,
-      templateContentVersionId: templateContentVersionId,
-      detailPageData: detailPageData.map(recordMap =>
-        Object.fromEntries(recordMap)
-      ),
-      productVariantValueMap: Object.fromEntries(productVariantValueMap),
-      templateFormat: templateFormat,
-      exportFormat: exportFormat
-    });
-    const req = https
-      .request(options, res => {
-        console.log('Status Code:', res.statusCode);
-      })
-      .on('error', err => {
-        console.log('Error: ', err.message);
-      });
-    req.write(data);
-    req.end();
   }
 }
 
