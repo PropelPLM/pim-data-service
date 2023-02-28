@@ -3,6 +3,11 @@ var fs = require('fs');
 const PimExportHelper = require('./PimExportHelper');
 const ForceService = require('./ForceService');
 const DA_DOWNLOAD_DETAIL_KEY = 'DA_DOWNLOAD_DETAIL_KEY';
+const DEFAULT_COLUMNS = new Map([
+  ['Product ID', 'Product_ID'], // JUST NAMED THIS COS OF HARDCODE IN PROPEL-DOC-JAVA
+  ['Title', 'Title'],
+  ['Category Name', 'Category__r.Name']
+]);
 
 class DADownloadDetails {
   static helper;
@@ -30,6 +35,7 @@ module.exports = {
   parseDigitalAssetAttrVal,
   DADownloadDetails,
   ATTRIBUTE_FLAG,
+  callAsposeToExport,
   sendCsvToAsposeCells,
   DA_DOWNLOAD_DETAIL_KEY
 };
@@ -333,5 +339,80 @@ function sendCsvToAsposeCells(csvString, sessionId, hostUrl, templateId) {
       console.log('Error: ', err.message);
     });
   req.write(data);
+  req.end();
+}
+
+async function callAsposeToExport({
+  reqBody,
+  templateFormat = 'xlsx',
+  listPageData,
+  detailPageData,
+  baseRecord
+}) {
+  const {
+    exportFormat,
+    hostUrl,
+    sessionId,
+    templateId,
+    templateContentVersionId
+  } = reqBody;
+  const options = {
+    hostname: 'propel-document-java-staging.herokuapp.com',
+    path: '/v2/pimTemplateExport',
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  };
+
+  let data = {
+    sessionId: sessionId,
+    hostUrl: hostUrl,
+    templateId: templateId,
+    templateContentVersionId: templateContentVersionId,
+    templateFormat: templateFormat,
+    exportFormat: exportFormat
+  };
+
+  let exportTypeSpecificInformation;
+
+  if (listPageData) {
+    const columnAttributes = await service.simpleQuery(
+      helper.namespaceQuery(
+        `select Id, Label__c, Primary_Key__c
+      from Attribute_Label__c order by Primary_Key__c`
+      )
+    );
+    const labelToPrimaryKeyMap = new Map(
+      columnAttributes.map(label => {
+        return [
+          helper.getValue(label, 'Label__c'),
+          helper.getValue(label, 'Primary_Key__c')
+        ];
+      })
+    );
+    exportTypeSpecificInformation = {
+      defaultColumns: Object.fromEntries(DEFAULT_COLUMNS),
+      labelToPrimaryKeyMap: Object.fromEntries(labelToPrimaryKeyMap),
+      listPageData: listPageData.map(recordMap => Object.fromEntries(recordMap))
+    };
+  } else {
+    exportTypeSpecificInformation = {
+      detailPageData: detailPageData.map(recordMap =>
+        Object.fromEntries(recordMap)
+      ),
+      productVariantValueMap: Object.fromEntries(baseRecord) // JUST NAMED THIS COS OF HARDCODE IN PROPEL-DOC-JAVA
+    };
+  }
+  Object.assign(data, exportTypeSpecificInformation);
+
+  const req = https
+    .request(options, res => {
+      console.log('Status Code:', res.statusCode);
+    })
+    .on('error', err => {
+      console.log('Error: ', err.message);
+    });
+  req.write(JSON.stringify(data));
   req.end();
 }
