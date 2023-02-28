@@ -25,7 +25,7 @@ async function getResultForProductStructure(recordList, isProduct) {
     productVariants,
     variantValues;
 
-  Array.from(productMap.values()).forEach(product => {
+  Array.from(recordMap.values()).forEach(product => {
     productVariantValueMapList.push(populateRecordDetailsMap(helper, product));
     productVariants = variantStructure.get(product.Id);
     if (productVariants == null) return;
