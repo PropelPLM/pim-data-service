@@ -5,6 +5,7 @@ const PimExportHelper = require('./PimExportHelper');
 const ForceService = require('./ForceService');
 const {
   ATTRIBUTE_FLAG,
+  PRODUCT_TYPE,
   callAsposeToExport,
   parseDigitalAssetAttrVal,
   prepareIdsForSOQL
@@ -35,7 +36,7 @@ class PimStructure {
 
     if (reqBody.options.isTemplateExport) {
       if (reqBody.templateVersionData) {
-        ({ templateFields, templateHeaders } = getTemplateHeadersAndFields(
+        ({ templateFields, templateHeaders } = this.getTemplateHeadersAndFields(
           reqBody.templateVersionData
         ));
       } else if (reqBody.templateContentVersionId) {
@@ -59,35 +60,35 @@ class PimStructure {
       // export is from detail data page
       /** PIM repo ProductService.getProductById start */
       // PIM repo ProductManager.buildWithProductIds
-      let recordList = await PimRecordManager(recordIds, helper, service);
-
-      // PIM repo ProductService.getResultForProductStructure(productsList)
-      let productVariantValueMapList = await PimRecordService(
-        recordList,
-        helper,
-        service
-      );
-      /** PIM repo ProductService.getProductById end */
-      let baseRecord = productVariantValueMapList[0];
-      let exportRecords = [baseRecord];
-
+      let recordList = await PimRecordManager(recordIds, helper, service),
+        productVariantValueMapList = await PimRecordService(
+          recordList,
+          helper,
+          service
+        ),
+        baseRecord = productVariantValueMapList[0],
+        exportRecords = [baseRecord],
+        attrValValue,
+        exportRecordsAndColumns;
+      let { appearingLabelIds, recordType } = reqBody;
+      appearingLabelIds = prepareIdsForSOQL(appearingLabelIds);
       const { appearingLabels, appearingValues, digitalAssetMap } =
-        parseOccurringAttrLabelsValuesAndDigitalAssets(
-          reqBody.appearingLabelIds,
+        await this.parseOccurringAttrLabelsValuesAndDigitalAssets(
+          appearingLabelIds,
           service
         );
       const daDownloadDetailsList = [];
-      let attrValValue;
+
       for (let i = 0; i < appearingLabels.length; i++) {
         // add the base product's attribute values
         for (let j = 0; j < appearingValues.length; j++) {
           if (
             helper.getValue(appearingValues[j], 'Attribute_Label__c') !==
               appearingLabels[i].Id ||
-            helper.getValue(appearingValues[j], 'Product__c') !==
-              exportRecords[0].get('Id') ||
-            helper.getValue(appearingValues[j], 'Digital_Asset__c') !==
-              exportRecords[0].get('Id')
+            (helper.getValue(appearingValues[j], 'Product__c') !==
+              exportRecords[0].get('Id') &&
+              helper.getValue(appearingValues[j], 'Digital_Asset__c') !==
+                exportRecords[0].get('Id'))
           )
             continue;
           attrValValue = helper.getValue(appearingValues[j], 'Value__c');
@@ -98,8 +99,9 @@ class PimStructure {
             attrValValue = await parseDigitalAssetAttrVal(
               digitalAssetMap,
               attrValValue,
+              daDownloadDetailsList,
               helper,
-              daDownloadDetailsList
+              reqBody
             );
           }
           exportRecords[0].set(appearingLabels[i].Name, attrValValue);
@@ -111,8 +113,8 @@ class PimStructure {
         }
       }
       /** get product's appearing attribute labels end */
-
-      if (product) {
+      const isProduct = recordType == PRODUCT_TYPE;
+      if (isProduct) {
         let valuesList = [];
 
         if (exportType === 'currentVariant') {
@@ -215,7 +217,7 @@ class PimStructure {
           }
 
           // add a new entry in exportRecords for each possible variant
-          const variantAndValueListMap = await getVariantAndVariantValues(
+          const variantAndValueListMap = await this.getVariantAndVariantValues(
             variantValueIds,
             exportType,
             namespace
@@ -331,8 +333,8 @@ class PimStructure {
         }
         exportRecordsAndColumns = reqBody.isInherited
           ? [
-              await fillInInheritedData(
-                baseProduct,
+              await this.fillInInheritedData(
+                baseRecord,
                 exportRecords,
                 valuesList,
                 exportType,
@@ -350,7 +352,7 @@ class PimStructure {
       }
       exportRecordsColsAndAssets = {
         daDownloadDetailsList,
-        recordsAndCols: await addExportColumns(
+        recordsAndCols: await this.addExportColumns(
           productVariantValueMapList,
           templateFields,
           templateHeaders,
@@ -540,12 +542,11 @@ class PimStructure {
       exportType = 'currentVariant';
     }
 
-    let variantValueTree = await createVariantValueTree(
-      valuesList,
-      baseProduct
-    );
-    filledInExportRecords = [];
-    filledInExportRecords.push(exportRecords.shift());
+    let variantValueTree = await this.createVariantValueTree(
+        valuesList,
+        baseProduct
+      ),
+      filledInExportRecords = [exportRecords.shift()];
 
     // loop through base product's data
     let baseProductData = new Map();
@@ -663,7 +664,7 @@ class PimStructure {
     templateHeaders,
     exportRecordsAndColumns
   ) {
-    let exportColumns;
+    let exportColumns = [];
     let templateHeaderValueMap = new Map();
     if (!templateFields || templateFields.length === 0) {
       // if not template export, push all attribute columns
@@ -677,6 +678,7 @@ class PimStructure {
       let field;
       for (let i = 0; i < templateFields.length; i++) {
         field = templateFields[i];
+
         if (field.includes(ATTRIBUTE_FLAG)) {
           // template specifies that the column's rows should contain a field's value
           field = field.slice(11, -1);
@@ -719,44 +721,10 @@ class PimStructure {
     return [...exportRecordsAndColumns, exportColumns || []];
   }
 
-  convertDAToUrl(instanceUrl, namespace, sobjectId) {
-    return (
-      instanceUrl +
-      '/lightning/r/' +
-      namespace +
-      'Digital_Asset__c/' +
-      sobjectId +
-      '/view'
-    );
-  }
-
-  static getTemplateHeadersAndFields(templateVersionData) {
-    function removeDoubleQuotes(str) {
-      // note the 3 different kinds of double quotes in the regex
-      return str.replace(/["“”]+/g, '');
-    }
-
-    let templateFields;
-    let templateHeaders;
-
-    if (!templateVersionData) return { templateFields, templateHeaders };
-
-    const templateRows = templateVersionData.split(/\r?\n/);
-    templateHeaders = templateRows?.[0]?.split(',') || [];
-    templateFields = templateRows?.[1]?.split(',') || [];
-    return {
-      templateFields: templateFields
-        .filter(field => field.includes(ATTRIBUTE_FLAG))
-        .map(attrField => removeDoubleQuotes(attrField)),
-      templateHeaders
-    };
-  }
-
   async parseOccurringAttrLabelsValuesAndDigitalAssets(
     appearingLabelIds,
     service
   ) {
-    appearingLabelIds = prepareIdsForSOQL(appearingLabelIds);
     // add appearing attribute labels and their values to base product
     const appearingLabels = await service.simpleQuery(
       helper.namespaceQuery(`select Id, Name
@@ -794,6 +762,39 @@ class PimStructure {
           return [asset.Id, asset];
         })
       )
+    };
+  }
+
+  convertDAToUrl(instanceUrl, namespace, sobjectId) {
+    return (
+      instanceUrl +
+      '/lightning/r/' +
+      namespace +
+      'Digital_Asset__c/' +
+      sobjectId +
+      '/view'
+    );
+  }
+
+  getTemplateHeadersAndFields(templateVersionData) {
+    function removeDoubleQuotes(str) {
+      // note the 3 different kinds of double quotes in the regex
+      return str.replace(/["“”]+/g, '');
+    }
+
+    let templateFields;
+    let templateHeaders;
+
+    if (!templateVersionData) return { templateFields, templateHeaders };
+
+    const templateRows = templateVersionData.split(/\r?\n/);
+    templateHeaders = templateRows?.[0]?.split(',') || [];
+    templateFields = templateRows?.[1]?.split(',') || [];
+    return {
+      templateFields: templateFields
+        .filter(field => field.includes(ATTRIBUTE_FLAG))
+        .map(attrField => removeDoubleQuotes(attrField)),
+      templateHeaders
     };
   }
 }
