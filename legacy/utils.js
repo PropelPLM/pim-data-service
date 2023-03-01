@@ -1,4 +1,4 @@
-var http = require('https');
+var https = require('https');
 var fs = require('fs');
 const PimExportHelper = require('./PimExportHelper');
 const ForceService = require('./ForceService');
@@ -135,7 +135,7 @@ function postToChatter(
   ].join(CRLF);
 
   // Execute request
-  var req = new http.request(options, res => {
+  var req = new https.request(options, res => {
     console.log('response: ', res.statusCode, res.statusMessage);
     if (callback) {
       callback();
@@ -188,7 +188,7 @@ function sendConfirmationEmail(response) {
     }
   };
   // Execute request
-  var req = new http.request(options, function (res) {
+  var req = new https.request(options, function (res) {
     console.log('response send email: ', res.statusCode);
   });
   // Request
@@ -333,9 +333,17 @@ function sendCsvToAsposeCells(csvString, sessionId, hostUrl, templateId) {
     exportFormat: 'xlsx',
     csvString: csvString
   });
-  const req = http
+  const req = https
     .request(options, res => {
-      console.log('Status Code:', res.statusCode);
+      let data = '';
+      console.log('sendCsvToAsposeCells Status Code:', res.statusCode);
+      res.on('data', chunk => {
+        data = data + chunk.toString();
+      });
+      res.on('end', () => {
+        const body = JSON.parse(data);
+        console.log(body);
+      });
     })
     .on('error', err => {
       console.log('Error: ', err.message);
@@ -410,7 +418,15 @@ async function callAsposeToExport({
 
   const req = https
     .request(options, res => {
-      console.log('Status Code:', res.statusCode);
+      let data = '';
+      console.log('callAsposeToExport Status Code:', res.statusCode);
+      res.on('data', chunk => {
+        data = data + chunk.toString();
+      });
+      res.on('end', () => {
+        const body = JSON.parse(data);
+        console.log(body);
+      });
     })
     .on('error', err => {
       console.log('Error: ', err.message);
