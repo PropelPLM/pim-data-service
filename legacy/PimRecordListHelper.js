@@ -610,7 +610,6 @@ async function addExportColumns(
 
     // add these attributes as columns to export
     columnAttributes.forEach(attr => {
-      console.log({ attr });
       exportColumns.push({
         fieldName: helper.getValue(attr, 'Primary_Key__c'),
         label: helper.getValue(attr, 'Label__c'),
