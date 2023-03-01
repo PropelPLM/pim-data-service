@@ -78,15 +78,13 @@ async function getVariantStructure(productsList) {
     )
   );
 
+  let variantParentProductId;
   variantsList.forEach(variant => {
-    if (!variantStructure.has(helper.getValue(variant, 'Product__c'))) {
-      variantStructure.set(helper.getValue(variant, 'Product__c'), []);
+    variantParentProductId = helper.getValue(variant, 'Product__c');
+    if (!variantStructure.has(variantParentProductId)) {
+      variantStructure.set(variantParentProductId, []);
     }
-
-    variantStructure.set(
-      helper.getValue(variant, 'Product__c'),
-      variantStructure.get(helper.getValue(variant, 'Product__c')).push(variant)
-    );
+    variantStructure.get(variantParentProductId).push(variant);
   });
   return variantStructure;
 }
@@ -106,9 +104,9 @@ function populateRecordDetailsMap(helper, record, parentProduct) {
 
   tempMap.set(
     'Title',
-    helper.getValue(variantValue, 'Label__c')
-      ? helper.getValue(variantValue, 'Label__c')
-      : variantValue.Name
+    helper.getValue(record, 'Label__c')
+      ? helper.getValue(record, 'Label__c')
+      : record.Name
   );
   tempMap.set('Parent_ID', topLevelRecord.Id);
   return tempMap;

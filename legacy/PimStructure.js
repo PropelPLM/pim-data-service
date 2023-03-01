@@ -61,17 +61,25 @@ class PimStructure {
       // export is from detail data page
       /** PIM repo ProductService.getProductById start */
       // PIM repo ProductManager.buildWithProductIds
-      let recordList = await PimRecordManager(recordIds, helper, service),
+      let { appearingLabelIds, recordType } = reqBody;
+      const isProduct = recordType == PRODUCT_TYPE;
+
+      let recordList = await PimRecordManager(
+          recordIds,
+          helper,
+          service,
+          isProduct
+        ),
         productVariantValueMapList = await PimRecordService(
           recordList,
           helper,
-          service
+          service,
+          isProduct
         ),
         baseRecord = productVariantValueMapList[0],
         exportRecords = [baseRecord],
         attrValValue,
         exportRecordsAndColumns;
-      let { appearingLabelIds, recordType } = reqBody;
       appearingLabelIds = prepareIdsForSOQL(appearingLabelIds);
       const { appearingLabels, appearingValues, digitalAssetMap } =
         await this.parseOccurringAttrLabelsValuesAndDigitalAssets(
@@ -114,7 +122,6 @@ class PimStructure {
         }
       }
       /** get product's appearing attribute labels end */
-      const isProduct = recordType == PRODUCT_TYPE;
       if (isProduct) {
         let valuesList = [];
 
