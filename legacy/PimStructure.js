@@ -121,7 +121,7 @@ class PimStructure {
           let variantValuePath = prepareIdsForSOQL(reqBody.variantValuePath);
           if (variantValuePath.length > 0) {
             // get Variant__c object and Variant_Value__c object for every variant value in current variant
-            const variantAndValueMap = await getVariantAndVariantValues(
+            const variantAndValueMap = await this.getVariantAndVariantValues(
               variantValuePath,
               exportType,
               namespace
@@ -436,7 +436,7 @@ class PimStructure {
       variantValueIds = variantValueArray.join(', ');
 
       // add a new entry in exportRecords for each possible variant
-      const variantAndValueListMap = await getVariantAndVariantValues(
+      const variantAndValueListMap = await this.getVariantAndVariantValues(
         variantValueIds,
         exportType
       );

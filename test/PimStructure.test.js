@@ -12,7 +12,9 @@ describe('PimStructure tests', () => {
   describe('getTemplateHeadersAndFields', () => {
     it('basic get template header and fields', done => {
       const { templateHeaders, templateFields } =
-        PimStructure.getTemplateHeadersAndFields(basicTemplatedExportCSVString);
+        new PimStructure().getTemplateHeadersAndFields(
+          basicTemplatedExportCSVString
+        );
 
       // array checks
       assert.typeOf(templateHeaders, 'array');
@@ -28,7 +30,7 @@ describe('PimStructure tests', () => {
     });
 
     it('misconfigured fields', done => {
-      const { templateFields } = PimStructure.getTemplateHeadersAndFields(
+      const { templateFields } = new PimStructure().getTemplateHeadersAndFields(
         misconfiguredTemplatedExportCSVString
       );
 
