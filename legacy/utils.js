@@ -305,12 +305,16 @@ async function parseDigitalAssetAttrVal(
 }
 
 function prepareIdsForSOQL(idList) {
+  const emptyRes = "''";
   try {
     if (!Array.isArray(idList)) {
       idList = Array.from(idList);
     }
+    if (idList.length == 0) return emptyRes;
+    if (idList[0].constructor === Object)
+      idList = idList.map(ele => ele.Id ?? ele.id);
 
-    return idList.length ? idList.map(id => `'${id}'`).join(',') : "''";
+    return idList.length ? idList.map(id => `'${id}'`).join(',') : emptyRes;
   } catch (err) {
     throw new Error(`Cannot get list of Ids for query from input: ${idList}`);
   }
