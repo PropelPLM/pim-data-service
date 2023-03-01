@@ -154,7 +154,13 @@ async function sendDADownloadRequests(zipFileName, daDownloadDetailsList, sessio
     }
   };
   const request = https.request(options, (res) => {
-    console.log({res})
+    let data = '';
+    res.on('data', chunk => {
+      data = data + chunk.toString();
+    });
+    res.on('end', () => {
+      console.log(data);
+    });
   });
   request.write(payload);
   request.end();
