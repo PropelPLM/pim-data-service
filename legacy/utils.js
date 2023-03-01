@@ -341,8 +341,7 @@ function sendCsvToAsposeCells(csvString, sessionId, hostUrl, templateId) {
         data = data + chunk.toString();
       });
       res.on('end', () => {
-        const body = JSON.parse(data);
-        console.log(body);
+        console.log(data);
       });
     })
     .on('error', err => {
@@ -424,8 +423,7 @@ async function callAsposeToExport({
         data = data + chunk.toString();
       });
       res.on('end', () => {
-        const body = JSON.parse(data);
-        console.log(body);
+        console.log(data);
       });
     })
     .on('error', err => {

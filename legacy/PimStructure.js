@@ -29,9 +29,10 @@ class PimStructure {
     helper = new PimExportHelper(namespace);
     let currentVariantName;
 
-    let templateFields;
-    let templateHeaders;
-    let useAspose;
+    let templateFields,
+      templateHeaders,
+      useAspose,
+      daDownloadDetailsList = [];
     const asposeInput = { reqBody };
 
     if (reqBody.options.isTemplateExport) {
