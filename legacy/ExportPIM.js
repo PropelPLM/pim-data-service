@@ -14,20 +14,19 @@ async function LegacyExportPIM(req) {
   }
   let daDownloadDetailsList, recordsAndCols;
   try {
-    ({daDownloadDetailsList, recordsAndCols} = await PimStructure(reqBody, isListPageExport));
+    ({daDownloadDetailsList, recordsAndCols} = await new PimStructure().build(reqBody, isListPageExport));
   } catch (err) {
     console.log('error: ', err);
   }
 
+  const baseFileName = createBaseFileName();
+  const filename = `Product-Export_${baseFileName}.csv`;
+  
+  sendDADownloadRequests(baseFileName, daDownloadDetailsList, reqBody.sessionId, reqBody.hostUrl);
   if (recordsAndCols?.length !== 2) {
     // non CSV template export, exported file will be written to chatter by Aspose
     return;
   }
-
-  const baseFileName = createBaseFileName();
-  const filename = `Product-Export_${baseFileName}.csv`;
-
-  sendDADownloadRequests(baseFileName, daDownloadDetailsList, reqBody.sessionId, reqBody.hostUrl);
 
   let csvString = convertArrayOfObjectsToCSV(
     recordsAndCols[0],
@@ -155,7 +154,13 @@ async function sendDADownloadRequests(zipFileName, daDownloadDetailsList, sessio
     }
   };
   const request = https.request(options, (res) => {
-    console.log({res})
+    let data = '';
+    res.on('data', chunk => {
+      data = data + chunk.toString();
+    });
+    res.on('end', () => {
+      console.log(data);
+    });
   });
   request.write(payload);
   request.end();

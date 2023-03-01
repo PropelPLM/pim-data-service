@@ -1,15 +1,15 @@
-const PimProductManager = require('./PimProductManager');
-const PimProductService = require('./PimProductService');
-const https = require('https');
+const PimRecordManager = require('./PimRecordManager');
+const PimRecordService = require('./PimRecordService');
 const {
+  ATTRIBUTE_FLAG,
   DA_DOWNLOAD_DETAIL_KEY,
-  DADownloadDetails,
-  prependCDNToViewLink
+  PRODUCT_TYPE,
+  prepareIdsForSOQL,
+  parseDigitalAssetAttrVal
 } = require('./utils');
 
 let helper;
 let service;
-const ATTRIBUTE_FLAG = 'PROPEL_ATT';
 const DA_TYPE = 'DigitalAsset';
 const DEFAULT_COLUMNS = new Map([
   ['Product ID', 'Product_ID'],
@@ -17,16 +17,26 @@ const DEFAULT_COLUMNS = new Map([
   ['Category Name', 'Category__r.Name']
 ]);
 
-async function PimProductListHelper(reqBody, pHelper, pService) {
+async function PimRecordListHelper(
+  reqBody,
+  pHelper,
+  pService,
+  templateFields,
+  templateHeaders
+) {
   helper = pHelper;
   service = pService;
 
   let daDownloadDetailsList;
-  const recordIds = reqBody.recordIds;
-  const vvIds = reqBody.variantValueIds;
-  const categoryId = reqBody.categoryId;
-  const isPrimaryCategory = reqBody.isPrimaryCategory;
+  const {
+    recordIds,
+    variantValueIds,
+    categoryId,
+    isPrimaryCategory,
+    recordType
+  } = reqBody;
 
+  const isProduct = recordType == PRODUCT_TYPE;
   /** PIM repo ProductService.productStructureByCategory start */
   let pqlBuilder = {
     objectType: 'CATEGORY',
@@ -35,42 +45,35 @@ async function PimProductListHelper(reqBody, pHelper, pService) {
 
   // PIM repo ProductPQLHelper.getRecordByCategory()
   const exportRecords = await getRecordByCategory(
-    reqBody,
     pqlBuilder,
     isPrimaryCategory
   );
 
   // filter the records if rows were selected or filters applied in product list page
-  let filteredRecords = [];
-  exportRecords.forEach(record => {
-    if (
+  let filteredRecords = exportRecords.filter(
+    record =>
       recordIds.includes(record.get('Id')) ||
-      vvIds.includes(record.get('Id'))
-    ) {
-      filteredRecords.push(record);
-    }
-  });
-  let exportRecordsAndColumns = [filteredRecords];
+      variantValueIds.includes(record.get('Id'))
+  );
+  let exportRecordsAndColumns = [filteredRecords]; // [[filtered]] zz
 
   /** PIM repo ProductService.productStructureByCategory end */
 
   /** PIM repo ProductService.getProductDetail start */
   // gets Products' attribute(s) if any
-  if (recordIds.length > 0 || vvIds.length > 0) {
-    let productIdSet = new Set();
-    let variantValueIds = new Set();
+  if (recordIds.length > 0 || variantValueIds.length > 0) {
+    let recordIdSet = new Set();
+    let vvIds = new Set();
     for (let i = 0; i < recordIds.length; i++) {
-      productIdSet.add(recordIds[i]);
+      recordIdSet.add(recordIds[i]);
     }
-    for (let i = 0; i < vvIds.length; i++) {
-      variantValueIds.add(vvIds[i]);
+    for (let i = 0; i < variantValueIds.length; i++) {
+      vvIds.add(variantValueIds[i]);
     }
 
     let attributeResults = new Map();
-    if (variantValueIds.size > 0) {
-      const stringifiedQuotedVariantValueIds = Array.from(variantValueIds)
-        .map(id => `'${id}'`)
-        .join(',');
+    if (vvIds.size > 0) {
+      const stringifiedQuotedVariantValueIds = prepareIdsForSOQL(vvIds);
       let variantValues = await service.queryExtend(
         helper.namespaceQuery(
           `select Id, Variant__r.Product__c
@@ -81,19 +84,22 @@ async function PimProductListHelper(reqBody, pHelper, pService) {
         stringifiedQuotedVariantValueIds.split(',')
       );
       variantValues.forEach(value => {
-        productIdSet.add(helper.getValue(value, 'Variant__r.Product__c'));
+        recordIdSet.add(helper.getValue(value, 'Variant__r.Product__c'));
       });
     }
 
-    const productIds = Array.from(productIdSet)
-      .map(id => `'${id}'`)
-      .join(',');
-    let productsList = await PimProductManager(productIds, helper, service);
-    let productMap = await getProductMap(productsList);
-    attributeResults = await getResultForProductMap(
-      productMap,
-      variantValueIds,
-      productsList,
+    const recordIdsToQuery = prepareIdsForSOQL(recordIdSet);
+    let recordList = await PimRecordManager(
+      recordIdsToQuery,
+      helper,
+      service,
+      isProduct
+    );
+    let recordMap = await getRecordMap(recordList);
+    attributeResults = await getAttributesForRecordMap(
+      recordMap,
+      vvIds,
+      recordList,
       reqBody
     );
 
@@ -110,16 +116,16 @@ async function PimProductListHelper(reqBody, pHelper, pService) {
     /** PIM repo ProductService.getProductDetail end */
     // for each key of attribute results (Product__c Id or Variant_Value__c Id)
     if (attributeResults.size > 0) {
-      const productIdKeys = Array.from(attributeResults.keys());
-      productIdKeys.forEach(productId => {
-        if (attributeResults.get(productId) !== null) {
+      const recordIdKeys = Array.from(attributeResults.keys());
+      recordIdKeys.forEach(recordId => {
+        if (attributeResults.get(recordId) !== null) {
           // check list of export records if there is a Map with a matching Id
           exportRecordsAndColumns[0].forEach(exportRecord => {
-            if (exportRecord.get('Id') === productId) {
+            if (exportRecord.get('Id') === recordId) {
               // add attribute labels and values from attributeResults into corresponding export record
-              const labels = Array.from(attributeResults.get(productId).keys());
+              const labels = Array.from(attributeResults.get(recordId).keys());
               const values = Array.from(
-                attributeResults.get(productId).values()
+                attributeResults.get(recordId).values()
               );
               for (let i = 0; i < labels.length; i++) {
                 exportRecord.set(labels[i], values[i]);
@@ -129,39 +135,6 @@ async function PimProductListHelper(reqBody, pHelper, pService) {
         }
       });
     }
-  }
-
-  // query columns for the records
-  let templateFields;
-  let templateHeaders;
-  if (reqBody.options.isTemplateExport && reqBody.templateVersionData) {
-    // parse headers and fields and store them in a map
-    const templateRows = reqBody.templateVersionData.split(/\r?\n/);
-    templateHeaders = templateRows[0].split(',');
-    templateFields = templateRows[1].split(',');
-    for (let i = 0; i < templateFields.length; i++) {
-      if (templateFields[i].includes(ATTRIBUTE_FLAG)) {
-        // remove double quotes (note the 3 different kinds of double quotes in the regex)
-        templateFields[i] = templateFields[i].replace(/["“”]+/g, '');
-      }
-    }
-  } else if (
-    reqBody.options.isTemplateExport &&
-    !reqBody.templateVersionData &&
-    reqBody.templateContentVersionId
-  ) {
-    // non CSV template export (e.g. XLSX) - make call to propel-document-java for aspose cells to modify the XLSX template
-    await callAsposeToExport(
-      reqBody.sessionId,
-      reqBody.hostUrl,
-      reqBody.templateId,
-      reqBody.templateContentVersionId,
-      'xlsx',
-      reqBody.exportFormat,
-      exportRecordsAndColumns[0]
-    );
-    // non-csv template exports will have their exported files posted to chatter by Aspose from propel-document-java
-    return [exportRecordsAndColumns];
   }
 
   return {
@@ -177,7 +150,11 @@ async function PimProductListHelper(reqBody, pHelper, pService) {
 }
 
 // PIM repo ProductPQLHelper.getRecordByCategory()
-async function getRecordByCategory(reqBody, pqlBuilder, isPrimaryCategory) {
+async function getRecordByCategory(
+  pqlBuilder,
+  isPrimaryCategory,
+  isProduct = true
+) {
   if (pqlBuilder.objectId === null) {
     throw 'Category Id is blank or null';
   }
@@ -188,21 +165,25 @@ async function getRecordByCategory(reqBody, pqlBuilder, isPrimaryCategory) {
     allParentIds: new Set(),
     startingCategoryId: pqlBuilder.objectId
   };
-  isPrimaryCategory = await getCategoryPrimaryStatus(pqlBuilder.objectId);
   let childrenIds = await getAllChildrenIds(cm);
+  if (childrenIds.size === 0) {
+    throw 'No Category Ids';
+  }
+  const listCategoryIds = prepareIdsForSOQL(childrenIds);
+  isPrimaryCategory =
+    !isProduct || (await getCategoryPrimaryStatus(pqlBuilder.objectId)); //TODO PASS IN ISDA
   let pm;
   if (isPrimaryCategory) {
-    pm = await buildStructureWithCategoryIds(childrenIds);
+    pm = await buildStructureWithCategoryIds(listCategoryIds, isProduct);
   } else {
-    pm = await buildStructureWithSecondaryCategoryIds(childrenIds);
+    pm = await buildStructureWithSecondaryCategoryIds(listCategoryIds);
   }
-  let tempRecords = await PimProductService(pm, helper, service);
+  let tempRecords = await PimRecordService(pm, helper, service);
   return tempRecords;
 }
 
 async function getCategoryPrimaryStatus(categoryId) {
-  let categoryIdList = [categoryId];
-  categoryIdList = categoryIdList.map(id => `'${id}'`).join(',');
+  const categoryIdList = prepareIdsForSOQL([categoryId]);
   const categoryList = await service.simpleQuery(
     helper.namespaceQuery(
       `select Id, Is_Primary__c
@@ -242,7 +223,7 @@ async function categoryChildrenQuery(pParentIds) {
     pParentIds.forEach(id => {
       listParentIds.push(id);
     });
-    listParentIds = listParentIds.map(id => `'${id}'`).join(',');
+    listParentIds = prepareIdsForSOQL(listParentIds);
     return await service.simpleQuery(
       helper.namespaceQuery(
         `select Id, Name, Parent__c
@@ -257,15 +238,13 @@ async function categoryChildrenQuery(pParentIds) {
 }
 
 // PIM repo ProductManager.buildStructureWithCategoryIds()
-async function buildStructureWithCategoryIds(pCategoryIds) {
-  if (pCategoryIds.size === 0) {
+async function buildStructureWithCategoryIds(
+  listCategoryIds,
+  isProduct = true
+) {
+  if (listCategoryIds.size === 0) {
     throw 'No Category Ids';
   }
-  let listCategoryIds = [];
-  pCategoryIds.forEach(id => {
-    listCategoryIds.push(id);
-  });
-  listCategoryIds = listCategoryIds.map(id => `'${id}'`).join(',');
   // return productsList
   return await service.simpleQuery(
     helper.namespaceQuery(
@@ -288,8 +267,10 @@ async function buildStructureWithCategoryIds(pCategoryIds) {
             Value__c
         from Attributes__r
         order by Attribute_Label__r.Order__c asc
-      ),
-      (
+      )
+      ${
+        isProduct
+          ? `,(
         select
             Id,
             Name,
@@ -303,22 +284,19 @@ async function buildStructureWithCategoryIds(pCategoryIds) {
             Order__c
         from Variants__r
       )
-      from Product__c
+      from Product__c`
+          : ` from Digital_Asset__c`
+      }
       where Category__c IN (${listCategoryIds})`
     )
   );
 }
 
 // PIM repo ProductManager.buildStructureWithSecondaryCategoryIds()
-async function buildStructureWithSecondaryCategoryIds(pCategoryIds) {
-  if (pCategoryIds.size === 0) {
+async function buildStructureWithSecondaryCategoryIds(listCategoryIds) {
+  if (listCategoryIds.size === 0) {
     throw 'No Category Ids';
   }
-  let listCategoryIds = [];
-  pCategoryIds.forEach(id => {
-    listCategoryIds.push(id);
-  });
-  listCategoryIds = listCategoryIds.map(id => `'${id}'`).join(',');
   let links = await service.simpleQuery(
     helper.namespaceQuery(
       `select Id, Product__c
@@ -332,7 +310,7 @@ async function buildStructureWithSecondaryCategoryIds(pCategoryIds) {
     links.forEach(link => {
       productIds.push(helper.getValue(link, 'Product__c'));
     });
-    productIds = productIds.map(id => `'${id}'`).join(',');
+    productIds = prepareIdsForSOQL(productIds);
     // return productsList
     return await service.simpleQuery(
       helper.namespaceQuery(
@@ -377,26 +355,26 @@ async function buildStructureWithSecondaryCategoryIds(pCategoryIds) {
   }
 }
 
-// PIM repo ProductManager.getProductMap
-async function getProductMap(productsList) {
-  let productMap = new Map();
-  productsList.forEach(product => {
-    productMap.set(product.Id, product);
+// PIM repo ProductManager.getRecordMap
+async function getRecordMap(recordList) {
+  let recordMap = new Map();
+  recordList.forEach(record => {
+    recordMap.set(record.Id, record);
   });
-  return productMap;
+  return recordMap;
 }
 
 // PIM repo ProductService.getResultForProductMap
-async function getResultForProductMap(
-  productMap,
+async function getAttributesForRecordMap(
+  recordMap,
   variantValueIds,
-  productsList,
+  recordList,
   reqBody
 ) {
   let results = new Map();
   let tempMap = new Map();
   const daDownloadDetailsList = [];
-  let variantToAttributeMap = await getVariantMap(productsList);
+  let variantToAttributeMap = await getVariantMap(recordList);
   const digitalAssetList = await service.simpleQuery(
     helper.namespaceQuery(
       `select Id, Name, External_File_Id__c, View_Link__c
@@ -409,11 +387,11 @@ async function getResultForProductMap(
     })
   );
 
-  for (let product of Array.from(productMap.values())) {
+  for (let record of Array.from(recordMap.values())) {
     tempMap = new Map();
-    if (helper.getValue(product, 'Attributes__r') === null) continue;
+    if (helper.getValue(record, 'Attributes__r') === null) continue;
 
-    for (let attribute of helper.getValue(product, 'Attributes__r').records) {
+    for (let attribute of helper.getValue(record, 'Attributes__r').records) {
       if (
         helper.getValue(attribute, 'Overwritten_Variant_Value__c') !== null ||
         helper.getValue(attribute, 'Attribute_Label__r') === null
@@ -425,28 +403,23 @@ async function getResultForProductMap(
       if (
         helper.getValue(attribute, 'Attribute_Label__r.Type__c') === DA_TYPE
       ) {
-        const digitalAsset = digitalAssetMap.get(attrValValue);
-        // get view_link__c field of Digital_Asset__c object with id of attrValValue
-        if (digitalAsset) {
-          daDownloadDetailsList.push(
-            new DADownloadDetails(digitalAsset, reqBody.namespace)
-          );
-          const viewLink = helper.getValue(digitalAsset, 'View_Link__c');
-          // if value is already complete url, add it to the map, else prepend the CDN url to the partial url then add to map
-          attrValValue = viewLink.includes('https')
-            ? viewLink
-            : await prependCDNToViewLink(viewLink, reqBody);
-        }
+        attrValValue = await parseDigitalAssetAttrVal(
+          digitalAssetMap,
+          attrValValue,
+          daDownloadDetailsList,
+          helper,
+          reqBody
+        );
       }
       tempMap.set(
         helper.getValue(attribute, 'Attribute_Label__r.Primary_Key__c'),
         attrValValue
       );
     }
-    results.set(product.Id, tempMap);
+    results.set(record.Id, tempMap);
   }
 
-  let variantValueDetailMap = await getVariantValueDetailMap(productsList);
+  let variantValueDetailMap = await getVariantValueDetailMap(recordList);
   let tempVariantValue;
   let tempVariantMap = new Map();
   for (let vvId of variantValueIds) {
@@ -468,18 +441,13 @@ async function getResultForProductMap(
           if (
             helper.getValue(attribute, 'Attribute_Label__r.Type__c') === DA_TYPE
           ) {
-            const digitalAsset = digitalAssetMap.get(attrValValue);
-            // get view_link__c field of Digital_Asset__c object with id of attrValValue
-            if (digitalAsset) {
-              daDownloadDetailsList.push(
-                new DADownloadDetails(digitalAsset, reqBody.namespace)
-              );
-              const viewLink = helper.getValue(digitalAsset, 'View_Link__c');
-              // if value is already complete url, add it to the map, else prepend the CDN url to the partial url then add to map
-              attrValValue = viewLink.includes('https')
-                ? viewLink
-                : await prependCDNToViewLink(viewLink, reqBody);
-            }
+            attrValValue = await parseDigitalAssetAttrVal(
+              digitalAssetMap,
+              attrValValue,
+              daDownloadDetailsList,
+              helper,
+              reqBody
+            );
           }
           tempVariantMap.set(
             helper.getValue(attribute, 'Attribute_Label__r.Primary_Key__c'),
@@ -498,18 +466,13 @@ async function getResultForProductMap(
         if (
           helper.getValue(attribute, 'Attribute_Label__r.Type__c') === DA_TYPE
         ) {
-          const digitalAsset = digitalAssetMap.get(attrValValue);
-          // get view_link__c field of Digital_Asset__c object with id of attrValValue
-          if (digitalAsset) {
-            daDownloadDetailsList.push(
-              new DADownloadDetails(digitalAsset, reqBody.namespace)
-            );
-            const viewLink = helper.getValue(digitalAsset, 'View_Link__c');
-            // if value is already complete url, add it to the map, else prepend the CDN url to the partial url then add to map
-            attrValValue = viewLink.includes('https')
-              ? viewLink
-              : await prependCDNToViewLink(viewLink, reqBody);
-          }
+          attrValValue = await parseDigitalAssetAttrVal(
+            digitalAssetMap,
+            attrValValue,
+            daDownloadDetailsList,
+            helper,
+            reqBody
+          );
         }
         tempVariantMap.set(
           helper.getValue(attribute, 'Attribute_Label__r.Primary_Key__c'),
@@ -573,7 +536,7 @@ async function getVariantValueDetailMap(productsList) {
   productsList.forEach(product => {
     productIdList.push(product.Id);
   });
-  productIdList = productIdList.map(id => `'${id}'`).join(',');
+  productIdList = prepareIdsForSOQL(productIdList);
   let variantValueMap = new Map();
   const variantValueList = await service.simpleQuery(
     helper.namespaceQuery(
@@ -586,61 +549,6 @@ async function getVariantValueDetailMap(productsList) {
     variantValueMap.set(value.Id, value);
   });
   return variantValueMap;
-}
-
-async function callAsposeToExport(
-  sessionId,
-  hostUrl,
-  templateId,
-  templateContentVersionId,
-  templateFormat,
-  exportFormat,
-  listPageData
-) {
-  const options = {
-    hostname: 'propel-document-java-staging.herokuapp.com',
-    path: '/v2/pimTemplateExport',
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  };
-  const columnAttributes = await service.simpleQuery(
-    helper.namespaceQuery(
-      `select Id, Label__c, Primary_Key__c
-      from Attribute_Label__c
-      where Classification__c = 'Product' order by Primary_Key__c`
-    )
-  );
-  const labelToPrimaryKeyMap = new Map(
-    columnAttributes.map(label => {
-      return [
-        helper.getValue(label, 'Label__c'),
-        helper.getValue(label, 'Primary_Key__c')
-      ];
-    })
-  );
-
-  let data = JSON.stringify({
-    sessionId: sessionId,
-    hostUrl: hostUrl,
-    templateId: templateId,
-    templateContentVersionId: templateContentVersionId,
-    listPageData: listPageData.map(recordMap => Object.fromEntries(recordMap)),
-    labelToPrimaryKeyMap: Object.fromEntries(labelToPrimaryKeyMap),
-    defaultColumns: Object.fromEntries(DEFAULT_COLUMNS),
-    templateFormat: templateFormat,
-    exportFormat: exportFormat
-  });
-  const req = https
-    .request(options, res => {
-      console.log('Status Code:', res.statusCode);
-    })
-    .on('error', err => {
-      console.log('Error: ', err.message);
-    });
-  req.write(data);
-  req.end();
 }
 
 async function addExportColumns(
@@ -675,7 +583,7 @@ async function addExportColumns(
     });
   }
   if (linkedGroups.length > 0) {
-    linkedGroups = linkedGroups.map(id => `'${id}'`).join(',');
+    linkedGroups = prepareIdsForSOQL(linkedGroups);
     linkedGroupsChildren = await service.simpleQuery(
       helper.namespaceQuery(
         `select Id, Name, Attribute_Group__c
@@ -689,7 +597,7 @@ async function addExportColumns(
   }
   if (columnAttributeIds.size > 0) {
     columnAttributeIds = Array.from(columnAttributeIds);
-    columnAttributeIds = columnAttributeIds.map(id => `'${id}'`).join(',');
+    columnAttributeIds = prepareIdsForSOQL(columnAttributeIds);
 
     // get SOQL query for Label__c of all attribute labels
     const columnAttributes = await service.simpleQuery(
@@ -778,4 +686,4 @@ async function addExportColumns(
   return [...exportRecordsAndColumns, exportColumns];
 }
 
-module.exports = PimProductListHelper;
+module.exports = PimRecordListHelper;

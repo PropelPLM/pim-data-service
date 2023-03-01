@@ -1,8 +1,14 @@
-var http = require('https');
+var https = require('https');
 var fs = require('fs');
 const PimExportHelper = require('./PimExportHelper');
 const ForceService = require('./ForceService');
 const DA_DOWNLOAD_DETAIL_KEY = 'DA_DOWNLOAD_DETAIL_KEY';
+const DEFAULT_COLUMNS = new Map([
+  ['Product ID', 'Product_ID'], // JUST NAMED THIS COS OF HARDCODE IN PROPEL-DOC-JAVA
+  ['Title', 'Title'],
+  ['Category Name', 'Category__r.Name']
+]);
+const PRODUCT_TYPE = 'Product';
 
 class DADownloadDetails {
   static helper;
@@ -15,18 +21,25 @@ class DADownloadDetails {
   }
 }
 
+const ATTRIBUTE_FLAG = 'PROPEL_ATT';
+
 module.exports = {
-  postToChatter,
-  getNestedField,
-  sendConfirmationEmail,
+  callAsposeToExport,
   cleanString,
+  getNestedField,
+  parseDigitalAssetAttrVal,
+  postToChatter,
+  prependCDNToViewLink,
+  prepareIdsForSOQL,
   removeFileFromDisk,
+  sendConfirmationEmail,
+  sendCsvToAsposeCells,
   validateNamespaceForPath,
   validateNamespaceForField,
-  prependCDNToViewLink,
   DADownloadDetails,
-  sendCsvToAsposeCells,
-  DA_DOWNLOAD_DETAIL_KEY
+  ATTRIBUTE_FLAG,
+  DA_DOWNLOAD_DETAIL_KEY,
+  PRODUCT_TYPE
 };
 /**
  * Function that send zip file to salesforce chatter via chatter api
@@ -122,7 +135,7 @@ function postToChatter(
   ].join(CRLF);
 
   // Execute request
-  var req = new http.request(options, res => {
+  var req = new https.request(options, res => {
     console.log('response: ', res.statusCode, res.statusMessage);
     if (callback) {
       callback();
@@ -175,7 +188,7 @@ function sendConfirmationEmail(response) {
     }
   };
   // Execute request
-  var req = new http.request(options, function (res) {
+  var req = new https.request(options, function (res) {
     console.log('response send email: ', res.statusCode);
   });
   // Request
@@ -270,6 +283,43 @@ async function prependCDNToViewLink(viewLink, reqBody) {
   return viewLink;
 }
 
+async function parseDigitalAssetAttrVal(
+  digitalAssetMap,
+  attrValValue,
+  daDownloadDetailsList,
+  helper,
+  reqBody
+) {
+  const digitalAsset = digitalAssetMap?.get(attrValValue);
+  if (!digitalAsset) return attrValValue;
+
+  daDownloadDetailsList.push(
+    new DADownloadDetails(digitalAsset, reqBody.namespace)
+  );
+  const viewLink = helper.getValue(digitalAsset, 'View_Link__c');
+  // if value is already complete url, add it to the map, else prepend the CDN url to the partial url then add to map
+  attrValValue = viewLink.includes('https')
+    ? viewLink
+    : await module.exports.prependCDNToViewLink(viewLink, reqBody);
+  return attrValValue;
+}
+
+function prepareIdsForSOQL(idList) {
+  const emptyRes = "''";
+  try {
+    if (!Array.isArray(idList)) {
+      idList = Array.from(idList);
+    }
+    if (idList.length == 0) return emptyRes;
+    if (idList[0].constructor === Object)
+      idList = idList.map(ele => ele.Id ?? ele.id);
+
+    return idList.length ? idList.map(id => `'${id}'`).join(',') : emptyRes;
+  } catch (err) {
+    throw new Error(`Cannot get list of Ids for query from input: ${idList}`);
+  }
+}
+
 function sendCsvToAsposeCells(csvString, sessionId, hostUrl, templateId) {
   const options = {
     hostname: 'propel-document-java-staging.herokuapp.com',
@@ -287,13 +337,102 @@ function sendCsvToAsposeCells(csvString, sessionId, hostUrl, templateId) {
     exportFormat: 'xlsx',
     csvString: csvString
   });
-  const req = http
+  const req = https
     .request(options, res => {
-      console.log('Status Code:', res.statusCode);
+      let data = '';
+      console.log('sendCsvToAsposeCells Status Code:', res.statusCode);
+      res.on('data', chunk => {
+        data = data + chunk.toString();
+      });
+      res.on('end', () => {
+        console.log(data);
+      });
     })
     .on('error', err => {
       console.log('Error: ', err.message);
     });
   req.write(data);
+  req.end();
+}
+
+async function callAsposeToExport({
+  reqBody,
+  templateFormat = 'xlsx',
+  listPageData,
+  detailPageData,
+  baseRecord
+}) {
+  const {
+    exportFormat,
+    hostUrl,
+    sessionId,
+    templateId,
+    templateContentVersionId
+  } = reqBody;
+  const options = {
+    hostname: 'propel-document-java-staging.herokuapp.com',
+    path: '/v2/pimTemplateExport',
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  };
+
+  let data = {
+    sessionId: sessionId,
+    hostUrl: hostUrl,
+    templateId: templateId,
+    templateContentVersionId: templateContentVersionId,
+    templateFormat: templateFormat,
+    exportFormat: exportFormat
+  };
+
+  let exportTypeSpecificInformation;
+
+  if (listPageData) {
+    const columnAttributes = await service.simpleQuery(
+      helper.namespaceQuery(
+        `select Id, Label__c, Primary_Key__c
+      from Attribute_Label__c order by Primary_Key__c`
+      )
+    );
+    const labelToPrimaryKeyMap = new Map(
+      columnAttributes.map(label => {
+        return [
+          helper.getValue(label, 'Label__c'),
+          helper.getValue(label, 'Primary_Key__c')
+        ];
+      })
+    );
+    exportTypeSpecificInformation = {
+      defaultColumns: Object.fromEntries(DEFAULT_COLUMNS),
+      labelToPrimaryKeyMap: Object.fromEntries(labelToPrimaryKeyMap),
+      listPageData: listPageData.map(recordMap => Object.fromEntries(recordMap))
+    };
+  } else {
+    exportTypeSpecificInformation = {
+      detailPageData: detailPageData.map(recordMap =>
+        Object.fromEntries(recordMap)
+      ),
+      productVariantValueMap: Object.fromEntries(baseRecord) // JUST NAMED THIS COS OF HARDCODE IN PROPEL-DOC-JAVA
+    };
+  }
+  Object.assign(data, exportTypeSpecificInformation);
+
+  const req = https
+    .request(options, res => {
+      let data = '';
+      console.log('callAsposeToExport Status Code:', res.statusCode);
+      res.on('data', chunk => {
+        data = data + chunk.toString();
+      });
+      res.on('end', () => {
+        console.log(data);
+      });
+    })
+    .on('error', err => {
+      console.log('Error: ', err.message);
+    });
+  req.write(JSON.stringify(data));
   req.end();
 }
