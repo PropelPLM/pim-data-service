@@ -3,7 +3,6 @@ const PimRecordService = require('./PimRecordService');
 const {
   ATTRIBUTE_FLAG,
   DA_DOWNLOAD_DETAIL_KEY,
-  PRODUCT_TYPE,
   prepareIdsForSOQL,
   parseDigitalAssetAttrVal
 } = require('./utils');
@@ -22,21 +21,15 @@ async function PimRecordListHelper(
   pHelper,
   pService,
   templateFields,
-  templateHeaders
+  templateHeaders,
+  isProduct = true
 ) {
   helper = pHelper;
   service = pService;
 
   let daDownloadDetailsList;
-  const {
-    recordIds,
-    variantValueIds,
-    categoryId,
-    isPrimaryCategory,
-    recordType
-  } = reqBody;
+  const { recordIds, variantValueIds, categoryId, isPrimaryCategory } = reqBody;
 
-  const isProduct = recordType == PRODUCT_TYPE;
   /** PIM repo ProductService.productStructureByCategory start */
   let pqlBuilder = {
     objectType: 'CATEGORY',
@@ -46,7 +39,8 @@ async function PimRecordListHelper(
   // PIM repo ProductPQLHelper.getRecordByCategory()
   const exportRecords = await getRecordByCategory(
     pqlBuilder,
-    isPrimaryCategory
+    isPrimaryCategory,
+    isProduct
   );
 
   // filter the records if rows were selected or filters applied in product list page

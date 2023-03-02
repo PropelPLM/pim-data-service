@@ -34,7 +34,7 @@ class PimStructure {
       useAspose,
       daDownloadDetailsList = [];
     const asposeInput = { reqBody };
-
+    const isProduct = reqBody.recordType == PRODUCT_TYPE;
     if (reqBody.options.isTemplateExport) {
       if (reqBody.templateVersionData) {
         ({ templateFields, templateHeaders } = this.getTemplateHeadersAndFields(
@@ -52,7 +52,8 @@ class PimStructure {
         helper,
         service,
         templateFields,
-        templateHeaders
+        templateHeaders,
+        isProduct
       );
       Object.assign(asposeInput, {
         listPageData: exportRecordsColsAndAssets?.recordsAndCols[0]
@@ -61,9 +62,7 @@ class PimStructure {
       // export is from detail data page
       /** PIM repo ProductService.getProductById start */
       // PIM repo ProductManager.buildWithProductIds
-      let { appearingLabelIds, recordType } = reqBody;
-      const isProduct = recordType == PRODUCT_TYPE;
-
+      let { appearingLabelIds } = reqBody;
       let recordList = await PimRecordManager(
           recordIds,
           helper,
