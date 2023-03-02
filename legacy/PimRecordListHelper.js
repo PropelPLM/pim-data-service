@@ -58,10 +58,10 @@ async function PimRecordListHelper(
   if (recordIds.length > 0 || variantValueIds.length > 0) {
     let recordIdSet = new Set();
     let vvIds = new Set();
-    for (let i = 0; i < recordIds.length; i++) {
+    for (let i = 0; i < recordIds?.length; i++) {
       recordIdSet.add(recordIds[i]);
     }
-    for (let i = 0; i < variantValueIds.length; i++) {
+    for (let i = 0; i < variantValueIds?.length; i++) {
       vvIds.add(variantValueIds[i]);
     }
 
@@ -242,7 +242,9 @@ async function buildStructureWithCategoryIds(
   // return productsList
   return await service.simpleQuery(
     helper.namespaceQuery(
-      `select Id, Name, Category__c, Category__r.Name,
+      `select Id, Name, Category__c, Category__r.Name, ${
+        isProduct ? '' : 'Asset_Status__c, Mime_Type__c, Size__c, View_Link__c,'
+      }
       (
         select
             Id,
