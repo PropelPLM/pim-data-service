@@ -1,4 +1,8 @@
-const { prepareIdsForSOQL } = require('./utils');
+const {
+  logErrorResponse,
+  logSuccessResponse,
+  prepareIdsForSOQL
+} = require('./utils');
 
 let helper;
 let service;
@@ -46,11 +50,19 @@ async function getResultForProductStructure(recordList, isProduct) {
 
 // PIM repo ProductManager.getProductMap
 function getRecordMap(recordList) {
-  let recordMap = new Map();
-  recordList.forEach(record => {
-    recordMap.set(record.Id, record);
-  });
-  return recordMap;
+  try {
+    let recordMap = new Map();
+    recordList.forEach(record => {
+      recordMap.set(record.Id, record);
+    });
+    logSuccessResponse(
+      `Records in recordMap: ${recordMap?.size}`,
+      '[PimRecordService.getRecordMap]'
+    );
+    return recordMap;
+  } catch (err) {
+    logErrorResponse(err, '[PimRecordService.getRecordMap]');
+  }
 }
 
 // PIM repo ProductManager.getVariantStructure

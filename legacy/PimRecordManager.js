@@ -1,3 +1,4 @@
+const { logErrorResponse, logSuccessResponse } = require('./utils');
 let helper;
 let service;
 
@@ -14,9 +15,10 @@ async function PimRecordManager(
 
 async function buildWithRecordIds(recordIds, isProduct) {
   // ProductManager.buildWithProductIds
-  return await service.queryExtend(
-    helper.namespaceQuery(
-      `select Id, Name, Category__c, Category__r.Name,
+  try {
+    const records = await service.queryExtend(
+      helper.namespaceQuery(
+        `select Id, Name, Category__c, Category__r.Name,
       (
         select
             Id,
@@ -56,9 +58,17 @@ async function buildWithRecordIds(recordIds, isProduct) {
           : ` from Digital_Asset__c`
       }
       where Id IN (${service.QUERY_LIST})`.replace(/\n/g, ' ')
-    ),
-    recordIds.split(',')
-  );
+      ),
+      recordIds.split(',')
+    );
+    logSuccessResponse(
+      `Records retrieved: ${records?.length}`,
+      '[PimRecordManager.buildWithRecordIds]'
+    );
+    return records;
+  } catch (err) {
+    logErrorResponse(err, '[PimRecordManager.buildWithRecordIds]');
+  }
 }
 
 module.exports = PimRecordManager;
