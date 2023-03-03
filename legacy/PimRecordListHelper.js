@@ -11,7 +11,7 @@ let helper;
 let service;
 const DA_TYPE = 'DigitalAsset';
 const DEFAULT_COLUMNS = new Map([
-  ['Product ID', 'Product_ID'],
+  ['Record ID', 'Record_ID'],
   ['Title', 'Title'],
   ['Category Name', 'Category__r.Name']
 ]);
@@ -35,6 +35,7 @@ async function PimRecordListHelper(
     objectType: 'CATEGORY',
     objectId: categoryId
   };
+  console.log({ pqlBuilder });
 
   // PIM repo ProductPQLHelper.getRecordByCategory()
   const exportRecords = await getRecordByCategory(
@@ -42,6 +43,7 @@ async function PimRecordListHelper(
     isPrimaryCategory,
     isProduct
   );
+  console.log({ exportRecords });
 
   // filter the records if rows were selected or filters applied in product list page
   let filteredRecords = exportRecords.filter(
@@ -96,6 +98,7 @@ async function PimRecordListHelper(
       recordList,
       reqBody
     );
+    console.log({ attributeResults });
 
     if (attributeResults.has(DA_DOWNLOAD_DETAIL_KEY)) {
       daDownloadDetailsList = attributeResults.get(DA_DOWNLOAD_DETAIL_KEY);
@@ -104,7 +107,7 @@ async function PimRecordListHelper(
 
     // sort the export records to the same format as product list page
     exportRecordsAndColumns[0].sort((a, b) =>
-      a.get('Product_ID') > b.get('Product_ID') ? 1 : -1
+      a.get('Record_ID') > b.get('Record_ID') ? 1 : -1
     );
 
     /** PIM repo ProductService.getProductDetail end */
@@ -116,6 +119,7 @@ async function PimRecordListHelper(
           // check list of export records if there is a Map with a matching Id
           exportRecordsAndColumns[0].forEach(exportRecord => {
             if (exportRecord.get('Id') === recordId) {
+              console.log({ exportRecord });
               // add attribute labels and values from attributeResults into corresponding export record
               const labels = Array.from(attributeResults.get(recordId).keys());
               const values = Array.from(
@@ -131,6 +135,8 @@ async function PimRecordListHelper(
     }
   }
 
+  console.log({ exportRecordsAndColumns: exportRecordsAndColumns[0] });
+
   return {
     daDownloadDetailsList,
     recordsAndCols: await addExportColumns(
@@ -138,7 +144,8 @@ async function PimRecordListHelper(
       templateFields,
       templateHeaders,
       exportRecordsAndColumns,
-      DEFAULT_COLUMNS
+      DEFAULT_COLUMNS,
+      isProduct
     )
   };
 }
@@ -166,6 +173,7 @@ async function getRecordByCategory(
   const listCategoryIds = prepareIdsForSOQL(childrenIds);
   isPrimaryCategory =
     !isProduct || (await getCategoryPrimaryStatus(pqlBuilder.objectId)); //TODO PASS IN ISDA
+  console.log({ isPrimaryCategory });
   let pm;
   if (isPrimaryCategory) {
     pm = await buildStructureWithCategoryIds(listCategoryIds, isProduct);
@@ -394,6 +402,7 @@ async function getAttributesForRecordMap(
       )
         continue;
 
+      console.log({ attribute });
       let attrValValue = helper.getValue(attribute, 'Value__c');
       // replace digital asset id with CDN url if Attribute_Label__c is of Type__c 'DigitalAsset'
       if (
@@ -552,7 +561,8 @@ async function addExportColumns(
   templateFields,
   templateHeaders,
   exportRecordsAndColumns,
-  defaultColumns
+  defaultColumns,
+  isProduct = true
 ) {
   let exportColumns = [];
   let templateHeaderValueMap = new Map();
@@ -600,7 +610,9 @@ async function addExportColumns(
       helper.namespaceQuery(
         `select Id, Label__c, Primary_Key__c
         from Attribute_Label__c
-        where Classification__c = 'Product' AND Id IN (${columnAttributeIds})`
+        where Classification__c = '${
+          isProduct ? 'Product' : 'Digital Asset'
+        }' AND Id IN (${columnAttributeIds})`
       )
     );
 
@@ -618,7 +630,9 @@ async function addExportColumns(
       helper.namespaceQuery(
         `select Id, Label__c, Primary_Key__c
       from Attribute_Label__c
-      where Classification__c = 'Product' order by Primary_Key__c`
+      where Classification__c = '${
+        isProduct ? 'Product' : 'Digital Asset'
+      }' order by Primary_Key__c`
       )
     );
 

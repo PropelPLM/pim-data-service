@@ -4,7 +4,7 @@ const PimExportHelper = require('./PimExportHelper');
 const ForceService = require('./ForceService');
 const DA_DOWNLOAD_DETAIL_KEY = 'DA_DOWNLOAD_DETAIL_KEY';
 const DEFAULT_COLUMNS = new Map([
-  ['Product ID', 'Product_ID'], // JUST NAMED THIS COS OF HARDCODE IN PROPEL-DOC-JAVA
+  ['Record ID', 'Record_ID'], // JUST NAMED THIS COS OF HARDCODE IN PROPEL-DOC-JAVA
   ['Title', 'Title'],
   ['Category Name', 'Category__r.Name']
 ]);

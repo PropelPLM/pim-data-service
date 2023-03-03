@@ -156,7 +156,7 @@ class PimStructure {
 
             // add variant values to the current variant product
             for (let i = 0; i < varList.length; i++) {
-              currentVariant.set('Product_ID', valuesList[i][0].Name);
+              currentVariant.set('Record_ID', valuesList[i][0].Name);
               currentVariant.set(
                 varList[i].Name,
                 helper.getValue(valuesList[i][0], 'Label__c')
@@ -206,7 +206,7 @@ class PimStructure {
                 }
               }
             }
-            currentVariantName = currentVariant.get('Product_ID');
+            currentVariantName = currentVariant.get('Record_ID');
             exportRecords.push(currentVariant);
           }
         } else if (exportType === 'allVariants') {
@@ -259,9 +259,9 @@ class PimStructure {
             currValue = valuesList[i];
             isFirstLevelVariant = true;
             while (true) {
-              // add variant value's Product ID
+              // add variant value's Record ID
               if (isFirstLevelVariant) {
-                newVariant.set('Product_ID', currValue.Name);
+                newVariant.set('Record_ID', currValue.Name);
                 isFirstLevelVariant = false;
               }
               // add Variant__c's Label
@@ -477,9 +477,9 @@ class PimStructure {
         currValue = valuesList[i];
         isFirstLevelVariant = true;
         while (true) {
-          // add variant value's Product ID
+          // add variant value's Record ID
           if (isFirstLevelVariant) {
-            newVariant.set('Product_ID', currValue.Name);
+            newVariant.set('Record_ID', currValue.Name);
             isFirstLevelVariant = false;
           }
           // add Variant__c's Label
@@ -564,10 +564,10 @@ class PimStructure {
 
     // loop through baseProduct's children to settle inheritance from base product
     variantValueTree
-      .get(baseProduct.get('Product_ID'))
+      .get(baseProduct.get('Record_ID'))
       .forEach(firstLevelVariant => {
         exportRecords.forEach(variant => {
-          if (variant.get('Product_ID') === firstLevelVariant) {
+          if (variant.get('Record_ID') === firstLevelVariant) {
             Array.from(baseProductData.keys()).forEach(key => {
               if (
                 !variant.has(key) ||
@@ -581,7 +581,7 @@ class PimStructure {
             if (
               exportType === 'allVariants' ||
               (exportType === 'currentVariant' &&
-                currentVariantName === variant.get('Product_ID'))
+                currentVariantName === variant.get('Record_ID'))
             ) {
               filledInExportRecords.push(variant);
             }
@@ -591,9 +591,9 @@ class PimStructure {
 
     // loop through each variant (top down) to settle inheritance from parent variants
     exportRecords.forEach(variant => {
-      variantValueTree.get(variant.get('Product_ID')).forEach(childVariant => {
+      variantValueTree.get(variant.get('Record_ID')).forEach(childVariant => {
         exportRecords.forEach(variantValue => {
-          if (variantValue.get('Product_ID') === childVariant) {
+          if (variantValue.get('Record_ID') === childVariant) {
             Array.from(variant.keys()).forEach(key => {
               if (
                 !variantValue.has(key) ||
@@ -608,7 +608,7 @@ class PimStructure {
             if (
               exportType === 'allVariants' ||
               (exportType === 'currentVariant' &&
-                currentVariantName === variantValue.get('Product_ID'))
+                currentVariantName === variantValue.get('Record_ID'))
             ) {
               filledInExportRecords.push(variantValue);
             }
@@ -625,7 +625,7 @@ class PimStructure {
 
     // add root node for baseProduct
     treeNode = new Map();
-    treeNode.set('Product_ID', baseProduct.get('Product_ID'));
+    treeNode.set('Record_ID', baseProduct.get('Record_ID'));
     treeNode.set('Id', baseProduct.get('Id'));
     treeNode.set('Children', []);
     variantValueTree.push(treeNode);
@@ -633,7 +633,7 @@ class PimStructure {
     // add nodes for variants
     valuesList.forEach(value => {
       treeNode = new Map();
-      treeNode.set('Product_ID', value.Name);
+      treeNode.set('Record_ID', value.Name);
       treeNode.set('Id', value.Id);
       treeNode.set('Children', []);
       if (helper.getValue(value, 'Parent_Variant_Value__c')) {
@@ -658,7 +658,7 @@ class PimStructure {
     // convert the data structure to reduce search overhead
     let childMap = new Map();
     variantValueTree.forEach(variant => {
-      childMap.set(variant.get('Product_ID'), variant.get('Children'));
+      childMap.set(variant.get('Record_ID'), variant.get('Children'));
     });
     return childMap;
   }
@@ -689,8 +689,8 @@ class PimStructure {
           field = field.slice(11, -1);
           Array.from(productVariantValueMapList[0].keys()).forEach(col => {
             const isMatchingColAndField =
-              (field !== 'Product ID' && field === col) ||
-              (col === 'Product_ID' && field === 'Product ID');
+              (field !== 'Record ID' && field === col) ||
+              (col === 'Record_ID' && field === 'Record ID');
             if (col !== 'Id' && isMatchingColAndField) {
               // push columns specified in template
               exportColumns = [

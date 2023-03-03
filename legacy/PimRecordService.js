@@ -105,7 +105,7 @@ function populateRecordDetailsMap(helper, record, parentProduct) {
   const topLevelRecord = parentProduct ?? record;
   const tempMap = new Map();
   tempMap.set('Id', record.Id);
-  tempMap.set('Product_ID', record.Name);
+  tempMap.set('Record_ID', record.Name);
   tempMap.set(
     'Category__r.Name',
     helper.getValue(topLevelRecord, 'Category__r').Name
