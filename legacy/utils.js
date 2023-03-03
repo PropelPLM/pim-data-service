@@ -362,6 +362,8 @@ async function callAsposeToExport({
   detailPageData,
   baseRecord
 }) {
+  const service = new ForceService(reqBody.hostUrl, reqBody.sessionId);
+  const helper = new PimExportHelper(reqBody.namespace);
   const {
     exportFormat,
     hostUrl,
