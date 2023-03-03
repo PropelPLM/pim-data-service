@@ -87,16 +87,6 @@ class PimStructure {
           service
         );
       const daDownloadDetailsList = [];
-      console.log('recordIds: ', recordIds);
-      console.log('isProduct: ', isProduct);
-      console.log('recordType: ', recordType);
-      console.log('recordList: ', recordList);
-      console.log(
-        'productVariantValueMapList[0]: ',
-        productVariantValueMapList[0]
-      );
-      console.log('baseRecord: ', baseRecord);
-      console.log('exportRecords: ', exportRecords);
       for (let i = 0; i < appearingLabels.length; i++) {
         // add the base product's attribute values
         for (let j = 0; j < appearingValues.length; j++) {

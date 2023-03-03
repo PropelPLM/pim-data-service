@@ -419,10 +419,6 @@ async function callAsposeToExport({
       productVariantValueMap: Object.fromEntries(baseRecord) // JUST NAMED THIS COS OF HARDCODE IN PROPEL-DOC-JAVA
     };
   }
-  console.log(
-    'exportTypeSpecificInformation.productVariantValueMap: ',
-    exportTypeSpecificInformation.productVariantValueMap
-  );
   Object.assign(data, exportTypeSpecificInformation);
 
   const req = https
