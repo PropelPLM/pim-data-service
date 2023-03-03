@@ -87,7 +87,16 @@ class PimStructure {
           service
         );
       const daDownloadDetailsList = [];
-
+      console.log('recordIds: ', recordIds);
+      console.log('isProduct: ', isProduct);
+      console.log('recordType: ', recordType);
+      console.log('recordList: ', recordList);
+      console.log(
+        'productVariantValueMapList[0]: ',
+        productVariantValueMapList[0]
+      );
+      console.log('baseRecord: ', baseRecord);
+      console.log('exportRecords: ', exportRecords);
       for (let i = 0; i < appearingLabels.length; i++) {
         // add the base product's attribute values
         for (let j = 0; j < appearingValues.length; j++) {
@@ -143,17 +152,20 @@ class PimStructure {
               valuesIdList.push(val[0].Id);
             });
             valuesIdList = prepareIdsForSOQL(valuesIdList);
-            const overwrittenValues = await service.simpleQuery(
-              helper.namespaceQuery(
-                `select Id, Attribute_Label__c, Attribute_Label_Type__c, Value__c, Product__c, Overwritten_Variant_Value__c
-                from Attribute_Value__c
-                where (
-                  Overwritten_Variant_Value__c IN (${valuesIdList}) AND
-                  Product__c IN (${recordIds}) AND
-                  Attribute_Label__c IN (${appearingLabelIds})
-                )`
-              )
-            );
+            let overwrittenValues = [];
+            if (valuesIdList.length > 0) {
+              overwrittenValues = await service.simpleQuery(
+                helper.namespaceQuery(
+                  `select Id, Attribute_Label__c, Attribute_Label_Type__c, Value__c, Product__c, Overwritten_Variant_Value__c
+                  from Attribute_Value__c
+                  where (
+                    Overwritten_Variant_Value__c IN (${valuesIdList}) AND
+                    Product__c IN (${recordIds}) AND
+                    Attribute_Label__c IN (${appearingLabelIds})
+                  )`
+                )
+              );
+            }
 
             // add variant values to the current variant product
             for (let i = 0; i < varList.length; i++) {
@@ -165,13 +177,13 @@ class PimStructure {
 
               // add any overwritten values
               if (overwrittenValues.length > 0) {
-                for (let i = 0; i < overwrittenValues.length; i++) {
+                for (let j = 0; j < overwrittenValues.length; j++) {
                   let affectedLabelName;
                   appearingLabels.forEach(label => {
                     if (
                       label.Id ===
                       helper.getValue(
-                        overwrittenValues[i],
+                        overwrittenValues[j],
                         'Attribute_Label__c'
                       )
                     ) {
@@ -179,16 +191,16 @@ class PimStructure {
                     }
                   });
                   const affectedVariantValue = helper.getValue(
-                    overwrittenValues[i],
+                    overwrittenValues[j],
                     'Overwritten_Variant_Value__c'
                   );
                   let newValue = helper.getValue(
-                    overwrittenValues[i],
+                    overwrittenValues[j],
                     'Value__c'
                   );
                   if (
                     helper.getValue(
-                      overwrittenValues[i],
+                      overwrittenValues[j],
                       'Attribute_Label_Type__c'
                     ) === DA_TYPE
                   ) {
@@ -241,17 +253,20 @@ class PimStructure {
             valuesIdList.push(val.Id);
           });
           valuesIdList = prepareIdsForSOQL(valuesIdList);
-          const overwrittenValues = await service.simpleQuery(
-            helper.namespaceQuery(
-              `select Id, Attribute_Label__c, Attribute_Label_Type__c, Value__c, Product__c, Overwritten_Variant_Value__c
-              from Attribute_Value__c
-              where (
-                Overwritten_Variant_Value__c IN (${valuesIdList}) AND
-                Product__c IN (${recordIds}) AND
-                Attribute_Label__c IN (${appearingLabelIds})
-              )`
-            )
-          );
+          let overwrittenValues = [];
+          if (valuesIdList.length > 0) {
+            overwrittenValues = await service.simpleQuery(
+              helper.namespaceQuery(
+                `select Id, Attribute_Label__c, Attribute_Label_Type__c, Value__c, Product__c, Overwritten_Variant_Value__c
+                from Attribute_Value__c
+                where (
+                  Overwritten_Variant_Value__c IN (${valuesIdList}) AND
+                  Product__c IN (${recordIds}) AND
+                  Attribute_Label__c IN (${appearingLabelIds})
+                )`
+              )
+            );
+          }
 
           let currValue;
           let isFirstLevelVariant;
@@ -459,17 +474,20 @@ class PimStructure {
         valuesIdList.push(val.Id);
       });
       valuesIdList = prepareIdsForSOQL(valuesIdList);
-      const overwrittenValues = await service.simpleQuery(
-        helper.namespaceQuery(
-          `select Id, Attribute_Label__c, Attribute_Label_Type__c, Value__c, Product__c, Overwritten_Variant_Value__c
-          from Attribute_Value__c
-          where (
-            Overwritten_Variant_Value__c IN (${valuesIdList}) AND
-            Product__c IN (${recordIds}) AND
-            Attribute_Label__c IN (${appearingLabelIds})
-          )`
-        )
-      );
+      let overwrittenValues = [];
+      if (valuesIdList.length > 0) {
+        overwrittenValues = await service.simpleQuery(
+          helper.namespaceQuery(
+            `select Id, Attribute_Label__c, Attribute_Label_Type__c, Value__c, Product__c, Overwritten_Variant_Value__c
+            from Attribute_Value__c
+            where (
+              Overwritten_Variant_Value__c IN (${valuesIdList}) AND
+              Product__c IN (${recordIds}) AND
+              Attribute_Label__c IN (${appearingLabelIds})
+            )`
+          )
+        );
+      }
 
       let currValue;
       let isFirstLevelVariant;
