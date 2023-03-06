@@ -49,7 +49,7 @@ async function PimRecordListHelper(
   let filteredRecords = exportRecords.filter(
     record =>
       recordIds.includes(record.get('Id')) ||
-      variantValueIds.includes(record.get('Id'))
+      variantValueIds?.includes(record.get('Id'))
   );
   let exportRecordsAndColumns = [filteredRecords]; // [[filtered]] zz
 
