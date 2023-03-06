@@ -35,7 +35,6 @@ async function PimRecordListHelper(
     objectType: 'CATEGORY',
     objectId: categoryId
   };
-  console.log({ pqlBuilder });
 
   // PIM repo ProductPQLHelper.getRecordByCategory()
   const exportRecords = await getRecordByCategory(
@@ -43,7 +42,6 @@ async function PimRecordListHelper(
     isPrimaryCategory,
     isProduct
   );
-  console.log({ exportRecords });
 
   // filter the records if rows were selected or filters applied in product list page
   let filteredRecords = exportRecords.filter(
@@ -98,7 +96,6 @@ async function PimRecordListHelper(
       recordList,
       reqBody
     );
-    console.log({ attributeResults });
 
     if (attributeResults.has(DA_DOWNLOAD_DETAIL_KEY)) {
       daDownloadDetailsList = attributeResults.get(DA_DOWNLOAD_DETAIL_KEY);
@@ -119,7 +116,6 @@ async function PimRecordListHelper(
           // check list of export records if there is a Map with a matching Id
           exportRecordsAndColumns[0].forEach(exportRecord => {
             if (exportRecord.get('Id') === recordId) {
-              console.log({ exportRecord });
               // add attribute labels and values from attributeResults into corresponding export record
               const labels = Array.from(attributeResults.get(recordId).keys());
               const values = Array.from(
@@ -134,8 +130,6 @@ async function PimRecordListHelper(
       });
     }
   }
-
-  console.log({ exportRecordsAndColumns: exportRecordsAndColumns[0] });
 
   return {
     daDownloadDetailsList,
@@ -173,7 +167,6 @@ async function getRecordByCategory(
   const listCategoryIds = prepareIdsForSOQL(childrenIds);
   isPrimaryCategory =
     !isProduct || (await getCategoryPrimaryStatus(pqlBuilder.objectId)); //TODO PASS IN ISDA
-  console.log({ isPrimaryCategory });
   let pm;
   if (isPrimaryCategory) {
     pm = await buildStructureWithCategoryIds(listCategoryIds, isProduct);
@@ -402,7 +395,6 @@ async function getAttributesForRecordMap(
       )
         continue;
 
-      console.log({ attribute });
       let attrValValue = helper.getValue(attribute, 'Value__c');
       // replace digital asset id with CDN url if Attribute_Label__c is of Type__c 'DigitalAsset'
       if (
