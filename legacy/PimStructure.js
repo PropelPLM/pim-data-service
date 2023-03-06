@@ -77,8 +77,8 @@ class PimStructure {
         ),
         baseRecord = productVariantValueMapList[0],
         exportRecords = [baseRecord],
-        exportRecordsAndColumns = exportRecords;
-      attrValValue;
+        exportRecordsAndColumns = [exportRecords],
+        attrValValue;
       appearingLabelIds = prepareIdsForSOQL(appearingLabelIds);
       const { appearingLabels, appearingValues, digitalAssetMap } =
         await this.parseOccurringAttrLabelsValuesAndDigitalAssets(
