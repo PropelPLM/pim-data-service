@@ -3,7 +3,11 @@ var crypto = require('crypto');
 const https = require('https');
 
 const PimStructure = require('./PimStructure');
-const { postToChatter, sendCsvToAsposeCells } = require('./utils');
+const {
+  postToChatter,
+  logErrorResponse,
+  sendCsvToAsposeCells
+} = require('./utils');
 
 async function LegacyExportPIM(req) {
   const reqBody = req.body;
@@ -41,7 +45,8 @@ async function LegacyExportPIM(req) {
     recordsAndCols[1]
   );
   if (csvString == null) {
-    return 'Error';
+    logErrorResponse('csvString is empty!', '[ExportPIM]');
+    return;
   }
 
   if (reqBody.exportFormat == 'csv') {
