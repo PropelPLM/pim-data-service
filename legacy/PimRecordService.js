@@ -13,6 +13,7 @@ async function PimRecordService(
   pService,
   isProduct = true
 ) {
+  if (!recordList || recordList.length == 0) return [];
   helper = pHelper;
   service = pService;
   return await getResultForProductStructure(recordList, isProduct);
@@ -21,15 +22,16 @@ async function PimRecordService(
 // PIM repo ProductService.getResultForProductStructure(recordList)
 // returns List of products and variants pointing to Maps
 async function getResultForProductStructure(recordList, isProduct) {
-  let productVariantValueMapList = [],
-    recordMap = getRecordMap(recordList);
+  let productVariantValueMapList = [
+    populateRecordDetailsMap(helper, recordList[0])
+  ];
 
-  if (!isProduct) return recordMap;
+  if (!isProduct) return productVariantValueMapList;
   let variantStructure = await getVariantStructure(recordList),
     productVariants,
     variantValues;
 
-  Array.from(recordMap.values()).forEach(product => {
+  recordList.forEach(product => {
     productVariantValueMapList.push(populateRecordDetailsMap(helper, product));
     productVariants = variantStructure.get(product.Id);
     if (productVariants == null) return;
@@ -52,9 +54,7 @@ async function getResultForProductStructure(recordList, isProduct) {
 function getRecordMap(recordList) {
   try {
     let recordMap = new Map();
-    recordList.forEach(record => {
-      recordMap.set(record.Id, record);
-    });
+    recordList.forEach(record => recordMap.set(record.Id, record));
     logSuccessResponse(
       `Records in recordMap: ${recordMap?.size}`,
       '[PimRecordService.getRecordMap]'
