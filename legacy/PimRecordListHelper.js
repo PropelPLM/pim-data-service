@@ -3,6 +3,7 @@ const PimRecordService = require('./PimRecordService');
 const {
   ATTRIBUTE_FLAG,
   DA_DOWNLOAD_DETAIL_KEY,
+  initAssetDownloadDetailsList,
   prepareIdsForSOQL,
   parseDigitalAssetAttrVal
 } = require('./utils');
@@ -22,13 +23,20 @@ async function PimRecordListHelper(
   pService,
   templateFields,
   templateHeaders,
+  digitalAssetMap,
   isProduct = true
 ) {
   helper = pHelper;
   service = pService;
 
   let daDownloadDetailsList;
-  const { recordIds, variantValueIds, categoryId, isPrimaryCategory } = reqBody;
+  const {
+    categoryId,
+    includeRecordAsset,
+    isPrimaryCategory,
+    recordIds,
+    variantValueIds
+  } = reqBody;
 
   /** PIM repo ProductService.productStructureByCategory start */
   let pqlBuilder = {
@@ -94,7 +102,15 @@ async function PimRecordListHelper(
       recordMap,
       vvIds,
       recordList,
-      reqBody
+      reqBody,
+      digitalAssetMap,
+      initAssetDownloadDetailsList(
+        isProduct,
+        includeRecordAsset,
+        recordList.map(record => record.Id),
+        digitalAssetMap,
+        namespace
+      )
     );
 
     if (attributeResults.has(DA_DOWNLOAD_DETAIL_KEY)) {
@@ -366,23 +382,13 @@ async function getAttributesForRecordMap(
   recordMap,
   variantValueIds,
   recordList,
-  reqBody
+  reqBody,
+  digitalAssetMap,
+  daDownloadDetailsList
 ) {
   let results = new Map();
   let tempMap = new Map();
-  const daDownloadDetailsList = [];
   let variantToAttributeMap = await getVariantMap(recordList);
-  const digitalAssetList = await service.simpleQuery(
-    helper.namespaceQuery(
-      `select Id, Name, External_File_Id__c, View_Link__c
-      from Digital_Asset__c`
-    )
-  );
-  const digitalAssetMap = new Map(
-    digitalAssetList.map(asset => {
-      return [asset.Id, asset];
-    })
-  );
 
   for (let record of Array.from(recordMap.values())) {
     tempMap = new Map();

@@ -7,6 +7,8 @@ const {
   ATTRIBUTE_FLAG,
   PRODUCT_TYPE,
   callAsposeToExport,
+  getDigitalAssetMap,
+  initAssetDownloadDetailsList,
   parseDigitalAssetAttrVal,
   prepareIdsForSOQL
 } = require('./utils');
@@ -24,17 +26,13 @@ class PimStructure {
 
     let exportRecordsColsAndAssets = {};
     const recordIds = prepareIdsForSOQL(reqBody.recordIds);
-    const exportType = reqBody.exportType;
-    const namespace = reqBody.namespace;
+    const { exportType, includeRecordAsset, namespace } = reqBody;
     helper = new PimExportHelper(namespace);
-    let currentVariantName;
+    const digitalAssetMap = getDigitalAssetMap(service, helper);
 
-    let templateFields,
-      templateHeaders,
-      useAspose,
-      daDownloadDetailsList = [];
     const asposeInput = { reqBody };
     const isProduct = reqBody.recordType == PRODUCT_TYPE;
+    let currentVariantName, templateFields, templateHeaders, useAspose;
     if (reqBody.options.isTemplateExport) {
       if (reqBody.templateVersionData) {
         ({ templateFields, templateHeaders } = this.getTemplateHeadersAndFields(
@@ -53,6 +51,7 @@ class PimStructure {
         service,
         templateFields,
         templateHeaders,
+        digitalAssetMap,
         isProduct
       );
       Object.assign(asposeInput, {
@@ -78,14 +77,20 @@ class PimStructure {
         baseRecord = productVariantValueMapList[0],
         exportRecords = [baseRecord],
         exportRecordsAndColumns = [exportRecords],
-        attrValValue;
+        attrValValue,
+        daDownloadDetailsList = initAssetDownloadDetailsList(
+          isProduct,
+          includeRecordAsset,
+          recordList.map(record => record.Id),
+          digitalAssetMap,
+          namespace
+        );
       appearingLabelIds = prepareIdsForSOQL(appearingLabelIds);
-      const { appearingLabels, appearingValues, digitalAssetMap } =
-        await this.parseOccurringAttrLabelsValuesAndDigitalAssets(
+      const { appearingLabels, appearingValues } =
+        await this.parseAppearringAttrLabelsAndValues(
           appearingLabelIds,
           service
         );
-      const daDownloadDetailsList = [];
       for (let i = 0; i < appearingLabels.length; i++) {
         // add the base product's attribute values
         for (let j = 0; j < appearingValues.length; j++) {
@@ -734,10 +739,7 @@ class PimStructure {
     return [...exportRecordsAndColumns, exportColumns || []];
   }
 
-  async parseOccurringAttrLabelsValuesAndDigitalAssets(
-    appearingLabelIds,
-    service
-  ) {
+  async parseAppearringAttrLabelsAndValues(appearingLabelIds, service) {
     // add appearing attribute labels and their values to base product
     const appearingLabels = await service.simpleQuery(
       helper.namespaceQuery(`select Id, Name
@@ -760,22 +762,7 @@ class PimStructure {
           Overwritten_Variant_Value__c = null)`
       )
     );
-
-    const digitalAssetList = await service.simpleQuery(
-      helper.namespaceQuery(
-        `select Id, Name, External_File_Id__c, View_Link__c
-        from Digital_Asset__c`
-      )
-    );
-    return {
-      appearingLabels,
-      appearingValues,
-      digitalAssetMap: new Map(
-        digitalAssetList.map(asset => {
-          return [asset.Id, asset];
-        })
-      )
-    };
+    return { appearingLabels, appearingValues };
   }
 
   convertDAToUrl(instanceUrl, namespace, sobjectId) {
