@@ -28,7 +28,7 @@ class PimStructure {
     const recordIds = prepareIdsForSOQL(reqBody.recordIds);
     const { exportType, includeRecordAsset, namespace } = reqBody;
     helper = new PimExportHelper(namespace);
-    const digitalAssetMap = getDigitalAssetMap(service, helper);
+    const digitalAssetMap = await getDigitalAssetMap(service, helper);
 
     const asposeInput = { reqBody };
     const isProduct = reqBody.recordType == PRODUCT_TYPE;
