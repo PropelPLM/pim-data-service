@@ -43,10 +43,38 @@ logErrorResponse = (err, functionName) => {
   return err;
 };
 
+getDigitalAssetMap = async (service, helper) => {
+  const digitalAssetList = await service.simpleQuery(
+    helper.namespaceQuery(
+      `select Id, Name, External_File_Id__c, View_Link__c
+      from Digital_Asset__c`
+    )
+  );
+  return new Map(
+    digitalAssetList.map(asset => {
+      return [asset.Id, asset];
+    })
+  );
+};
+
+initAssetDownloadDetailsList(isProduct, includeRecordAsset, recordIds, digitalAssetMap, namespace) {
+  const daDownloadDetails = [];
+  if (isProduct || !includeRecordAsset) return daDownloadDetails;
+
+  recordIds.forEach(recordId => {
+    const digitalAsset = digitalAssetMap?.get(recordId);
+    if (!digitalAsset) return;
+    daDownloadDetails.push(new DADownloadDetails(digitalAsset, namespace));
+  });
+  return daDownloadDetails;
+}
+
 module.exports = {
   callAsposeToExport,
   cleanString,
+  getDigitalAssetMap,
   getNestedField,
+  initAssetDownloadDetailsList,
   logSuccessResponse,
   logErrorResponse,
   parseDigitalAssetAttrVal,
