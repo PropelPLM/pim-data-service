@@ -35,7 +35,8 @@ async function PimRecordListHelper(
     includeRecordAsset,
     isPrimaryCategory,
     recordIds,
-    variantValueIds
+    variantValueIds,
+    namespace
   } = reqBody;
 
   /** PIM repo ProductService.productStructureByCategory start */
