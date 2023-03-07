@@ -3,7 +3,7 @@ const PimRecordService = require('./PimRecordService');
 const {
   ATTRIBUTE_FLAG,
   DA_DOWNLOAD_DETAIL_KEY,
-  PRODUCT_TYPE,
+  initAssetDownloadDetailsList,
   prepareIdsForSOQL,
   parseDigitalAssetAttrVal
 } = require('./utils');
@@ -12,7 +12,7 @@ let helper;
 let service;
 const DA_TYPE = 'DigitalAsset';
 const DEFAULT_COLUMNS = new Map([
-  ['Product ID', 'Product_ID'],
+  ['Record ID', 'Record_ID'],
   ['Title', 'Title'],
   ['Category Name', 'Category__r.Name']
 ]);
@@ -22,21 +22,23 @@ async function PimRecordListHelper(
   pHelper,
   pService,
   templateFields,
-  templateHeaders
+  templateHeaders,
+  digitalAssetMap,
+  isProduct = true
 ) {
   helper = pHelper;
   service = pService;
 
   let daDownloadDetailsList;
   const {
+    categoryId,
+    includeRecordAsset,
+    isPrimaryCategory,
     recordIds,
     variantValueIds,
-    categoryId,
-    isPrimaryCategory,
-    recordType
+    namespace
   } = reqBody;
 
-  const isProduct = recordType == PRODUCT_TYPE;
   /** PIM repo ProductService.productStructureByCategory start */
   let pqlBuilder = {
     objectType: 'CATEGORY',
@@ -46,14 +48,15 @@ async function PimRecordListHelper(
   // PIM repo ProductPQLHelper.getRecordByCategory()
   const exportRecords = await getRecordByCategory(
     pqlBuilder,
-    isPrimaryCategory
+    isPrimaryCategory,
+    isProduct
   );
 
   // filter the records if rows were selected or filters applied in product list page
   let filteredRecords = exportRecords.filter(
     record =>
       recordIds.includes(record.get('Id')) ||
-      variantValueIds.includes(record.get('Id'))
+      variantValueIds?.includes(record.get('Id'))
   );
   let exportRecordsAndColumns = [filteredRecords]; // [[filtered]] zz
 
@@ -64,10 +67,10 @@ async function PimRecordListHelper(
   if (recordIds.length > 0 || variantValueIds.length > 0) {
     let recordIdSet = new Set();
     let vvIds = new Set();
-    for (let i = 0; i < recordIds.length; i++) {
+    for (let i = 0; i < recordIds?.length; i++) {
       recordIdSet.add(recordIds[i]);
     }
-    for (let i = 0; i < variantValueIds.length; i++) {
+    for (let i = 0; i < variantValueIds?.length; i++) {
       vvIds.add(variantValueIds[i]);
     }
 
@@ -100,7 +103,15 @@ async function PimRecordListHelper(
       recordMap,
       vvIds,
       recordList,
-      reqBody
+      reqBody,
+      digitalAssetMap,
+      initAssetDownloadDetailsList(
+        isProduct,
+        includeRecordAsset,
+        recordList.map(record => record.Id),
+        digitalAssetMap,
+        namespace
+      )
     );
 
     if (attributeResults.has(DA_DOWNLOAD_DETAIL_KEY)) {
@@ -110,7 +121,7 @@ async function PimRecordListHelper(
 
     // sort the export records to the same format as product list page
     exportRecordsAndColumns[0].sort((a, b) =>
-      a.get('Product_ID') > b.get('Product_ID') ? 1 : -1
+      a.get('Record_ID') > b.get('Record_ID') ? 1 : -1
     );
 
     /** PIM repo ProductService.getProductDetail end */
@@ -144,7 +155,8 @@ async function PimRecordListHelper(
       templateFields,
       templateHeaders,
       exportRecordsAndColumns,
-      DEFAULT_COLUMNS
+      DEFAULT_COLUMNS,
+      isProduct
     )
   };
 }
@@ -248,7 +260,9 @@ async function buildStructureWithCategoryIds(
   // return productsList
   return await service.simpleQuery(
     helper.namespaceQuery(
-      `select Id, Name, Category__c, Category__r.Name,
+      `select Id, Name, Category__c, Category__r.Name, ${
+        isProduct ? '' : 'Asset_Status__c, Mime_Type__c, Size__c, View_Link__c,'
+      }
       (
         select
             Id,
@@ -369,23 +383,13 @@ async function getAttributesForRecordMap(
   recordMap,
   variantValueIds,
   recordList,
-  reqBody
+  reqBody,
+  digitalAssetMap,
+  daDownloadDetailsList
 ) {
   let results = new Map();
   let tempMap = new Map();
-  const daDownloadDetailsList = [];
   let variantToAttributeMap = await getVariantMap(recordList);
-  const digitalAssetList = await service.simpleQuery(
-    helper.namespaceQuery(
-      `select Id, Name, External_File_Id__c, View_Link__c
-      from Digital_Asset__c`
-    )
-  );
-  const digitalAssetMap = new Map(
-    digitalAssetList.map(asset => {
-      return [asset.Id, asset];
-    })
-  );
 
   for (let record of Array.from(recordMap.values())) {
     tempMap = new Map();
@@ -556,7 +560,8 @@ async function addExportColumns(
   templateFields,
   templateHeaders,
   exportRecordsAndColumns,
-  defaultColumns
+  defaultColumns,
+  isProduct = true
 ) {
   let exportColumns = [];
   let templateHeaderValueMap = new Map();
@@ -604,7 +609,9 @@ async function addExportColumns(
       helper.namespaceQuery(
         `select Id, Label__c, Primary_Key__c
         from Attribute_Label__c
-        where Classification__c = 'Product' AND Id IN (${columnAttributeIds})`
+        where Classification__c = '${
+          isProduct ? 'Product' : 'Digital Asset'
+        }' AND Id IN (${columnAttributeIds})`
       )
     );
 
@@ -622,7 +629,9 @@ async function addExportColumns(
       helper.namespaceQuery(
         `select Id, Label__c, Primary_Key__c
       from Attribute_Label__c
-      where Classification__c = 'Product' order by Primary_Key__c`
+      where Classification__c = '${
+        isProduct ? 'Product' : 'Digital Asset'
+      }' order by Primary_Key__c`
       )
     );
 

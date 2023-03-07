@@ -1,7 +1,7 @@
 const assert = require('chai').assert;
 const PimStructure = require('../legacy/PimStructure');
 
-const basicHeader = 'Product_ID,Description';
+const basicHeader = 'Record_ID,Description';
 const basicFields = 'PROPEL_ATT(“ProductID”),PROPEL_ATT(“Description”)';
 const basicTemplatedExportCSVString = `${basicHeader}\r\n${basicFields}`;
 

@@ -4,7 +4,7 @@ const PimExportHelper = require('./PimExportHelper');
 const ForceService = require('./ForceService');
 const DA_DOWNLOAD_DETAIL_KEY = 'DA_DOWNLOAD_DETAIL_KEY';
 const DEFAULT_COLUMNS = new Map([
-  ['Product ID', 'Product_ID'], // JUST NAMED THIS COS OF HARDCODE IN PROPEL-DOC-JAVA
+  ['Record ID', 'Record_ID'], // JUST NAMED THIS COS OF HARDCODE IN PROPEL-DOC-JAVA
   ['Title', 'Title'],
   ['Category Name', 'Category__r.Name']
 ]);
@@ -23,10 +23,66 @@ class DADownloadDetails {
 
 const ATTRIBUTE_FLAG = 'PROPEL_ATT';
 
+logSuccessResponse = (response, functionName) => {
+  const logEnding =
+    Object.entries(response).length === 0 && response.constructor === Object
+      ? ''
+      : `: ${JSON.stringify(response)}`;
+  console.log(
+    `\x1b[92m${functionName} succeeded \x1b[39m with a response${logEnding}.`
+  );
+  return response;
+};
+
+logErrorResponse = (err, functionName) => {
+  console.log(
+    `\x1b[31m${functionName} failed \x1b[39m due to error: ${JSON.stringify(
+      err
+    )}.`
+  );
+  return err;
+};
+
+getDigitalAssetMap = async (service, helper) => {
+  const digitalAssetList = await service.simpleQuery(
+    helper.namespaceQuery(
+      `select Id, Name, External_File_Id__c, View_Link__c
+      from Digital_Asset__c`
+    )
+  );
+  return new Map(
+    digitalAssetList.map(asset => {
+      return [asset.Id, asset];
+    })
+  );
+};
+
+initAssetDownloadDetailsList = (
+  isProduct,
+  includeRecordAsset,
+  recordIds,
+  digitalAssetMap,
+  namespace
+) => {
+  const daDownloadDetails = [];
+  if (isProduct || !includeRecordAsset) return daDownloadDetails;
+
+  recordIds.forEach(recordId => {
+    const digitalAsset = digitalAssetMap?.get(recordId);
+    if (!digitalAsset) return;
+    daDownloadDetails.push(new DADownloadDetails(digitalAsset, namespace));
+  });
+  return daDownloadDetails;
+};
+
 module.exports = {
   callAsposeToExport,
   cleanString,
+  getDigitalAssetMap,
   getNestedField,
+  initAssetDownloadDetailsList,
+  logSuccessResponse,
+  logErrorResponse,
   parseDigitalAssetAttrVal,
   postToChatter,
   prependCDNToViewLink,

@@ -1,4 +1,8 @@
-const { prepareIdsForSOQL } = require('./utils');
+const {
+  logErrorResponse,
+  logSuccessResponse,
+  prepareIdsForSOQL
+} = require('./utils');
 
 let helper;
 let service;
@@ -9,23 +13,25 @@ async function PimRecordService(
   pService,
   isProduct = true
 ) {
+  if (!recordList || recordList.length == 0) return [];
   helper = pHelper;
   service = pService;
   return await getResultForProductStructure(recordList, isProduct);
 }
 
 // PIM repo ProductService.getResultForProductStructure(recordList)
-// returns List of products and variants pointing to Maps
+// returns List of Maps
 async function getResultForProductStructure(recordList, isProduct) {
-  let productVariantValueMapList = [],
-    recordMap = getRecordMap(recordList);
+  let productVariantValueMapList = [
+    populateRecordDetailsMap(helper, recordList[0])
+  ];
 
-  if (!isProduct) return recordMap;
+  if (!isProduct) return productVariantValueMapList;
   let variantStructure = await getVariantStructure(recordList),
     productVariants,
     variantValues;
 
-  Array.from(recordMap.values()).forEach(product => {
+  recordList.forEach(product => {
     productVariantValueMapList.push(populateRecordDetailsMap(helper, product));
     productVariants = variantStructure.get(product.Id);
     if (productVariants == null) return;
@@ -42,15 +48,6 @@ async function getResultForProductStructure(recordList, isProduct) {
     });
   });
   return productVariantValueMapList;
-}
-
-// PIM repo ProductManager.getProductMap
-function getRecordMap(recordList) {
-  let recordMap = new Map();
-  recordList.forEach(record => {
-    recordMap.set(record.Id, record);
-  });
-  return recordMap;
 }
 
 // PIM repo ProductManager.getVariantStructure
@@ -93,7 +90,7 @@ function populateRecordDetailsMap(helper, record, parentProduct) {
   const topLevelRecord = parentProduct ?? record;
   const tempMap = new Map();
   tempMap.set('Id', record.Id);
-  tempMap.set('Product_ID', record.Name);
+  tempMap.set('Record_ID', record.Name);
   tempMap.set(
     'Category__r.Name',
     helper.getValue(topLevelRecord, 'Category__r').Name

@@ -7,6 +7,8 @@ const {
   ATTRIBUTE_FLAG,
   PRODUCT_TYPE,
   callAsposeToExport,
+  getDigitalAssetMap,
+  initAssetDownloadDetailsList,
   parseDigitalAssetAttrVal,
   prepareIdsForSOQL
 } = require('./utils');
@@ -24,17 +26,13 @@ class PimStructure {
 
     let exportRecordsColsAndAssets = {};
     const recordIds = prepareIdsForSOQL(reqBody.recordIds);
-    const exportType = reqBody.exportType;
-    const namespace = reqBody.namespace;
+    const { exportType, includeRecordAsset, namespace } = reqBody;
     helper = new PimExportHelper(namespace);
-    let currentVariantName;
+    const digitalAssetMap = await getDigitalAssetMap(service, helper);
 
-    let templateFields,
-      templateHeaders,
-      useAspose,
-      daDownloadDetailsList = [];
     const asposeInput = { reqBody };
-
+    const isProduct = reqBody.recordType == PRODUCT_TYPE;
+    let currentVariantName, templateFields, templateHeaders, useAspose;
     if (reqBody.options.isTemplateExport) {
       if (reqBody.templateVersionData) {
         ({ templateFields, templateHeaders } = this.getTemplateHeadersAndFields(
@@ -52,7 +50,9 @@ class PimStructure {
         helper,
         service,
         templateFields,
-        templateHeaders
+        templateHeaders,
+        digitalAssetMap,
+        isProduct
       );
       Object.assign(asposeInput, {
         listPageData: exportRecordsColsAndAssets?.recordsAndCols[0]
@@ -61,9 +61,7 @@ class PimStructure {
       // export is from detail data page
       /** PIM repo ProductService.getProductById start */
       // PIM repo ProductManager.buildWithProductIds
-      let { appearingLabelIds, recordType } = reqBody;
-      const isProduct = recordType == PRODUCT_TYPE;
-
+      let { appearingLabelIds } = reqBody;
       let recordList = await PimRecordManager(
           recordIds,
           helper,
@@ -78,15 +76,21 @@ class PimStructure {
         ),
         baseRecord = productVariantValueMapList[0],
         exportRecords = [baseRecord],
+        exportRecordsAndColumns = [exportRecords],
         attrValValue,
-        exportRecordsAndColumns;
+        daDownloadDetailsList = initAssetDownloadDetailsList(
+          isProduct,
+          includeRecordAsset,
+          recordList.map(record => record.Id),
+          digitalAssetMap,
+          namespace
+        );
       appearingLabelIds = prepareIdsForSOQL(appearingLabelIds);
-      const { appearingLabels, appearingValues, digitalAssetMap } =
-        await this.parseOccurringAttrLabelsValuesAndDigitalAssets(
+      const { appearingLabels, appearingValues } =
+        await this.parseAppearringAttrLabelsAndValues(
           appearingLabelIds,
           service
         );
-      const daDownloadDetailsList = [];
       for (let i = 0; i < appearingLabels.length; i++) {
         // add the base product's attribute values
         for (let j = 0; j < appearingValues.length; j++) {
@@ -94,9 +98,9 @@ class PimStructure {
             helper.getValue(appearingValues[j], 'Attribute_Label__c') !==
               appearingLabels[i].Id ||
             (helper.getValue(appearingValues[j], 'Product__c') !==
-              exportRecords[0].get('Id') &&
+              baseRecord.get('Id') &&
               helper.getValue(appearingValues[j], 'Digital_Asset__c') !==
-                exportRecords[0].get('Id'))
+                baseRecord.get('Id'))
           )
             continue;
           attrValValue = helper.getValue(appearingValues[j], 'Value__c');
@@ -159,7 +163,7 @@ class PimStructure {
 
             // add variant values to the current variant product
             for (let i = 0; i < varList.length; i++) {
-              currentVariant.set('Product_ID', valuesList[i][0].Name);
+              currentVariant.set('Record_ID', valuesList[i][0].Name);
               currentVariant.set(
                 varList[i].Name,
                 helper.getValue(valuesList[i][0], 'Label__c')
@@ -209,7 +213,7 @@ class PimStructure {
                 }
               }
             }
-            currentVariantName = currentVariant.get('Product_ID');
+            currentVariantName = currentVariant.get('Record_ID');
             exportRecords.push(currentVariant);
           }
         } else if (exportType === 'allVariants') {
@@ -265,9 +269,9 @@ class PimStructure {
             currValue = valuesList[i];
             isFirstLevelVariant = true;
             while (true) {
-              // add variant value's Product ID
+              // add variant value's Record ID
               if (isFirstLevelVariant) {
-                newVariant.set('Product_ID', currValue.Name);
+                newVariant.set('Record_ID', currValue.Name);
                 isFirstLevelVariant = false;
               }
               // add Variant__c's Label
@@ -486,9 +490,9 @@ class PimStructure {
         currValue = valuesList[i];
         isFirstLevelVariant = true;
         while (true) {
-          // add variant value's Product ID
+          // add variant value's Record ID
           if (isFirstLevelVariant) {
-            newVariant.set('Product_ID', currValue.Name);
+            newVariant.set('Record_ID', currValue.Name);
             isFirstLevelVariant = false;
           }
           // add Variant__c's Label
@@ -573,10 +577,10 @@ class PimStructure {
 
     // loop through baseProduct's children to settle inheritance from base product
     variantValueTree
-      .get(baseProduct.get('Product_ID'))
+      .get(baseProduct.get('Record_ID'))
       .forEach(firstLevelVariant => {
         exportRecords.forEach(variant => {
-          if (variant.get('Product_ID') === firstLevelVariant) {
+          if (variant.get('Record_ID') === firstLevelVariant) {
             Array.from(baseProductData.keys()).forEach(key => {
               if (
                 !variant.has(key) ||
@@ -590,7 +594,7 @@ class PimStructure {
             if (
               exportType === 'allVariants' ||
               (exportType === 'currentVariant' &&
-                currentVariantName === variant.get('Product_ID'))
+                currentVariantName === variant.get('Record_ID'))
             ) {
               filledInExportRecords.push(variant);
             }
@@ -600,9 +604,9 @@ class PimStructure {
 
     // loop through each variant (top down) to settle inheritance from parent variants
     exportRecords.forEach(variant => {
-      variantValueTree.get(variant.get('Product_ID')).forEach(childVariant => {
+      variantValueTree.get(variant.get('Record_ID')).forEach(childVariant => {
         exportRecords.forEach(variantValue => {
-          if (variantValue.get('Product_ID') === childVariant) {
+          if (variantValue.get('Record_ID') === childVariant) {
             Array.from(variant.keys()).forEach(key => {
               if (
                 !variantValue.has(key) ||
@@ -617,7 +621,7 @@ class PimStructure {
             if (
               exportType === 'allVariants' ||
               (exportType === 'currentVariant' &&
-                currentVariantName === variantValue.get('Product_ID'))
+                currentVariantName === variantValue.get('Record_ID'))
             ) {
               filledInExportRecords.push(variantValue);
             }
@@ -634,7 +638,7 @@ class PimStructure {
 
     // add root node for baseProduct
     treeNode = new Map();
-    treeNode.set('Product_ID', baseProduct.get('Product_ID'));
+    treeNode.set('Record_ID', baseProduct.get('Record_ID'));
     treeNode.set('Id', baseProduct.get('Id'));
     treeNode.set('Children', []);
     variantValueTree.push(treeNode);
@@ -642,7 +646,7 @@ class PimStructure {
     // add nodes for variants
     valuesList.forEach(value => {
       treeNode = new Map();
-      treeNode.set('Product_ID', value.Name);
+      treeNode.set('Record_ID', value.Name);
       treeNode.set('Id', value.Id);
       treeNode.set('Children', []);
       if (helper.getValue(value, 'Parent_Variant_Value__c')) {
@@ -667,7 +671,7 @@ class PimStructure {
     // convert the data structure to reduce search overhead
     let childMap = new Map();
     variantValueTree.forEach(variant => {
-      childMap.set(variant.get('Product_ID'), variant.get('Children'));
+      childMap.set(variant.get('Record_ID'), variant.get('Children'));
     });
     return childMap;
   }
@@ -698,8 +702,8 @@ class PimStructure {
           field = field.slice(11, -1);
           Array.from(productVariantValueMapList[0].keys()).forEach(col => {
             const isMatchingColAndField =
-              (field !== 'Product ID' && field === col) ||
-              (col === 'Product_ID' && field === 'Product ID');
+              (field !== 'Record ID' && field === col) ||
+              (col === 'Record_ID' && field === 'Record ID');
             if (col !== 'Id' && isMatchingColAndField) {
               // push columns specified in template
               exportColumns = [
@@ -735,10 +739,7 @@ class PimStructure {
     return [...exportRecordsAndColumns, exportColumns || []];
   }
 
-  async parseOccurringAttrLabelsValuesAndDigitalAssets(
-    appearingLabelIds,
-    service
-  ) {
+  async parseAppearringAttrLabelsAndValues(appearingLabelIds, service) {
     // add appearing attribute labels and their values to base product
     const appearingLabels = await service.simpleQuery(
       helper.namespaceQuery(`select Id, Name
@@ -761,22 +762,7 @@ class PimStructure {
           Overwritten_Variant_Value__c = null)`
       )
     );
-
-    const digitalAssetList = await service.simpleQuery(
-      helper.namespaceQuery(
-        `select Id, Name, External_File_Id__c, View_Link__c
-        from Digital_Asset__c`
-      )
-    );
-    return {
-      appearingLabels,
-      appearingValues,
-      digitalAssetMap: new Map(
-        digitalAssetList.map(asset => {
-          return [asset.Id, asset];
-        })
-      )
-    };
+    return { appearingLabels, appearingValues };
   }
 
   convertDAToUrl(instanceUrl, namespace, sobjectId) {
