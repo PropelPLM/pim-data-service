@@ -57,7 +57,13 @@ getDigitalAssetMap = async (service, helper) => {
   );
 };
 
-initAssetDownloadDetailsList(isProduct, includeRecordAsset, recordIds, digitalAssetMap, namespace) {
+initAssetDownloadDetailsList = (
+  isProduct,
+  includeRecordAsset,
+  recordIds,
+  digitalAssetMap,
+  namespace
+) => {
   const daDownloadDetails = [];
   if (isProduct || !includeRecordAsset) return daDownloadDetails;
 
@@ -67,7 +73,7 @@ initAssetDownloadDetailsList(isProduct, includeRecordAsset, recordIds, digitalAs
     daDownloadDetails.push(new DADownloadDetails(digitalAsset, namespace));
   });
   return daDownloadDetails;
-}
+};
 
 module.exports = {
   callAsposeToExport,
