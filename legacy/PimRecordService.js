@@ -20,7 +20,7 @@ async function PimRecordService(
 }
 
 // PIM repo ProductService.getResultForProductStructure(recordList)
-// returns List of products and variants pointing to Maps
+// returns List of Maps
 async function getResultForProductStructure(recordList, isProduct) {
   let productVariantValueMapList = [
     populateRecordDetailsMap(helper, recordList[0])
@@ -48,21 +48,6 @@ async function getResultForProductStructure(recordList, isProduct) {
     });
   });
   return productVariantValueMapList;
-}
-
-// PIM repo ProductManager.getProductMap
-function getRecordMap(recordList) {
-  try {
-    let recordMap = new Map();
-    recordList.forEach(record => recordMap.set(record.Id, record));
-    logSuccessResponse(
-      `Records in recordMap: ${recordMap?.size}`,
-      '[PimRecordService.getRecordMap]'
-    );
-    return recordMap;
-  } catch (err) {
-    logErrorResponse(err, '[PimRecordService.getRecordMap]');
-  }
 }
 
 // PIM repo ProductManager.getVariantStructure
