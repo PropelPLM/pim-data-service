@@ -355,7 +355,7 @@ class PimStructure {
               );
               // push only the lowest level variant values (i.e. SKUs)
               lowestLevelVariantValues.forEach(vvId => {
-                if (newVariant.get('Product_ID') === vvId) {
+                if (newVariant.get('Record_ID') === vvId) {
                   exportRecords.push(newVariant);
                 }
               });
@@ -626,7 +626,7 @@ class PimStructure {
             } else if (exportType === 'lowestVariants') {
               // push only the lowest level variant values (i.e. SKUs)
               lowestLevelVariantValues.forEach(vvId => {
-                if (variant.get('Product_ID') === vvId) {
+                if (variant.get('Record_ID') === vvId) {
                   filledInExportRecords.push(variant);
                 }
               });
@@ -660,7 +660,7 @@ class PimStructure {
             } else if (exportType === 'lowestVariants') {
               // push only the lowest level variant values (i.e. SKUs)
               lowestLevelVariantValues.forEach(vvId => {
-                if (variantValue.get('Product_ID') === vvId) {
+                if (variantValue.get('Record_ID') === vvId) {
                   filledInExportRecords.push(variantValue);
                 }
               });
