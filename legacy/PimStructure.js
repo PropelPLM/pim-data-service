@@ -7,6 +7,7 @@ const {
   ATTRIBUTE_FLAG,
   PRODUCT_TYPE,
   callAsposeToExport,
+  getLowestVariantValuesList,
   getDigitalAssetMap,
   initAssetDownloadDetailsList,
   parseDigitalAssetAttrVal,
@@ -216,7 +217,10 @@ class PimStructure {
             currentVariantName = currentVariant.get('Record_ID');
             exportRecords.push(currentVariant);
           }
-        } else if (exportType === 'allVariants') {
+        } else if (
+          exportType === 'allVariants' ||
+          exportType === 'lowestVariants'
+        ) {
           let variantValueIds = '';
           // get ids of all variant values as comma separated String (skip first element since that is a product, not variant)
           for (let i = 1; i < productVariantValueMapList.length; i++) {
@@ -274,7 +278,7 @@ class PimStructure {
                 newVariant.set('Record_ID', currValue.Name);
                 isFirstLevelVariant = false;
               }
-              // add Variant__c's Label
+              // add Variant__c's Label (e.g. for Variant 'Size', Label is 'Large')
               for (let j = 0; j < varList.length; j++) {
                 if (
                   varList[j].Id === helper.getValue(currValue, 'Variant__c')
@@ -286,6 +290,7 @@ class PimStructure {
                 }
               }
               // loop through the parent value path to repeat this iteratively
+              // required as each variant value only contains 1 variant label so the variant label inherited from its parent has to be retrieved from the parent
               if (
                 helper.getValue(currValue, 'Parent_Variant_Value__c') != null
               ) {
@@ -343,7 +348,20 @@ class PimStructure {
                 }
               }
             }
-            exportRecords.push(newVariant);
+            if (exportType === 'lowestVariants' && !reqBody.isInherited) {
+              const lowestLevelVariantValues = await getLowestVariantValuesList(
+                valuesList,
+                reqBody.namespace
+              );
+              // push only the lowest level variant values (i.e. SKUs)
+              lowestLevelVariantValues.forEach(vvId => {
+                if (newVariant.get('Record_ID') === vvId) {
+                  exportRecords.push(newVariant);
+                }
+              });
+            } else {
+              exportRecords.push(newVariant);
+            }
           }
         } else {
           throw 'Invalid Export Type';
@@ -395,7 +413,9 @@ class PimStructure {
       valueIds.push(id);
     });
     valueIds =
-      exportType === 'allVariants' ? prepareIdsForSOQL(valueIds) : valueIds;
+      exportType === 'allVariants' || exportType === 'lowestVariants'
+        ? prepareIdsForSOQL(valueIds)
+        : valueIds;
     let returnMap = new Map();
     let values = await service.simpleQuery(
       helper.namespaceQuery(
@@ -403,6 +423,7 @@ class PimStructure {
           Id,
           Name,
           Label__c,
+          Parent_Value_Path__c,
           Parent_Variant_Value__c,
           Variant__c,
           Variant__r.Name
@@ -440,6 +461,7 @@ class PimStructure {
     digitalAssetMap,
     daDownloadDetailsList
   ) {
+    let lowestLevelVariantValues;
     if (exportType === 'currentVariant') {
       exportType = 'allVariants';
       exportRecords = [baseProduct];
@@ -560,8 +582,12 @@ class PimStructure {
         exportRecords.push(newVariant);
       }
       exportType = 'currentVariant';
+    } else if (exportType === 'lowestVariants') {
+      lowestLevelVariantValues = await getLowestVariantValuesList(
+        valuesList,
+        reqBody.namespace
+      );
     }
-
     let variantValueTree = await this.createVariantValueTree(
         valuesList,
         baseProduct
@@ -597,6 +623,13 @@ class PimStructure {
                 currentVariantName === variant.get('Record_ID'))
             ) {
               filledInExportRecords.push(variant);
+            } else if (exportType === 'lowestVariants') {
+              // push only the lowest level variant values (i.e. SKUs)
+              lowestLevelVariantValues.forEach(vvId => {
+                if (variant.get('Record_ID') === vvId) {
+                  filledInExportRecords.push(variant);
+                }
+              });
             }
           }
         });
@@ -624,6 +657,13 @@ class PimStructure {
                 currentVariantName === variantValue.get('Record_ID'))
             ) {
               filledInExportRecords.push(variantValue);
+            } else if (exportType === 'lowestVariants') {
+              // push only the lowest level variant values (i.e. SKUs)
+              lowestLevelVariantValues.forEach(vvId => {
+                if (variantValue.get('Record_ID') === vvId) {
+                  filledInExportRecords.push(variantValue);
+                }
+              });
             }
           }
         });

@@ -3,6 +3,7 @@ const PimRecordService = require('./PimRecordService');
 const {
   ATTRIBUTE_FLAG,
   DA_DOWNLOAD_DETAIL_KEY,
+  getLowestVariantValuesList,
   initAssetDownloadDetailsList,
   prepareIdsForSOQL,
   parseDigitalAssetAttrVal
@@ -34,6 +35,7 @@ async function PimRecordListHelper(
     categoryId,
     includeRecordAsset,
     isPrimaryCategory,
+    exportType,
     recordIds,
     variantValueIds,
     namespace
@@ -47,17 +49,26 @@ async function PimRecordListHelper(
 
   // PIM repo ProductPQLHelper.getRecordByCategory()
   const exportRecords = await getRecordByCategory(
-    pqlBuilder,
-    isPrimaryCategory,
-    isProduct
-  );
+      pqlBuilder,
+      isPrimaryCategory,
+      isProduct
+    ),
+    isSKUExport = exportType === 'lowestVariants';
 
+  let variantsPresentInLowestVariantExport,
+    recordIsPresentInNonLowestVariantExport;
   // filter the records if rows were selected or filters applied in product list page
-  let filteredRecords = exportRecords.filter(
-    record =>
-      recordIds.includes(record.get('Id')) ||
-      variantValueIds?.includes(record.get('Id'))
-  );
+  let filteredRecords = exportRecords.filter(record => {
+    variantsPresentInLowestVariantExport =
+      isSKUExport && variantValueIds?.includes(record.get('Id'));
+    recordIsPresentInNonLowestVariantExport =
+      (!isSKUExport && recordIds.includes(record.get('Id'))) ||
+      variantValueIds?.includes(record.get('Id'));
+    return (
+      variantsPresentInLowestVariantExport ||
+      recordIsPresentInNonLowestVariantExport
+    );
+  });
   let exportRecordsAndColumns = [filteredRecords]; // [[filtered]] zz
 
   /** PIM repo ProductService.productStructureByCategory end */
@@ -67,8 +78,11 @@ async function PimRecordListHelper(
   if (recordIds.length > 0 || variantValueIds.length > 0) {
     let recordIdSet = new Set();
     let vvIds = new Set();
-    for (let i = 0; i < recordIds?.length; i++) {
-      recordIdSet.add(recordIds[i]);
+    if (exportType == null || !isSKUExport) {
+      // non variant values are only added if its not exporting lowest variants
+      for (let i = 0; i < recordIds?.length; i++) {
+        recordIdSet.add(recordIds[i]);
+      }
     }
     for (let i = 0; i < variantValueIds?.length; i++) {
       vvIds.add(variantValueIds[i]);
@@ -79,13 +93,29 @@ async function PimRecordListHelper(
       const stringifiedQuotedVariantValueIds = prepareIdsForSOQL(vvIds);
       let variantValues = await service.queryExtend(
         helper.namespaceQuery(
-          `select Id, Variant__r.Product__c
+          `select Id, Name, Parent_Value_Path__c, Variant__r.Product__c
           from Variant_Value__c
           where Id IN (${service.QUERY_LIST})
         `
         ),
         stringifiedQuotedVariantValueIds.split(',')
       );
+
+      let lowestVariantValueIds;
+      if (isSKUExport) {
+        // get the lowest level variant values' ids
+        lowestVariantValueIds = await getLowestVariantValuesList(
+          variantValues,
+          namespace
+        );
+        // filter out all records not selected for export
+        variantValues = variantValues.filter(value =>
+          lowestVariantValueIds.includes(value.Name)
+        );
+        exportRecordsAndColumns[0] = exportRecordsAndColumns[0].filter(record =>
+          lowestVariantValueIds.includes(record.get('Record_ID'))
+        );
+      }
       variantValues.forEach(value => {
         recordIdSet.add(helper.getValue(value, 'Variant__r.Product__c'));
       });
