@@ -499,11 +499,11 @@ async function callAsposeToExport({
 // returns a list of the lowest level variant values' ids (i.e. SKUs) from a list of variant values
 async function getLowestVariantValuesList(valuesList, namespace) {
   const helper = new PimExportHelper(namespace);
-  let parentValueLengthMap = new Map();
-  let numOfParentValues;
-  let highestNumOfParentValues = 0;
-  let parentValues;
-  let vvId;
+  let parentValueLengthMap = new Map(),
+    numOfParentValues,
+    highestNumOfParentValues = 0,
+    parentValues,
+    vvId;
   valuesList.forEach(val => {
     parentValues = helper.getValue(val, 'Parent_Value_Path__c');
     if (parentValues == null) {

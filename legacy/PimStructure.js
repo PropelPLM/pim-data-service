@@ -413,7 +413,7 @@ class PimStructure {
       valueIds.push(id);
     });
     valueIds =
-      exportType === 'allVariants' || 'lowestVariants'
+      exportType === 'allVariants' || exportType === 'lowestVariants'
         ? prepareIdsForSOQL(valueIds)
         : valueIds;
     let returnMap = new Map();
