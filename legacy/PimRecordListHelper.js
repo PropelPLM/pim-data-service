@@ -49,25 +49,26 @@ async function PimRecordListHelper(
 
   // PIM repo ProductPQLHelper.getRecordByCategory()
   const exportRecords = await getRecordByCategory(
-    pqlBuilder,
-    isPrimaryCategory,
-    isProduct
-  );
+      pqlBuilder,
+      isPrimaryCategory,
+      isProduct
+    ),
+    isSKUExport = exportType === 'lowestVariants';
 
+  let variantsPresentInLowestVariantExport,
+    recordIsPresentInNonLowestVariantExport;
   // filter the records if rows were selected or filters applied in product list page
-  let filteredRecords;
-  if (exportType === 'lowestVariants') {
-    // only include variant values since only lowest variant values are selected for export
-    filteredRecords = exportRecords.filter(record =>
-      variantValueIds?.includes(record.get('Id'))
+  let filteredRecords = exportRecords.filter(record => {
+    variantsPresentInLowestVariantExport =
+      isSKUExport && variantValueIds?.includes(record.get('Id'));
+    recordIsPresentInNonLowestVariantExport =
+      (!isSKUExport && recordIds.includes(record.get('Id'))) ||
+      variantValueIds?.includes(record.get('Id'));
+    return (
+      variantsPresentInLowestVariantExport ||
+      recordIsPresentInNonLowestVariantExport
     );
-  } else {
-    filteredRecords = exportRecords.filter(
-      record =>
-        recordIds.includes(record.get('Id')) ||
-        variantValueIds?.includes(record.get('Id'))
-    );
-  }
+  });
   let exportRecordsAndColumns = [filteredRecords]; // [[filtered]] zz
 
   /** PIM repo ProductService.productStructureByCategory end */
@@ -77,7 +78,7 @@ async function PimRecordListHelper(
   if (recordIds.length > 0 || variantValueIds.length > 0) {
     let recordIdSet = new Set();
     let vvIds = new Set();
-    if (exportType == null || exportType !== 'lowestVariants') {
+    if (exportType == null || !isSKUExport) {
       // non variant values are only added if its not exporting lowest variants
       for (let i = 0; i < recordIds?.length; i++) {
         recordIdSet.add(recordIds[i]);
@@ -101,7 +102,7 @@ async function PimRecordListHelper(
       );
 
       let lowestVariantValueIds;
-      if (exportType === 'lowestVariants') {
+      if (isSKUExport) {
         // get the lowest level variant values' ids
         lowestVariantValueIds = await getLowestVariantValuesList(
           variantValues,
