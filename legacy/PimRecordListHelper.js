@@ -4,6 +4,7 @@ const {
   ATTRIBUTE_FLAG,
   DA_DOWNLOAD_DETAIL_KEY,
   PRODUCT_TYPE,
+  getLowestVariantValuesList,
   prepareIdsForSOQL,
   parseDigitalAssetAttrVal
 } = require('./utils');
@@ -33,7 +34,9 @@ async function PimRecordListHelper(
     variantValueIds,
     categoryId,
     isPrimaryCategory,
-    recordType
+    recordType,
+    exportType,
+    namespace
   } = reqBody;
 
   const isProduct = recordType == PRODUCT_TYPE;
@@ -50,11 +53,19 @@ async function PimRecordListHelper(
   );
 
   // filter the records if rows were selected or filters applied in product list page
-  let filteredRecords = exportRecords.filter(
-    record =>
-      recordIds.includes(record.get('Id')) ||
+  let filteredRecords;
+  if (exportType === 'lowestVariants') {
+    // only include variant values since only lowest variant values are selected for export
+    filteredRecords = exportRecords.filter(record =>
       variantValueIds.includes(record.get('Id'))
-  );
+    );
+  } else {
+    filteredRecords = exportRecords.filter(
+      record =>
+        recordIds.includes(record.get('Id')) ||
+        variantValueIds.includes(record.get('Id'))
+    );
+  }
   let exportRecordsAndColumns = [filteredRecords]; // [[filtered]] zz
 
   /** PIM repo ProductService.productStructureByCategory end */
@@ -64,8 +75,11 @@ async function PimRecordListHelper(
   if (recordIds.length > 0 || variantValueIds.length > 0) {
     let recordIdSet = new Set();
     let vvIds = new Set();
-    for (let i = 0; i < recordIds.length; i++) {
-      recordIdSet.add(recordIds[i]);
+    if (exportType == null || exportType !== 'lowestVariants') {
+      // non variant values are only added if its not exporting lowest variants
+      for (let i = 0; i < recordIds.length; i++) {
+        recordIdSet.add(recordIds[i]);
+      }
     }
     for (let i = 0; i < variantValueIds.length; i++) {
       vvIds.add(variantValueIds[i]);
@@ -76,13 +90,29 @@ async function PimRecordListHelper(
       const stringifiedQuotedVariantValueIds = prepareIdsForSOQL(vvIds);
       let variantValues = await service.queryExtend(
         helper.namespaceQuery(
-          `select Id, Variant__r.Product__c
+          `select Id, Name, Parent_Value_Path__c, Variant__r.Product__c
           from Variant_Value__c
           where Id IN (${service.QUERY_LIST})
         `
         ),
         stringifiedQuotedVariantValueIds.split(',')
       );
+
+      let lowestVariantValueIds;
+      if (exportType === 'lowestVariants') {
+        // get the lowest level variant values' ids
+        lowestVariantValueIds = await getLowestVariantValuesList(
+          variantValues,
+          namespace
+        );
+        // filter out all records not selected for export
+        variantValues = variantValues.filter(value =>
+          lowestVariantValueIds.includes(value.Name)
+        );
+        exportRecordsAndColumns[0] = exportRecordsAndColumns[0].filter(record =>
+          lowestVariantValueIds.includes(record.get('Record_ID'))
+        );
+      }
       variantValues.forEach(value => {
         recordIdSet.add(helper.getValue(value, 'Variant__r.Product__c'));
       });

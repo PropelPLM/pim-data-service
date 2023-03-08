@@ -7,6 +7,7 @@ const {
   ATTRIBUTE_FLAG,
   PRODUCT_TYPE,
   callAsposeToExport,
+  getLowestVariantValuesList,
   parseDigitalAssetAttrVal,
   prepareIdsForSOQL
 } = require('./utils');
@@ -344,8 +345,10 @@ class PimStructure {
               }
             }
             if (exportType === 'lowestVariants' && !reqBody.isInherited) {
-              const lowestLevelVariantValues =
-                await this.getLowestVariantValuesList(valuesList);
+              const lowestLevelVariantValues = await getLowestVariantValuesList(
+                valuesList,
+                reqBody.namespace
+              );
               // push only the lowest level variant values (i.e. SKUs)
               lowestLevelVariantValues.forEach(vvId => {
                 if (newVariant.get('Product_ID') === vvId) {
@@ -576,8 +579,9 @@ class PimStructure {
       }
       exportType = 'currentVariant';
     } else if (exportType === 'lowestVariants') {
-      lowestLevelVariantValues = await this.getLowestVariantValuesList(
-        valuesList
+      lowestLevelVariantValues = await getLowestVariantValuesList(
+        valuesList,
+        reqBody.namespace
       );
     }
     let variantValueTree = await this.createVariantValueTree(
@@ -815,35 +819,35 @@ class PimStructure {
     };
   }
 
-  // returns a list of the lowest level variant values' ids (i.e. SKUs) from a list of variant values
-  async getLowestVariantValuesList(valuesList) {
-    let parentValueLengthMap = new Map();
-    let numOfParentValues;
-    let highestNumOfParentValues = 0;
-    let parentValues;
-    let vvId;
-    valuesList.forEach(val => {
-      parentValues = helper.getValue(val, 'Parent_Value_Path__c');
-      if (parentValues == null) {
-        numOfParentValues = 0;
-      } else {
-        numOfParentValues = parentValues.split(',').length;
-      }
-      // sort variant values according to their variant level
-      vvId = val.Name;
-      if (parentValueLengthMap.get(numOfParentValues)) {
-        parentValueLengthMap.get(numOfParentValues).push(vvId);
-      } else {
-        parentValueLengthMap.set(numOfParentValues, [vvId]);
-      }
-      // update highest tally
-      highestNumOfParentValues =
-        numOfParentValues > highestNumOfParentValues
-          ? numOfParentValues
-          : highestNumOfParentValues;
-    });
-    return parentValueLengthMap.get(highestNumOfParentValues);
-  }
+  // // returns a list of the lowest level variant values' ids (i.e. SKUs) from a list of variant values
+  // async getLowestVariantValuesList(valuesList) {
+  //   let parentValueLengthMap = new Map();
+  //   let numOfParentValues;
+  //   let highestNumOfParentValues = 0;
+  //   let parentValues;
+  //   let vvId;
+  //   valuesList.forEach(val => {
+  //     parentValues = helper.getValue(val, 'Parent_Value_Path__c');
+  //     if (parentValues == null) {
+  //       numOfParentValues = 0;
+  //     } else {
+  //       numOfParentValues = parentValues.split(',').length;
+  //     }
+  //     // sort variant values according to their variant level
+  //     vvId = val.Name;
+  //     if (parentValueLengthMap.get(numOfParentValues)) {
+  //       parentValueLengthMap.get(numOfParentValues).push(vvId);
+  //     } else {
+  //       parentValueLengthMap.set(numOfParentValues, [vvId]);
+  //     }
+  //     // update highest tally
+  //     highestNumOfParentValues =
+  //       numOfParentValues > highestNumOfParentValues
+  //         ? numOfParentValues
+  //         : highestNumOfParentValues;
+  //   });
+  //   return parentValueLengthMap.get(highestNumOfParentValues);
+  // }
 
   convertDAToUrl(instanceUrl, namespace, sobjectId) {
     return (
