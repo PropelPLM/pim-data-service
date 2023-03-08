@@ -3,7 +3,11 @@ var crypto = require('crypto');
 const https = require('https');
 
 const PimStructure = require('./PimStructure');
-const { postToChatter, sendCsvToAsposeCells } = require('./utils');
+const {
+  postToChatter,
+  logErrorResponse,
+  sendCsvToAsposeCells
+} = require('./utils');
 
 async function LegacyExportPIM(req) {
   const reqBody = req.body;
@@ -14,15 +18,23 @@ async function LegacyExportPIM(req) {
   }
   let daDownloadDetailsList, recordsAndCols;
   try {
-    ({daDownloadDetailsList, recordsAndCols} = await new PimStructure().build(reqBody, isListPageExport));
+    ({ daDownloadDetailsList, recordsAndCols } = await new PimStructure().build(
+      reqBody,
+      isListPageExport
+    ));
   } catch (err) {
     console.log('error: ', err);
   }
 
   const baseFileName = createBaseFileName();
-  const filename = `Product-Export_${baseFileName}.csv`;
-  
-  sendDADownloadRequests(baseFileName, daDownloadDetailsList, reqBody.sessionId, reqBody.hostUrl);
+  const filename = `${reqBody.recordType}-Export_${baseFileName}.csv`;
+
+  sendDADownloadRequests(
+    baseFileName,
+    daDownloadDetailsList,
+    reqBody.sessionId,
+    reqBody.hostUrl
+  );
   if (recordsAndCols?.length !== 2) {
     // non CSV template export, exported file will be written to chatter by Aspose
     return;
@@ -33,7 +45,8 @@ async function LegacyExportPIM(req) {
     recordsAndCols[1]
   );
   if (csvString == null) {
-    return 'Error';
+    logErrorResponse('csvString is empty!', '[ExportPIM]');
+    return;
   }
 
   if (reqBody.exportFormat == 'csv') {
@@ -51,7 +64,12 @@ async function LegacyExportPIM(req) {
     });
   } else if (reqBody.exportFormat == 'xlsx') {
     // CSV -> XLSX export OR XLSX non template export
-    sendCsvToAsposeCells(csvString, reqBody.sessionId, reqBody.hostUrl, reqBody.templateId);
+    sendCsvToAsposeCells(
+      csvString,
+      reqBody.sessionId,
+      reqBody.hostUrl,
+      reqBody.templateId
+    );
   }
   return csvString;
 }
@@ -62,7 +80,8 @@ function convertArrayOfObjectsToCSV(records, columns) {
     keys = [],
     cols = [],
     columnDivider,
-    lineDivider;
+    lineDivider,
+    recordAttributes;
   // check if "objectRecords" parameter is null, then return from function
   if (records == null || !records.length) {
     return null;
@@ -97,11 +116,12 @@ function convertArrayOfObjectsToCSV(records, columns) {
       if (counter > 0) {
         csvStringResult += columnDivider;
       }
+      recordAttributes = records[i];
       if (
         records[i].get(skey) != null &&
         typeof records[i].get(skey) == 'object'
       ) {
-        records[i].get(skey) = records[i].get(skey).Name;
+        recordAttributes.set(skey, recordAttributes.get(skey).Name);
       }
       csvStringResult += escapeString(records[i].get(skey) || '');
 
@@ -121,18 +141,15 @@ function createBaseFileName() {
   const minutes = ('0' + date.getMinutes()).slice(-2);
   const seconds = ('0' + date.getSeconds()).slice(-2);
 
-  return year +
-    '-' +
-    month +
-    '-' +
-    day +
-    '_' +
-    hour +
-    minutes +
-    seconds;
+  return year + '-' + month + '-' + day + '_' + hour + minutes + seconds;
 }
 
-async function sendDADownloadRequests(zipFileName, daDownloadDetailsList, sessionId, hostName) {
+async function sendDADownloadRequests(
+  zipFileName,
+  daDownloadDetailsList,
+  sessionId,
+  hostName
+) {
   if (!daDownloadDetailsList || !daDownloadDetailsList.length) return;
   zipFileName = `Digital_Asset-Export_${zipFileName}.zip`;
 
@@ -150,10 +167,10 @@ async function sendDADownloadRequests(zipFileName, daDownloadDetailsList, sessio
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Content-Length': Buffer.byteLength(payload),
+      'Content-Length': Buffer.byteLength(payload)
     }
   };
-  const request = https.request(options, (res) => {
+  const request = https.request(options, res => {
     let data = '';
     res.on('data', chunk => {
       data = data + chunk.toString();
