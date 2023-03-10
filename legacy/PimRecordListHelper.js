@@ -115,13 +115,13 @@ async function PimRecordListHelper(
         exportRecordsAndColumns[0] = exportRecordsAndColumns[0].filter(record =>
           lowestVariantValueIds.includes(record.get('Record_ID'))
         );
+        vvIds.clear();
+        variantValues.forEach(value => {
+          // update variant value ids and record ids with only those relevant to lowest variants
+          vvIds.add(value.Id);
+          recordIdSet.add(helper.getValue(value, 'Variant__r.Product__c'));
+        });
       }
-      vvIds.clear();
-      variantValues.forEach(value => {
-        // update variant value ids and record ids with only those relevant to lowest variants
-        vvIds.add(value.Id);
-        recordIdSet.add(helper.getValue(value, 'Variant__r.Product__c'));
-      });
     }
 
     const recordIdsToQuery = prepareIdsForSOQL(recordIdSet);
