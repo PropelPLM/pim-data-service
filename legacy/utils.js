@@ -18,6 +18,7 @@ class DADownloadDetails {
     this.fileName = asset.Name;
     this.fileId = this.helper.getValue(asset, 'External_File_Id__c');
     this.key = this.helper.getValue(asset, 'View_Link__c');
+    this.mimeType = this.helper.getValue(asset, 'Mime_Type__c');
   }
 }
 
@@ -46,7 +47,7 @@ logErrorResponse = (err, functionName) => {
 getDigitalAssetMap = async (service, helper) => {
   const digitalAssetList = await service.simpleQuery(
     helper.namespaceQuery(
-      `select Id, Name, External_File_Id__c, View_Link__c
+      `select Id, Name, External_File_Id__c, View_Link__c, Mime_Type__c
       from Digital_Asset__c`
     )
   );
