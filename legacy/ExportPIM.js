@@ -35,6 +35,8 @@ async function LegacyExportPIM(req) {
     reqBody.sessionId,
     reqBody.hostUrl
   );
+
+  if (!reqBody.includeAttributes) return;
   if (recordsAndCols?.length !== 2) {
     // non CSV template export, exported file will be written to chatter by Aspose
     return;
