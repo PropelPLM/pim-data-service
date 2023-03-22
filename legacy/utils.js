@@ -500,30 +500,49 @@ async function callAsposeToExport({
 // returns a list of the lowest level variant values' ids (i.e. SKUs) from a list of variant values
 async function getLowestVariantValuesList(valuesList, namespace) {
   const helper = new PimExportHelper(namespace);
-  let parentValueLengthMap = new Map(),
-    numOfParentValues,
+  let numOfParentValues,
     highestNumOfParentValues = 0,
     parentValues,
-    vvId;
-  valuesList.forEach(val => {
+    vvId,
+    parentProduct,
+    productParentValueLengthMap = new Map(), // Map<product id, integer>, key: variant value's parent product id, value: current highest no. of parent variant values
+    productSKUListMap = new Map(); // Map<product id, list<vv id>, key: variant value's parent product id, value: list of variant value ids with highest no. of parent variant values
+
+  // get the variant value's product
+  for (let val of valuesList) {
+    parentProduct = helper.getValue(val, 'Variant__r.Product__c');
     parentValues = helper.getValue(val, 'Parent_Value_Path__c');
     if (parentValues == null) {
       numOfParentValues = 0;
     } else {
       numOfParentValues = parentValues.split(',').length;
     }
-    // sort variant values according to their variant level
     vvId = val.Name;
-    if (parentValueLengthMap.get(numOfParentValues)) {
-      parentValueLengthMap.get(numOfParentValues).push(vvId);
+
+    if (numOfParentValues === 0) continue;
+
+    if (productParentValueLengthMap.get(parentProduct)) {
+      // parent product has entry in highest num of parent values tally
+      highestNumOfParentValues = productParentValueLengthMap.get(parentProduct);
+      if (numOfParentValues === highestNumOfParentValues) {
+        if (productSKUListMap.get(parentProduct)) {
+          // add vvId to the list of lowest variants aka SKUs
+          productSKUListMap.get(parentProduct).push(vvId);
+        } else {
+          // create new list of lowest variants consisting of vvId for product
+          productSKUListMap.set(parentProduct, [vvId]);
+        }
+      } else if (numOfParentValues > highestNumOfParentValues) {
+        // replace list of lowest variants with list consisting of only vvId
+        highestNumOfParentValues = numOfParentValues;
+        productSKUListMap.set(parentProduct, [vvId]);
+      }
     } else {
-      parentValueLengthMap.set(numOfParentValues, [vvId]);
+      // create new entry for parent product in highest num of parent values tally
+      productParentValueLengthMap.set(parentProduct, numOfParentValues);
+      productSKUListMap.set(parentProduct, [vvId]);
     }
-    // update highest tally
-    highestNumOfParentValues =
-      numOfParentValues > highestNumOfParentValues
-        ? numOfParentValues
-        : highestNumOfParentValues;
-  });
-  return parentValueLengthMap.get(highestNumOfParentValues);
+  }
+  // return each product's list of SKUs
+  return Array.from(productSKUListMap.values()).flat();
 }
