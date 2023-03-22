@@ -97,6 +97,7 @@ module.exports = {
   DADownloadDetails,
   ATTRIBUTE_FLAG,
   DA_DOWNLOAD_DETAIL_KEY,
+  DEFAULT_COLUMNS,
   PRODUCT_TYPE
 };
 /**
