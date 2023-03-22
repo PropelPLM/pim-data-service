@@ -3,6 +3,7 @@ const PimRecordService = require('./PimRecordService');
 const {
   ATTRIBUTE_FLAG,
   DA_DOWNLOAD_DETAIL_KEY,
+  DEFAULT_COLUMNS,
   getLowestVariantValuesList,
   initAssetDownloadDetailsList,
   prepareIdsForSOQL,
@@ -12,11 +13,6 @@ const {
 let helper;
 let service;
 const DA_TYPE = 'DigitalAsset';
-const DEFAULT_COLUMNS = new Map([
-  ['Record ID', 'Record_ID'],
-  ['Title', 'Title'],
-  ['Category Name', 'Category__r.Name']
-]);
 
 async function PimRecordListHelper(
   reqBody,
@@ -604,6 +600,7 @@ async function addExportColumns(
   // populate default columns first if not templated export
   if (!templateFields || templateFields.length === 0) {
     Array.from(defaultColumns.keys()).forEach(defaultCol => {
+      if (!isProduct && defaultCol === 'Title') return;
       exportColumns.push({
         fieldName: defaultColumns.get(defaultCol),
         label: defaultCol,
