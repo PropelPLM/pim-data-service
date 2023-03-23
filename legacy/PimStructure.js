@@ -209,9 +209,9 @@ class PimStructure {
                       'Attribute_Label_Type__c'
                     ) === DA_TYPE
                   ) {
-                    attrValValue = await parseDigitalAssetAttrVal(
+                    newValue = await parseDigitalAssetAttrVal(
                       digitalAssetMap,
-                      attrValValue,
+                      newValue,
                       daDownloadDetailsList,
                       helper,
                       reqBody
@@ -354,9 +354,9 @@ class PimStructure {
                     'Attribute_Label_Type__c'
                   ) === DA_TYPE
                 ) {
-                  attrValValue = await parseDigitalAssetAttrVal(
+                  newValue = await parseDigitalAssetAttrVal(
                     digitalAssetMap,
-                    attrValValue,
+                    newValue,
                     daDownloadDetailsList,
                     helper,
                     reqBody
@@ -595,9 +595,9 @@ class PimStructure {
                 'Attribute_Label_Type__c'
               ) === DA_TYPE
             ) {
-              attrValValue = await parseDigitalAssetAttrVal(
+              newValue = await parseDigitalAssetAttrVal(
                 digitalAssetMap,
-                attrValValue,
+                newValue,
                 daDownloadDetailsList,
                 helper,
                 reqBody
