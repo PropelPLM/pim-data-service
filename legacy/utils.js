@@ -95,6 +95,7 @@ module.exports = {
   validateNamespaceForPath,
   validateNamespaceForField,
   DADownloadDetails,
+  parseProductReferenceAttrVal,
   ATTRIBUTE_FLAG,
   DA_DOWNLOAD_DETAIL_KEY,
   DEFAULT_COLUMNS,
@@ -544,4 +545,33 @@ async function getLowestVariantValuesList(valuesList, namespace) {
   }
   // return each product's list of SKUs
   return Array.from(productSKUListMap.values()).flat();
+}
+
+/**
+ * converts attribute value's value__c's SObject ID to Product ID for Product Reference fields
+ * @param attrValValue - a comma separated String of referenced products' Product__c.Id value
+ * @param reqBody - the export request body
+ * @returns {String} - a comma separated String of referenced products' Product__c.Name value aka Product ID
+ *  */
+async function parseProductReferenceAttrVal(attrValValue, reqBody) {
+  if (!attrValValue) return '';
+  const service = new ForceService(reqBody.hostUrl, reqBody.sessionId);
+  const helper = new PimExportHelper(reqBody.namespace);
+
+  // split the value to get the individual Product__c SObject Ids
+  let productSobjectIds = attrValValue.split(', ');
+
+  productSobjectIds = await module.exports.prepareIdsForSOQL(productSobjectIds);
+  let products = await service.simpleQuery(
+    helper.namespaceQuery(
+      `select Id, Name
+      from Product__c 
+      where Id IN (${productSobjectIds})`
+    )
+  );
+  return products
+    .map(prod => {
+      return prod.Name;
+    })
+    .join(', ');
 }
