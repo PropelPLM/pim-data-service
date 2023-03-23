@@ -524,7 +524,7 @@ async function getLowestVariantValuesList(valuesList, namespace) {
     if (productParentValueLengthMap.has(parentProduct)) {
       // parent product has entry in highest num of parent values tally
       highestNumOfParentValues = productParentValueLengthMap.get(parentProduct);
-      if (numOfParentValues == highestNumOfParentValues) {
+      if (numOfParentValues === highestNumOfParentValues) {
         if (productSKUListMap.has(parentProduct)) {
           // add vvId to the list of lowest variants aka SKUs
           console.log('1');
@@ -537,7 +537,7 @@ async function getLowestVariantValuesList(valuesList, namespace) {
       } else if (numOfParentValues > highestNumOfParentValues) {
         // replace list of lowest variants with list consisting of only vvId
         console.log('3');
-        highestNumOfParentValues = numOfParentValues;
+        productParentValueLengthMap.set(parentProduct, numOfParentValues);
         productSKUListMap.set(parentProduct, [vvId]);
       }
     } else {
