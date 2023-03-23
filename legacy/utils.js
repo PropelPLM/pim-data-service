@@ -520,11 +520,11 @@ async function getLowestVariantValuesList(valuesList, namespace) {
     }
     vvId = val.Name;
 
-    if (productParentValueLengthMap.get(parentProduct)) {
+    if (productParentValueLengthMap.has(parentProduct)) {
       // parent product has entry in highest num of parent values tally
       highestNumOfParentValues = productParentValueLengthMap.get(parentProduct);
       if (numOfParentValues === highestNumOfParentValues) {
-        if (productSKUListMap.get(parentProduct)) {
+        if (productSKUListMap.has(parentProduct)) {
           // add vvId to the list of lowest variants aka SKUs
           productSKUListMap.get(parentProduct).push(vvId);
         } else {
@@ -533,7 +533,7 @@ async function getLowestVariantValuesList(valuesList, namespace) {
         }
       } else if (numOfParentValues > highestNumOfParentValues) {
         // replace list of lowest variants with list consisting of only vvId
-        highestNumOfParentValues = numOfParentValues;
+        productParentValueLengthMap.set(parentProduct, numOfParentValues);
         productSKUListMap.set(parentProduct, [vvId]);
       }
     } else {
