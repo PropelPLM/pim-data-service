@@ -520,8 +520,6 @@ async function getLowestVariantValuesList(valuesList, namespace) {
     }
     vvId = val.Name;
 
-    if (numOfParentValues === 0) continue;
-
     if (productParentValueLengthMap.get(parentProduct)) {
       // parent product has entry in highest num of parent values tally
       highestNumOfParentValues = productParentValueLengthMap.get(parentProduct);
