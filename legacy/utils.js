@@ -521,11 +521,11 @@ async function getLowestVariantValuesList(valuesList, namespace) {
     vvId = val.Name;
     console.log('=================');
     console.log('vvId: ', vvId);
-    if (productParentValueLengthMap.get(parentProduct)) {
+    if (productParentValueLengthMap.has(parentProduct)) {
       // parent product has entry in highest num of parent values tally
       highestNumOfParentValues = productParentValueLengthMap.get(parentProduct);
       if (numOfParentValues === highestNumOfParentValues) {
-        if (productSKUListMap.get(parentProduct)) {
+        if (productSKUListMap.has(parentProduct)) {
           // add vvId to the list of lowest variants aka SKUs
           console.log('1');
           productSKUListMap.get(parentProduct).push(vvId);
