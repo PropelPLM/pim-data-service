@@ -547,7 +547,12 @@ async function getLowestVariantValuesList(valuesList, namespace) {
   return Array.from(productSKUListMap.values()).flat();
 }
 
-// converts attribute value's value__c's SObject ID to Product ID for Product Reference fields
+/**
+ * converts attribute value's value__c's SObject ID to Product ID for Product Reference fields
+ * @param attrValValue - a comma separated String of referenced products' Product__c.Id value
+ * @param reqBody - the export request body
+ * @returns {String} - a comma separated String of referenced products' Product__c.Name value aka Product ID
+ *  */
 async function parseProductReferenceAttrVal(attrValValue, reqBody) {
   if (!attrValValue) return '';
   const service = new ForceService(reqBody.hostUrl, reqBody.sessionId);
@@ -564,10 +569,9 @@ async function parseProductReferenceAttrVal(attrValValue, reqBody) {
       where Id IN (${productSobjectIds})`
     )
   );
-  products = products
+  return products
     .map(prod => {
       return prod.Name;
     })
     .join(', ');
-  return products;
 }
