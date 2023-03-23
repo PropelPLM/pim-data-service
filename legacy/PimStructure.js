@@ -11,12 +11,14 @@ const {
   getDigitalAssetMap,
   initAssetDownloadDetailsList,
   parseDigitalAssetAttrVal,
-  prepareIdsForSOQL
+  prepareIdsForSOQL,
+  parseProductReferenceAttrVal
 } = require('./utils');
 
 let helper;
 let service;
 const DA_TYPE = 'DigitalAsset';
+const PRODUCT_REFERENCE_TYPE = 'ProductReference';
 
 class PimStructure {
   constructor() {}
@@ -116,6 +118,14 @@ class PimStructure {
               helper,
               reqBody
             );
+          } else if (
+            helper.getValue(appearingValues[j], 'Attribute_Label_Type__c') ===
+            PRODUCT_REFERENCE_TYPE
+          ) {
+            attrValValue = await parseProductReferenceAttrVal(
+              attrValValue,
+              reqBody
+            );
           }
           exportRecords[0].set(appearingLabels[i].Name, attrValValue);
         }
@@ -204,6 +214,16 @@ class PimStructure {
                       attrValValue,
                       daDownloadDetailsList,
                       helper,
+                      reqBody
+                    );
+                  } else if (
+                    helper.getValue(
+                      overwrittenValues[j],
+                      'Attribute_Label_Type__c'
+                    ) === PRODUCT_REFERENCE_TYPE
+                  ) {
+                    newValue = await parseProductReferenceAttrVal(
+                      newValue,
                       reqBody
                     );
                   }
@@ -339,6 +359,16 @@ class PimStructure {
                     attrValValue,
                     daDownloadDetailsList,
                     helper,
+                    reqBody
+                  );
+                } else if (
+                  helper.getValue(
+                    overwrittenValues[j],
+                    'Attribute_Label_Type__c'
+                  ) === PRODUCT_REFERENCE_TYPE
+                ) {
+                  newValue = await parseProductReferenceAttrVal(
+                    newValue,
                     reqBody
                   );
                 }
@@ -572,6 +602,13 @@ class PimStructure {
                 helper,
                 reqBody
               );
+            } else if (
+              helper.getValue(
+                overwrittenValues[j],
+                'Attribute_Label_Type__c'
+              ) === PRODUCT_REFERENCE_TYPE
+            ) {
+              newValue = await parseProductReferenceAttrVal(newValue, reqBody);
             }
             // update the newVariant object with the overwritten values
             if (valuesList[i].Id === affectedVariantValue) {
