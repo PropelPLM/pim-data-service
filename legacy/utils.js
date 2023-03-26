@@ -548,30 +548,38 @@ async function getLowestVariantValuesList(valuesList, namespace) {
 }
 
 /**
- * converts attribute value's value__c's SObject ID to Product ID for Product Reference fields
- * @param attrValValue - a comma separated String of referenced products' Product__c.Id value
+ * converts attribute value's value__c's SObject ID to name of Product/Variant Value for Product Reference fields
+ * @param attrValValue - a comma separated String of referenced products' Product__c.Id/Variant_Value__c.Id value
  * @param reqBody - the export request body
- * @returns {String} - a comma separated String of referenced products' Product__c.Name value aka Product ID
+ * @returns {String} - a comma separated String of referenced products' Product__c.Name/Variant_Value__c.Name value
  *  */
 async function parseProductReferenceAttrVal(attrValValue, reqBody) {
   if (!attrValValue) return '';
   const service = new ForceService(reqBody.hostUrl, reqBody.sessionId);
   const helper = new PimExportHelper(reqBody.namespace);
 
-  // split the value to get the individual Product__c SObject Ids
-  let productSobjectIds = attrValValue.split(', ');
+  // split the value to get the individual Product__c/Variant_Value__c SObject Ids
+  let sobjectIds = attrValValue.split(', ');
 
-  productSobjectIds = await module.exports.prepareIdsForSOQL(productSobjectIds);
+  sobjectIds = await module.exports.prepareIdsForSOQL(sobjectIds);
   let products = await service.simpleQuery(
     helper.namespaceQuery(
       `select Id, Name
       from Product__c 
-      where Id IN (${productSobjectIds})`
+      where Id IN (${sobjectIds})`
+    )
+  );
+  let variantValues = await service.simpleQuery(
+    helper.namespaceQuery(
+      `select Id, Name
+      from Variant_Value__c 
+      where Id IN (${sobjectIds})`
     )
   );
   return products
-    .map(prod => {
-      return prod.Name;
+    .concat(variantValues)
+    .map(record => {
+      return record.Name;
     })
     .join(', ');
 }
