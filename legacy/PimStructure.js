@@ -235,7 +235,8 @@ class PimStructure {
               }
             }
             currentVariantName = currentVariant.get('Record_ID');
-            exportRecords.push(currentVariant);
+            // overwrite base product with current variant
+            exportRecords = [currentVariant];
           }
         } else if (
           exportType === 'allVariants' ||
@@ -706,7 +707,10 @@ class PimStructure {
         });
       });
     });
-    return filledInExportRecords;
+    // remove base product from current variant export
+    return exportType === 'currentVariant'
+      ? filledInExportRecords.slice(1)
+      : filledInExportRecords;
   }
 
   async createVariantValueTree(valuesList, baseProduct) {
