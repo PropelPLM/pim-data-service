@@ -1,16 +1,24 @@
+const { logErrorResponse, logSuccessResponse } = require('./utils');
 let helper;
 let service;
 
-async function PimProductManager(recordIds, pHelper, pService) {
-  helper = pHelper
-  service = pService
-  return await buildWithProductIds(recordIds);
+async function PimRecordManager(
+  recordIds,
+  pHelper,
+  pService,
+  isProduct = true
+) {
+  helper = pHelper;
+  service = pService;
+  return await buildWithRecordIds(recordIds, isProduct);
 }
 
-async function buildWithProductIds(recordIds) {
+async function buildWithRecordIds(recordIds, isProduct) {
   // ProductManager.buildWithProductIds
-  const productsList = await service.queryExtend(helper.namespaceQuery(
-    `select Id, Name, Category__c, Category__r.Name,
+  try {
+    const records = await service.queryExtend(
+      helper.namespaceQuery(
+        `select Id, Name, Category__c, Category__r.Name,
       (
         select
             Id,
@@ -29,8 +37,10 @@ async function buildWithProductIds(recordIds) {
             Value__c
         from Attributes__r
         order by Attribute_Label__r.Order__c asc
-      ),
-      (
+      )
+      ${
+        isProduct
+          ? `, (
         select
             Id,
             Name,
@@ -44,10 +54,21 @@ async function buildWithProductIds(recordIds) {
             Order__c
         from Variants__r
       )
-      from Product__c
+      from Product__c`
+          : ` from Digital_Asset__c`
+      }
       where Id IN (${service.QUERY_LIST})`.replace(/\n/g, ' ')
-  ), recordIds.split(','));
-  return productsList;
+      ),
+      recordIds.split(',')
+    );
+    logSuccessResponse(
+      `Records retrieved: ${records?.length}`,
+      '[PimRecordManager.buildWithRecordIds]'
+    );
+    return records;
+  } catch (err) {
+    logErrorResponse(err, '[PimRecordManager.buildWithRecordIds]');
+  }
 }
 
-module.exports = PimProductManager;
+module.exports = PimRecordManager;
