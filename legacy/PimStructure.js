@@ -144,8 +144,10 @@ class PimStructure {
         let valuesList = [];
 
         if (exportType === 'currentVariant') {
-          let variantValuePath = prepareIdsForSOQL(reqBody.variantValuePath);
-          if (variantValuePath.length > 0) {
+          if (reqBody.variantValuePath.length > 0) {
+            const variantValuePath = prepareIdsForSOQL(
+              reqBody.variantValuePath
+            );
             // get Variant__c object and Variant_Value__c object for every variant value in current variant
             const variantAndValueMap = await this.getVariantAndVariantValues(
               variantValuePath,
@@ -712,7 +714,8 @@ class PimStructure {
       });
     });
     // remove base product from current variant export
-    return exportType === 'currentVariant'
+    return exportType === 'currentVariant' &&
+      reqBody.variantValuePath.length > 0
       ? filledInExportRecords.slice(1)
       : filledInExportRecords;
   }
