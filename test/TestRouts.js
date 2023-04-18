@@ -52,6 +52,21 @@ describe('Import Product Test', () => {
   })
 })
 
+describe('Import Attribute Tab Test', () => {
+
+  describe('testing /import/pim/attributetab', () => {
+    it('/import/pim/attributetab post', (done) => {
+      chai.request(server)
+        .post('/import/pim/attributetab')
+        .send('{}')
+        .end((err, response) => {
+          response.body.should.have.property('success')
+        done()
+        })
+    })
+  })
+})
+
 describe('Export Product Test', () => {
 
   describe('testing /export/pim/product', () => {
