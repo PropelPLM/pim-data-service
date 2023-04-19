@@ -90,7 +90,6 @@ describe('Export Legacy Product Test', () => {
         .post('/export/legacy/pim/product')
         .send('{}')
         .end((err, response) => {
-          console.log(response.body)
           response.body.should.have.assert('{}', 'Failure: body was not {}')
         done()
         })
