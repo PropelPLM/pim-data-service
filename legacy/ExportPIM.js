@@ -191,7 +191,7 @@ function escapeString(str) {
   str = str.toString() ? str.toString() : '';
   let useEnclosingQuotes = str.indexOf(',') > -1;
   if (str.indexOf('"') > 0) {
-    str = str.replace(/['"']/g, '""');
+    str = str.replace(/"/g, '""');
     useEnclosingQuotes = true;
   }
   if (str.indexOf('\n') > -1) {
