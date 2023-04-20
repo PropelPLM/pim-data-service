@@ -39,7 +39,11 @@ class PimStructure {
 
     const asposeInput = { reqBody };
     const isProduct = reqBody.recordType == PRODUCT_TYPE;
-    let currentVariantName, templateFields, templateHeaders, useAspose;
+    let currentVariantName,
+      templateFields,
+      templateHeaders,
+      useAspose,
+      daDownloadDetailsList;
     if (reqBody.options.isTemplateExport) {
       if (reqBody.templateVersionData) {
         ({ templateFields, templateHeaders } = this.getTemplateHeadersAndFields(
@@ -84,14 +88,14 @@ class PimStructure {
         baseRecord = productVariantValueMapList[0],
         exportRecords = [baseRecord],
         exportRecordsAndColumns = [exportRecords],
-        attrValValue,
-        daDownloadDetailsList = initAssetDownloadDetailsList(
-          isProduct,
-          includeRecordAsset,
-          recordList.map(record => record.Id),
-          digitalAssetMap,
-          namespace
-        );
+        attrValValue;
+      daDownloadDetailsList = initAssetDownloadDetailsList(
+        isProduct,
+        includeRecordAsset,
+        recordList.map(record => record.Id),
+        digitalAssetMap,
+        namespace
+      );
       appearingLabelIds = prepareIdsForSOQL(appearingLabelIds);
       const { appearingLabels, appearingValues } =
         await this.parseAppearringAttrLabelsAndValues(
