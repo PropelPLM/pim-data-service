@@ -280,23 +280,21 @@ function getNestedField(object, field) {
 }
 
 // Escape special characters for build a clean .CSV file
-function cleanString(value) {
-  if (value !== undefined && value !== null) {
-    value = value.toString();
-    let useEnclosingQuotes = value.indexOf(',') > -1;
-    if (value.indexOf('"') > 0) {
-      value = value.replace(/"/g, '""');
-      useEnclosingQuotes = true;
-    }
-    if (value.indexOf('\n') > -1) {
-      useEnclosingQuotes = true;
-    }
-    if (useEnclosingQuotes) {
-      value = `"${value}"`;
-    }
-    return value;
+function cleanString(str) {
+  // check for fields which actually contain a quote, newline or comma char, need to protect those
+  str = str.toString() ? str.toString() : '';
+  let useEnclosingQuotes = str.indexOf(',') > -1;
+  if (str.includes('"')) {
+    str = str.replace(/"/g, '""');
+    useEnclosingQuotes = true;
   }
-  return '';
+  if (str.indexOf('\n') > -1) {
+    useEnclosingQuotes = true;
+  }
+  if (useEnclosingQuotes) {
+    str = '"' + str + '"';
+  }
+  return str;
 }
 
 function removeFileFromDisk(nameOnDisk) {
