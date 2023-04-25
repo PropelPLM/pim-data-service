@@ -4,6 +4,7 @@ const https = require('https');
 
 const PimStructure = require('./PimStructure');
 const {
+  cleanString,
   postToChatter,
   logErrorResponse,
   sendCsvToAsposeCells
@@ -125,7 +126,7 @@ function convertArrayOfObjectsToCSV(records, columns) {
       ) {
         recordAttributes.set(skey, recordAttributes.get(skey).Name);
       }
-      csvStringResult += escapeString(records[i].get(skey) || '');
+      csvStringResult += cleanString(records[i].get(skey) || '');
 
       counter++;
     }
@@ -184,23 +185,6 @@ async function sendDADownloadRequests(
   request.write(payload);
   request.end();
   console.log('Payload sent: ', payload);
-}
-
-function escapeString(str) {
-  // check for fields which actually contain a quote, newline or comma char, need to protect those
-  str = str.toString() ? str.toString() : '';
-  let useEnclosingQuotes = str.indexOf(',') > -1;
-  if (str.indexOf('"') > 0) {
-    str = str.replace(/"/g, '""');
-    useEnclosingQuotes = true;
-  }
-  if (str.indexOf('\n') > -1) {
-    useEnclosingQuotes = true;
-  }
-  if (useEnclosingQuotes) {
-    str = '"' + str + '"';
-  }
-  return str;
 }
 
 module.exports = LegacyExportPIM;
