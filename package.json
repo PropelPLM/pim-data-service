@@ -8,6 +8,7 @@
     "test": "mocha",
     "test:watch": "mocha --watch",
     "-----------local-tests-----------": "",
+    "attributetabimport": "node ./local/testImportAttributeTab.js",
     "categoryimport": "node ./local/testImportCategory.js",
     "productimport": "node ./local/testImportProduct.js",
     "exportproduct": "node ./local/testExportProduct.js",
