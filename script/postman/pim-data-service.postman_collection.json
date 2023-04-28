@@ -1,0 +1,98 @@
+{
+	"info": {
+		"_postman_id": "e6d0c398-2505-40d7-8f37-ce341a984982",
+		"name": "pim-data-service",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "3344322",
+		"_collection_link": "https://red-astronaut-344609.postman.co/workspace/Team-Workspace~5aee9bab-bfa5-44d3-8e2d-4cedb371592c/collection/3344322-e6d0c398-2505-40d7-8f37-ce341a984982?action=share&creator=3344322&source=collection_link"
+	},
+	"item": [
+		{
+			"name": "Attribute Tab Import",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"batchsize\": 3,\n    \"clientId\": \"3MVG9vDPWAliPr7qI2eOWh9MTRBEzmvX6wKco2wZIs46S42fsNODO7MyZIMxJgQB0qycwRNnwAFCebFZ7Pspf\",\n    \"data\": \"name,classification,rank,category_associations\\nTab A,Product,5,12022\\nTab B,Product,6,12033;11021\\n\",\n    \"isTest\": false,\n    \"mapping\": {},\n    \"namespace\": \"PIM\",\n    \"orgId\": \"00D7i000000UO0T\",\n    \"options\": {},\n    \"skipDB\": true,\n    \"user\": \"test-lwa0dgwoissf@example.com\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:7001/import/pim/attributetab",
+					"host": [
+						"localhost"
+					],
+					"port": "7001",
+					"path": [
+						"import",
+						"pim",
+						"attributetab"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Category Import",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"batchsize\": 3,\n    \"clientId\": \"3MVG9vDPWAliPr7qI2eOWh9MTRBEzmvX6wKco2wZIs46S42fsNODO7MyZIMxJgQB0qycwRNnwAFCebFZ7Pspf\",\n    \"data\": \"name,category_id,parent_category,parent_category_id\\nNew Category Import Test - Level 1,43988,Mikes Test,123456\\nNew Category Import Test - Level 2,43989,New Category\\nImport Test - Level 1,43988\\nNew Category Import Test - Level 3,43990,New Category Import Test - Level 2,43989\\nNew Category Import Test - Level 4,43991,New Category Import Test - Level 3,43990\\n\",\n    \"isTest\": false,\n    \"mapping\": {},\n    \"namespace\": \"PIM\",\n    \"orgId\": \"00D7i000000UO0T\",\n    \"options\": {},\n    \"skipDB\": true,\n    \"user\": \"test-lwa0dgwoissf@example.com\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:7001/import/pim/category",
+					"host": [
+						"localhost"
+					],
+					"port": "7001",
+					"path": [
+						"import",
+						"pim",
+						"category"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Product Import",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"batchsize\": 3,\n    \"clientId\": \"3MVG9vDPWAliPr7qI2eOWh9MTRBEzmvX6wKco2wZIs46S42fsNODO7MyZIMxJgQB0qycwRNnwAFCebFZ7Pspf\",\n    \"data\": \"product_id,parent_id,v_level,manufacturer_id,lifecycle_stage,release_status,active_quality_issues,highest_level_product_id,category_id,variant_0,variant_1\\nTry_test,,0,Manufacture-id -Printer Parent-1,In Progress,Not Released,None,,11011,,\\nTry_test_child,Try_test,1,Manufacture-id -DR-Printer child-1-1,,,,Try_test,11011,black,\\nTry_test_grandchild,Try_test_child,2,Manufacture-id -DR-Printer grandchild-1-11-6,Complete,In Review,,Try_test,11011,,small\\n\",\n    \"isTest\": false,\n    \"mapping\": {},\n    \"namespace\": \"PIM\",\n    \"orgId\": \"00D7i000000UO0T\",\n    \"options\": {},\n    \"skipDB\": true,\n    \"user\": \"test-lwa0dgwoissf@example.com\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:7001/import/pim/product",
+					"host": [
+						"localhost"
+					],
+					"port": "7001",
+					"path": [
+						"import",
+						"pim",
+						"product"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
