@@ -4,6 +4,8 @@
 
 # Export
 
+# Local Testing setup, https://propelplm.atlassian.net/wiki/spaces/TC/pages/1973223444/Local+development+in+Heroku
+
 ## Product List Page Export
 ### salesforce sends
 - a list of product record ids
