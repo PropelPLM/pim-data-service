@@ -2,6 +2,9 @@ var fs = require('fs');
 var crypto = require('crypto');
 const https = require('https');
 
+// adding the propel-sfdc-connect package
+const propelConnect = require('@propelsoftwaresolutions/propel-sfdc-connect');
+
 const PimStructure = require('./PimStructure');
 const {
   cleanString,
@@ -17,6 +20,17 @@ async function LegacyExportPIM(req) {
   if (reqBody.recordIds.length == 0) {
     return 'Error';
   }
+
+  // highjacking the flow here are inserting the session id from the JWT flow
+  const response = await propelConnect.jwtSession({
+    clientId: reqBody.clientId,
+    isTest: reqBody.isTest,
+    privateKey: process.env.PIM_DATA_SERVICE_KEY,
+    user: reqBody.user
+  })
+  reqBody.sessionId = response.access_token;
+  if (!reqBody.sessionId) { return 'Error - no session id'; }
+
   let daDownloadDetailsList, recordsAndCols;
   try {
     ({ daDownloadDetailsList, recordsAndCols } = await new PimStructure().build(
