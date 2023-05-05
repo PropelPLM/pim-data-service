@@ -43,7 +43,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"batchsize\": 3,\n    \"clientId\": \"3MVG9vDPWAliPr7qI2eOWh9MTRBEzmvX6wKco2wZIs46S42fsNODO7MyZIMxJgQB0qycwRNnwAFCebFZ7Pspf\",\n    \"data\": \"name,category_id,parent_category,parent_category_id\\nNew Category Import Test - Level 1,43988,Mikes Test,123456\\nNew Category Import Test - Level 2,43989,New Category\\nImport Test - Level 1,43988\\nNew Category Import Test - Level 3,43990,New Category Import Test - Level 2,43989\\nNew Category Import Test - Level 4,43991,New Category Import Test - Level 3,43990\\n\",\n    \"isTest\": false,\n    \"mapping\": {},\n    \"namespace\": \"PIM\",\n    \"orgId\": \"00D7i000000UO0T\",\n    \"options\": {},\n    \"skipDB\": true,\n    \"user\": \"test-lwa0dgwoissf@example.com\"\n}",
+					"raw": "{\n    \"batchsize\": 3,\n    \"clientId\": \"3MVG9vDPWAliPr7qI2eOWh9MTRBEzmvX6wKco2wZIs46S42fsNODO7MyZIMxJgQB0qycwRNnwAFCebFZ7Pspf\",\n    \"data\": \"name,category_id,parent_category,parent_category_id\\nNew Category Import Test - Level 1,43988,Crazy Cool Clothes and More,10000\\nNew Category Import Test - Level 2,43989,New Category Import Test - Level 1,43988\\nNew Category Import Test - Level 3,43990,New Category Import Test - Level 2,43989\\nNew Category Import Test - Level 4,43991,New Category Import Test - Level 3,43990\",\n    \"isTest\": true,\n    \"mapping\": {},\n    \"namespace\": \"PIM\",\n    \"orgId\": \"00D7i000000UO0T\",\n    \"options\": {},\n    \"skipDB\": true,\n    \"user\": \"test-lwa0dgwoissf@example.com\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -72,7 +72,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"batchsize\": 3,\n    \"clientId\": \"3MVG9vDPWAliPr7qI2eOWh9MTRBEzmvX6wKco2wZIs46S42fsNODO7MyZIMxJgQB0qycwRNnwAFCebFZ7Pspf\",\n    \"data\": \"product_id,parent_id,v_level,manufacturer_id,lifecycle_stage,release_status,active_quality_issues,highest_level_product_id,category_id,variant_0,variant_1\\nTry_test,,0,Manufacture-id -Printer Parent-1,In Progress,Not Released,None,,11011,,\\nTry_test_child,Try_test,1,Manufacture-id -DR-Printer child-1-1,,,,Try_test,11011,black,\\nTry_test_grandchild,Try_test_child,2,Manufacture-id -DR-Printer grandchild-1-11-6,Complete,In Review,,Try_test,11011,,small\\n\",\n    \"isTest\": false,\n    \"mapping\": {},\n    \"namespace\": \"PIM\",\n    \"orgId\": \"00D7i000000UO0T\",\n    \"options\": {},\n    \"skipDB\": true,\n    \"user\": \"test-lwa0dgwoissf@example.com\"\n}",
+					"raw": "{\n    \"batchsize\": 3,\n    \"clientId\": \"3MVG9vDPWAliPr7qI2eOWh9MTRBEzmvX6wKco2wZIs46S42fsNODO7MyZIMxJgQB0qycwRNnwAFCebFZ7Pspf\",\n    \"data\": \"product_id,parent_id,v_level,manufacturer_id,lifecycle_stage,release_status,active_quality_issues,highest_level_product_id,category_id,variant_0,variant_1\\nTry_test,,0,Manufacture-id -Printer Parent-1,In Progress,Not Released,None,,11011,,\\nTry_test_child,Try_test,1,Manufacture-id -DR-Printer child-1-1,,,,Try_test,11011,black,\\nTry_test_grandchild,Try_test_child,2,Manufacture-id -DR-Printer grandchild-1-11-6,Complete,In Review,,Try_test,11011,,small\\n\",\n    \"isTest\": true,\n    \"mapping\": {},\n    \"namespace\": \"PIM\",\n    \"orgId\": \"00D7i000000UO0T\",\n    \"options\": {},\n    \"skipDB\": true,\n    \"user\": \"test-lwa0dgwoissf@example.com\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
