@@ -42,6 +42,7 @@ app.post('/import/pim/attributetab', (req, res) => {
   } catch (error) {
     ERROR_OBJ.message = error;
     res.status(400).send(ERROR_OBJ);
+    console.error(ERROR_OBJ)
   }
 });
 
@@ -55,6 +56,7 @@ app.post('/import/pim/category', (req, res) => {
   } catch (error) {
     ERROR_OBJ.message = error;
     res.status(400).send(ERROR_OBJ);
+    console.error(ERROR_OBJ)
   }
 });
 
@@ -68,6 +70,7 @@ app.post('/import/pim/product', (req, res) => {
   } catch (error) {
     ERROR_OBJ.message = error;
     res.status(400).send(ERROR_OBJ);
+    console.error(ERROR_OBJ)
   }
 });
 
@@ -81,6 +84,7 @@ app.post('/export/pim/product', (req, res) => {
   } catch (error) {
     ERROR_OBJ.message = error;
     res.status(400).send(ERROR_OBJ);
+    console.error(ERROR_OBJ)
   }
 });
 
