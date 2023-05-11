@@ -23,7 +23,7 @@ async function LegacyExportPIM(req) {
 
   // highjacking the flow here are inserting the session id from the JWT flow
   const response = await propelConnect.jwtSession({
-    clientId: reqBody.clientId,
+    clientId: (reqBody.clientId) ? reqBody.clientId :process.env.PIM_DATA_SERVICE_CLIENT_ID,
     isTest: reqBody.isTest,
     privateKey: process.env.PIM_DATA_SERVICE_KEY,
     user: reqBody.user
