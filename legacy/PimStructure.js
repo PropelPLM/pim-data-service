@@ -394,6 +394,8 @@ class PimStructure {
                 valuesList,
                 reqBody.namespace
               );
+              // remove base product from exportRecords
+              exportRecords = [];
               // push only the lowest level variant values (i.e. SKUs)
               lowestLevelVariantValues.forEach(vvId => {
                 if (newVariant.get('Record_ID') === vvId) {
@@ -718,7 +720,8 @@ class PimStructure {
       });
     });
     // remove base product from current variant export
-    return exportType === 'currentVariant' &&
+    return (exportType === 'currentVariant' ||
+      exportType === 'lowestVariants') &&
       reqBody.variantValuePath.length > 0
       ? filledInExportRecords.slice(1)
       : filledInExportRecords;
