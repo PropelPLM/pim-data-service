@@ -15,6 +15,7 @@ module.exports = app.listen(process.env.PORT || 5001);
 /**
  * objects used in routes
  */
+const ImportAttributeGroup = require('./lib/ImportAttributeGroup')
 const ImportAttributeTab = require('./lib/ImportAttributeTab');
 const ImportCategory = require('./lib/ImportCategory');
 const ImportProduct = require('./lib/ImportProduct');
@@ -30,6 +31,20 @@ const SUCCESS_OBJ = { message: 'Request received', success: true };
  */
 app.get('/', (req, res) => {
   res.status(200).send('Propel PIM data server is running.');
+});
+
+/**
+ * route for importing pim Attribute Groups
+ */
+app.post('/import/pim/attributegroup', (req, res) => {
+  try {
+    new ImportAttributeGroup(req, res);
+    res.status(200).send(SUCCESS_OBJ);
+  } catch (error) {
+    ERROR_OBJ.message = error;
+    res.status(400).send(ERROR_OBJ);
+    console.error(ERROR_OBJ)
+  }
 });
 
 /**
