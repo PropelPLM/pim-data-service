@@ -1,4 +1,4 @@
-class PimAttribute {
+class PimAttributeValue {
 
   /**
    * @param {PropelHelper} helper
@@ -59,4 +59,4 @@ class PimAttribute {
   }
 }
 
-module.exports = PimAttribute
+module.exports = PimAttributeValue

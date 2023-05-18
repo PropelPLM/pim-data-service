@@ -16,6 +16,7 @@ module.exports = app.listen(process.env.PORT || 5001);
  * objects used in routes
  */
 const ImportAttributeGroup = require('./lib/ImportAttributeGroup')
+const ImportAttributeLabel = require('./lib/ImportAttributeLabel')
 const ImportAttributeTab = require('./lib/ImportAttributeTab');
 const ImportCategory = require('./lib/ImportCategory');
 const ImportProduct = require('./lib/ImportProduct');
@@ -39,6 +40,20 @@ app.get('/', (req, res) => {
 app.post('/import/pim/attributegroup', (req, res) => {
   try {
     new ImportAttributeGroup(req, res);
+    res.status(200).send(SUCCESS_OBJ);
+  } catch (error) {
+    ERROR_OBJ.message = error;
+    res.status(400).send(ERROR_OBJ);
+    console.error(ERROR_OBJ)
+  }
+});
+
+/**
+ * route for importing pim Attribute Labels
+ */
+app.post('/import/pim/attributelabel', (req, res) => {
+  try {
+    new ImportAttributeLabel(req, res);
     res.status(200).send(SUCCESS_OBJ);
   } catch (error) {
     ERROR_OBJ.message = error;
