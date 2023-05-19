@@ -66,6 +66,35 @@
 			"response": []
 		},
 		{
+			"name": "Attribute Label Import",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"batchsize\": 3,\n    \"data\": \"name,attribute_group,localizable,searchable,classification,rank,category_associations\\nLabel A,Group A,false,true,Product,1,300300;500000\\nLabel B,Group B,true,false,Product,1,350350;351350\\n\",\n    \"isTest\": true,\n    \"mapping\": {},\n    \"namespace\": \"\",\n    \"orgId\": \"00D7i000000UO0T\",\n    \"options\": {},\n    \"skipDB\": true,\n    \"user\": \"test-xqahb6uhwa70@example.com\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:7001/import/pim/attributelabel",
+					"host": [
+						"localhost"
+					],
+					"port": "7001",
+					"path": [
+						"import",
+						"pim",
+						"attributelabel"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "Category Import",
 			"request": {
 				"method": "POST",

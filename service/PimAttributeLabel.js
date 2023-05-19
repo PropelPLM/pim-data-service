@@ -22,6 +22,14 @@ class PimAttributeLabel {
     }
   }
 
+  getNameMap() {
+    return new Map(
+      this.attributeLabels.map(attributeLabel => {
+        return [attributeLabel.Name, attributeLabel.Id]
+      })
+    )
+  }
+
   /**
    * 
    * @returns map of primary key and sobject Id
