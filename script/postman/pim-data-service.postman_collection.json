@@ -1,10 +1,8 @@
 {
 	"info": {
-		"_postman_id": "e6d0c398-2505-40d7-8f37-ce341a984982",
+		"_postman_id": "0a56acad-4aff-4eeb-becc-67c12e513fbb",
 		"name": "pim-data-service",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "3344322",
-		"_collection_link": "https://red-astronaut-344609.postman.co/workspace/Team-Workspace~5aee9bab-bfa5-44d3-8e2d-4cedb371592c/collection/3344322-e6d0c398-2505-40d7-8f37-ce341a984982?action=share&creator=3344322&source=collection_link"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
@@ -14,10 +12,10 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"batchsize\": 3,\n    \"data\": \"name,classification,rank,category_associations\\nTab A,Product,5,12022\\nTab B,Product,6,12033;11021\\n\",\n    \"dataType\": \"csv\",\n    \"isTest\": true,\n    \"mapping\": {},\n    \"namespace\": \"\",\n    \"orgId\": \"00D7i000000UO0T\",\n    \"options\": {},\n    \"skipDB\": true,\n    \"user\": \"test-xqahb6uhwa70@example.com\"\n}",
+					"raw": "{\n    \"batchsize\": 3,\n    \"data\": \"bmFtZSxjbGFzc2lmaWNhdGlvbixyYW5rLGNhdGVnb3J5X2Fzc29jaWF0aW9uc1xuVGFiIEEsUHJvZHVjdCw1LDEyMDIyXG5UYWIgQixQcm9kdWN0LDYsMTIwMzM7MTEwMjFcbg==\",\n    \"dataType\": \"csv\",\n    \"isTest\": true,\n    \"mapping\": {},\n    \"namespace\": \"\",\n    \"orgId\": \"00D7i000000UO0T\",\n    \"options\": {},\n    \"skipDB\": true,\n    \"user\": \"test-xqahb6uhwa70@example.com\"\n}",
 					"options": {
 						"raw": {
-							"language": "json"
+							"language": "text"
 						}
 					}
 				},
@@ -43,10 +41,10 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"batchsize\": 3,\n    \"data\": \"name,attribute_tab,classification,rank,category_associations\\nGroup A,Tab A,Product,5,12022\\nGroup B,Tab B,Product,6,12033;11021\\n\",\n    \"isTest\": true,\n    \"mapping\": {},\n    \"namespace\": \"\",\n    \"orgId\": \"00D7i000000UO0T\",\n    \"options\": {},\n    \"skipDB\": true,\n    \"user\": \"test-xqahb6uhwa70@example.com\"\n}",
+					"raw": "{\n    \"batchsize\": 3,\n    \"data\": \"bmFtZSxhdHRyaWJ1dGVfdGFiLGNsYXNzaWZpY2F0aW9uLHJhbmssY2F0ZWdvcnlfYXNzb2NpYXRpb25zXG5Hcm91cCBBLFRhYiBBLFByb2R1Y3QsNSwxMjAyMlxuR3JvdXAgQixUYWIgQixQcm9kdWN0LDYsMTIwMzM7MTEwMjFcbg==\",\n    \"isTest\": true,\n    \"mapping\": {},\n    \"namespace\": \"\",\n    \"orgId\": \"00D7i000000UO0T\",\n    \"options\": {},\n    \"skipDB\": true,\n    \"user\": \"test-xqahb6uhwa70@example.com\"\n}",
 					"options": {
 						"raw": {
-							"language": "json"
+							"language": "text"
 						}
 					}
 				},
@@ -72,10 +70,10 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"batchsize\": 3,\n    \"data\": \"name,attribute_group,localizable,searchable,classification,rank,category_associations\\nLabel A,Group A,false,true,Product,1,300300;500000\\nLabel B,Group B,true,false,Product,1,350350;351350\\n\",\n    \"isTest\": true,\n    \"mapping\": {},\n    \"namespace\": \"\",\n    \"orgId\": \"00D7i000000UO0T\",\n    \"options\": {},\n    \"skipDB\": true,\n    \"user\": \"test-xqahb6uhwa70@example.com\"\n}",
+					"raw": "{\n    \"batchsize\": 3,\n    \"data\": \"bmFtZSxhdHRyaWJ1dGVfZ3JvdXAsbG9jYWxpemFibGUsc2VhcmNoYWJsZSxjbGFzc2lmaWNhdGlvbixyYW5rLGNhdGVnb3J5X2Fzc29jaWF0aW9uc1xuTGFiZWwgQSxHcm91cCBBLGZhbHNlLHRydWUsUHJvZHVjdCwxLDMwMDMwMDs1MDAwMDBcbkxhYmVsIEIsR3JvdXAgQix0cnVlLGZhbHNlLFByb2R1Y3QsMSwzNTAzNTA7MzUxMzUwXG4=\",\n    \"isTest\": true,\n    \"mapping\": {},\n    \"namespace\": \"\",\n    \"orgId\": \"00D7i000000UO0T\",\n    \"options\": {},\n    \"skipDB\": true,\n    \"user\": \"test-xqahb6uhwa70@example.com\"\n}",
 					"options": {
 						"raw": {
-							"language": "json"
+							"language": "text"
 						}
 					}
 				},
@@ -101,10 +99,10 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"batchsize\": 3,\n    \"data\": \"name,category_id,parent_category,parent_category_id\\nNew Category Import Test - Level 1,43988,Crazy Cool Clothes and More,10000\\nNew Category Import Test - Level 2,43989,New Category Import Test - Level 1,43988\\nNew Category Import Test - Level 3,43990,New Category Import Test - Level 2,43989\\nNew Category Import Test - Level 4,43991,New Category Import Test - Level 3,43990\",\n    \"isTest\": true,\n    \"mapping\": {},\n    \"namespace\": \"\",\n    \"orgId\": \"00D7i000000UO0T\",\n    \"options\": {},\n    \"skipDB\": true,\n    \"user\": \"test-xqahb6uhwa70@example.com\"\n}",
+					"raw": "{\n    \"batchsize\": 3,\n    \"data\": \"bmFtZSxjYXRlZ29yeV9pZCxwYXJlbnRfY2F0ZWdvcnkscGFyZW50X2NhdGVnb3J5X2lkXG5OZXcgQ2F0ZWdvcnkgSW1wb3J0IFRlc3QgLSBMZXZlbCAxLDQzOTg4LENyYXp5IENvb2wgQ2xvdGhlcyBhbmQgTW9yZSwxMDAwMFxuTmV3IENhdGVnb3J5IEltcG9ydCBUZXN0IC0gTGV2ZWwgMiw0Mzk4OSxOZXcgQ2F0ZWdvcnkgSW1wb3J0IFRlc3QgLSBMZXZlbCAxLDQzOTg4XG5OZXcgQ2F0ZWdvcnkgSW1wb3J0IFRlc3QgLSBMZXZlbCAzLDQzOTkwLE5ldyBDYXRlZ29yeSBJbXBvcnQgVGVzdCAtIExldmVsIDIsNDM5ODlcbk5ldyBDYXRlZ29yeSBJbXBvcnQgVGVzdCAtIExldmVsIDQsNDM5OTEsTmV3IENhdGVnb3J5IEltcG9ydCBUZXN0IC0gTGV2ZWwgMyw0Mzk5MA==\",\n    \"isTest\": true,\n    \"mapping\": {},\n    \"namespace\": \"\",\n    \"orgId\": \"00D7i000000UO0T\",\n    \"options\": {},\n    \"skipDB\": true,\n    \"user\": \"test-xqahb6uhwa70@example.com\"\n}",
 					"options": {
 						"raw": {
-							"language": "json"
+							"language": "text"
 						}
 					}
 				},
@@ -130,10 +128,10 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"batchsize\": 3,\n    \"data\": \"product_id,parent_id,v_level,manufacturer_id,lifecycle_stage,release_status,active_quality_issues,highest_level_product_id,category_id,variant_0,variant_1\\nTry_test,,0,Manufacture-id -Printer Parent-1,In Progress,Not Released,None,,11011,,\\nTry_test_child,Try_test,1,Manufacture-id -DR-Printer child-1-1,,,,Try_test,11011,black,\\nTry_test_grandchild,Try_test_child,2,Manufacture-id -DR-Printer grandchild-1-11-6,Complete,In Review,,Try_test,11011,,small\\n\",\n    \"isTest\": true,\n    \"mapping\": {},\n    \"namespace\": \"\",\n    \"orgId\": \"00D7i000000UO0T\",\n    \"options\": {},\n    \"skipDB\": true,\n    \"user\": \"test-lwa0dgwoissf@example.com\"\n}",
+					"raw": "{\n    \"batchsize\": 3,\n    \"data\": \"cHJvZHVjdF9pZCxwYXJlbnRfaWQsdl9sZXZlbCxtYW51ZmFjdHVyZXJfaWQsbGlmZWN5Y2xlX3N0YWdlLHJlbGVhc2Vfc3RhdHVzLGFjdGl2ZV9xdWFsaXR5X2lzc3VlcyxoaWdoZXN0X2xldmVsX3Byb2R1Y3RfaWQsY2F0ZWdvcnlfaWQsdmFyaWFudF8wLHZhcmlhbnRfMVxuVHJ5X3Rlc3QsLDAsTWFudWZhY3R1cmUtaWQgLVByaW50ZXIgUGFyZW50LTEsSW4gUHJvZ3Jlc3MsTm90IFJlbGVhc2VkLE5vbmUsLDExMDExLCxcblRyeV90ZXN0X2NoaWxkLFRyeV90ZXN0LDEsTWFudWZhY3R1cmUtaWQgLURSLVByaW50ZXIgY2hpbGQtMS0xLCwsLFRyeV90ZXN0LDExMDExLGJsYWNrLFxuVHJ5X3Rlc3RfZ3JhbmRjaGlsZCxUcnlfdGVzdF9jaGlsZCwyLE1hbnVmYWN0dXJlLWlkIC1EUi1QcmludGVyIGdyYW5kY2hpbGQtMS0xMS02LENvbXBsZXRlLEluIFJldmlldywsVHJ5X3Rlc3QsMTEwMTEsLHNtYWxsXG4=\",\n    \"isTest\": true,\n    \"mapping\": {},\n    \"namespace\": \"\",\n    \"orgId\": \"00D7i000000UO0T\",\n    \"options\": {},\n    \"skipDB\": true,\n    \"user\": \"test-lwa0dgwoissf@example.com\"\n}",
 					"options": {
 						"raw": {
-							"language": "json"
+							"language": "text"
 						}
 					}
 				},
