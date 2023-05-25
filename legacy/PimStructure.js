@@ -394,8 +394,6 @@ class PimStructure {
                 valuesList,
                 reqBody.namespace
               );
-              // remove base product from exportRecords
-              exportRecords = [];
               // push only the lowest level variant values (i.e. SKUs)
               lowestLevelVariantValues.forEach(vvId => {
                 if (newVariant.get('Record_ID') === vvId) {
@@ -409,24 +407,30 @@ class PimStructure {
         } else {
           throw 'Invalid Export Type';
         }
-        exportRecordsAndColumns = reqBody.isInherited
-          ? [
-              await this.fillInInheritedData(
-                baseRecord,
-                exportRecords,
-                valuesList,
-                exportType,
-                productVariantValueMapList,
-                recordIds,
-                appearingLabelIds,
-                appearingLabels,
-                currentVariantName,
-                reqBody,
-                digitalAssetMap,
-                daDownloadDetailsList
-              )
-            ]
-          : [exportRecords];
+
+        if (reqBody.isInherited) {
+          exportRecordsAndColumns = [
+            await this.fillInInheritedData(
+              baseRecord,
+              exportRecords,
+              valuesList,
+              exportType,
+              productVariantValueMapList,
+              recordIds,
+              appearingLabelIds,
+              appearingLabels,
+              currentVariantName,
+              reqBody,
+              digitalAssetMap,
+              daDownloadDetailsList
+            )
+          ];
+        } else if (exportType === 'lowestVariants') {
+          // remove base product from list of lowest variants
+          exportRecordsAndColumns = [exportRecords.slice(1)];
+        } else {
+          exportRecordsAndColumns = [exportRecords];
+        }
       }
       exportRecordsColsAndAssets = {
         daDownloadDetailsList,
