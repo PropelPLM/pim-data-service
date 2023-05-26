@@ -723,10 +723,10 @@ class PimStructure {
         });
       });
     });
-    // remove base product from current variant export
-    return (exportType === 'currentVariant' ||
-      exportType === 'lowestVariants') &&
-      reqBody.variantValuePath.length > 0
+    // remove base product from SKU export or current variant export (if current record is not base product)
+    return (exportType === 'currentVariant' &&
+      reqBody.variantValuePath.length > 0) ||
+      exportType === 'lowestVariants'
       ? filledInExportRecords.slice(1)
       : filledInExportRecords;
   }
