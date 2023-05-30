@@ -153,6 +153,8 @@ class PimStructure {
             const variantValuePath = prepareIdsForSOQL(
               reqBody.variantValuePath
             );
+            console.log('reqBody.variantValuePath: ', reqBody.variantValuePath);
+            console.log('reqBody.variantValueIds: ', reqBody.variantValueIds);
             // get Variant__c object and Variant_Value__c object for every variant value in current variant
             const variantAndValueMap = await this.getVariantAndVariantValues(
               variantValuePath,
@@ -467,12 +469,10 @@ class PimStructure {
     variantValueIds.split(', ').forEach(id => {
       valueIds.push(id);
     });
-    console.log('valueIds1 ', valueIds);
     valueIds =
       exportType === 'allVariants' || exportType === 'lowestVariants'
         ? prepareIdsForSOQL(valueIds)
         : valueIds;
-    console.log('valueIds2 ', valueIds);
     let returnMap = new Map();
     let values = await service.simpleQuery(
       helper.namespaceQuery(
@@ -488,7 +488,6 @@ class PimStructure {
         where Id IN (${valueIds})`
       )
     );
-    console.log('values1: ', values);
 
     let tempVariant;
     values.forEach(value => {
@@ -502,7 +501,6 @@ class PimStructure {
         returnMap.set(tempVariant, [value]);
       }
     });
-    console.log('returnMap: ', returnMap);
     return returnMap;
   }
 
