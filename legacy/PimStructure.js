@@ -163,6 +163,7 @@ class PimStructure {
             let currentVariant = new Map();
             const varList = Array.from(variantAndValueMap.keys());
             valuesList = Array.from(variantAndValueMap.values()); // note: this is an array of arrays
+            console.log('valuesList: ', valuesList);
             let valuesIdList = [];
             valuesList.forEach(val => {
               valuesIdList.push(val[0].Id);
@@ -196,9 +197,6 @@ class PimStructure {
                 'overwrittenValues.length: ',
                 overwrittenValues.length
               );
-              console.log('valuesIdList: ', valuesIdList);
-              console.log('recordIds: ', recordIds);
-              console.log('appearingLabelIds: ', appearingLabelIds);
               if (overwrittenValues.length > 0) {
                 for (let j = 0; j < overwrittenValues.length; j++) {
                   console.log('overwrittenValues[j]: ', overwrittenValues[j]);
