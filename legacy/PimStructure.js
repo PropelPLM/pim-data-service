@@ -104,7 +104,6 @@ class PimStructure {
         );
       for (let i = 0; i < appearingLabels.length; i++) {
         // add the base product's attribute values
-        console.log('appearingLabel.Name: ', appearingLabels[i].Name);
         for (let j = 0; j < appearingValues.length; j++) {
           if (
             helper.getValue(appearingValues[j], 'Attribute_Label__c') !==
@@ -116,8 +115,6 @@ class PimStructure {
           )
             continue;
           attrValValue = helper.getValue(appearingValues[j], 'Value__c');
-          console.log('attr val val raw: ', appearingValues[j]);
-          console.log('==========================');
           if (
             helper.getValue(appearingValues[j], 'Attribute_Label_Type__c') ===
             DA_TYPE
@@ -195,8 +192,13 @@ class PimStructure {
               );
 
               // add any overwritten values
+              console.log(
+                'overwrittenValues.length: ',
+                overwrittenValues.length
+              );
               if (overwrittenValues.length > 0) {
                 for (let j = 0; j < overwrittenValues.length; j++) {
+                  console.log('overwrittenValues[j]: ', overwrittenValues[j]);
                   let affectedLabelName;
                   appearingLabels.forEach(label => {
                     if (
