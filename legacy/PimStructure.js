@@ -116,7 +116,10 @@ class PimStructure {
           )
             continue;
           attrValValue = helper.getValue(appearingValues[j], 'Value__c');
-          console.log('attr val val: ', attrValValue);
+          console.log(
+            'attr val val type: ',
+            helper.getValue(appearingValues[j], 'Attribute_Label_Type__c')
+          );
           console.log('==========================');
           if (
             helper.getValue(appearingValues[j], 'Attribute_Label_Type__c') ===
