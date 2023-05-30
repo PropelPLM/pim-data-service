@@ -196,6 +196,9 @@ class PimStructure {
                 'overwrittenValues.length: ',
                 overwrittenValues.length
               );
+              console.log('valuesIdList: ', valuesIdList);
+              console.log('recordIds: ', recordIds);
+              console.log('appearingLabelIds: ', appearingLabelIds);
               if (overwrittenValues.length > 0) {
                 for (let j = 0; j < overwrittenValues.length; j++) {
                   console.log('overwrittenValues[j]: ', overwrittenValues[j]);
