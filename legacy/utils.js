@@ -67,11 +67,15 @@ initAssetDownloadDetailsList = (
 ) => {
   const daDownloadDetails = [];
   if (isProduct || !includeRecordAsset) return daDownloadDetails;
-
+  console.log('breakpoint 1');
   recordIds.forEach(recordId => {
+    console.log('breakpoint 2: ', recordId);
     const digitalAsset = digitalAssetMap?.get(recordId);
+    console.log('breakpoint 3: ', digitalAsset);
     if (!digitalAsset) return;
+    console.log('push occurred');
     daDownloadDetails.push(new DADownloadDetails(digitalAsset, namespace));
+    console.log('daDownloadDetails: ', daDownloadDetails);
   });
   return daDownloadDetails;
 };
