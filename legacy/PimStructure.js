@@ -163,7 +163,8 @@ class PimStructure {
             let currentVariant = new Map();
             const varList = Array.from(variantAndValueMap.keys());
             valuesList = Array.from(variantAndValueMap.values()); // note: this is an array of arrays
-            console.log('valuesList: ', valuesList);
+            console.log('reqBody.variantValuePath: ', reqBody.variantValuePath);
+            console.log('variantValuePath: ', variantValuePath);
             let valuesIdList = [];
             valuesList.forEach(val => {
               valuesIdList.push(val[0].Id);
