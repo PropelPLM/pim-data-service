@@ -104,6 +104,7 @@ class PimStructure {
         );
       for (let i = 0; i < appearingLabels.length; i++) {
         // add the base product's attribute values
+        console.log('appearingLabel: ', appearingLabels[i]);
         for (let j = 0; j < appearingValues.length; j++) {
           if (
             helper.getValue(appearingValues[j], 'Attribute_Label__c') !==
