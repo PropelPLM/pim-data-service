@@ -4,7 +4,8 @@ class PimAttributeLabel {
    * @param {PropelHelper} helper
    * @param {PropelLog} log
    */
-  constructor(helper, log) {
+  constructor(helper, log, names = []) {
+    this.attributeLabelNames = names
     this.attributeLabels = []
     this.helper = helper
     this.log = log
@@ -12,8 +13,12 @@ class PimAttributeLabel {
 
   async populate() {
     try {
+      let basedQueryStr = `select Id, Name, Primary_Key__c from Attribute_Label__c`
+      if (this.attributeLabelNames?.length) {
+        basedQueryStr += ` where Name in (${this.attributeLabelNames.join(',')})`
+      }
       this.attributeLabels = await this.helper.connection.queryLimit(this.helper.namespaceQuery(
-        `select Id, Name, Primary_Key__c from Attribute_Label__c`
+        basedQueryStr
       ))
     } catch(error) {
       this.log.addToLogs([{errors: [error] }], this.helper.namespace('Attribute_Label__c'))
@@ -31,7 +36,7 @@ class PimAttributeLabel {
   }
 
   /**
-   * 
+   *
    * @returns map of primary key and sobject Id
    */
   getPrimaryKeyIdMap() {

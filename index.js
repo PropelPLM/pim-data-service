@@ -15,6 +15,7 @@ module.exports = app.listen(process.env.PORT || 5001);
 /**
  * objects used in routes
  */
+const ImportAssetLink = require('./lib/ImportAssetLink')
 const ImportAttributeGroup = require('./lib/ImportAttributeGroup')
 const ImportAttributeLabel = require('./lib/ImportAttributeLabel')
 const ImportAttributeTab = require('./lib/ImportAttributeTab');
@@ -96,6 +97,20 @@ app.post('/import/pim/category', (req, res) => {
 app.post('/import/pim/product', (req, res) => {
   try {
     new ImportProduct(req, res);
+    res.status(200).send(SUCCESS_OBJ);
+  } catch (error) {
+    ERROR_OBJ.message = error;
+    res.status(400).send(ERROR_OBJ);
+    console.error(ERROR_OBJ)
+  }
+});
+
+/**
+ * route for importing pim Digital Asset Link to Product
+ */
+app.post('/import/pim/assetlink', (req, res) => {
+  try {
+    new ImportAssetLink(req, res);
     res.status(200).send(SUCCESS_OBJ);
   } catch (error) {
     ERROR_OBJ.message = error;
