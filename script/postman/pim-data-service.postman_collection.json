@@ -1,8 +1,10 @@
 {
 	"info": {
-		"_postman_id": "0a56acad-4aff-4eeb-becc-67c12e513fbb",
+		"_postman_id": "1c7afb10-bbff-4038-b191-b16c7b2c934a",
 		"name": "pim-data-service",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "3344322",
+		"_collection_link": "https://red-astronaut-344609.postman.co/workspace/Team-Workspace~5aee9bab-bfa5-44d3-8e2d-4cedb371592c/collection/3344322-1c7afb10-bbff-4038-b191-b16c7b2c934a?action=share&creator=3344322&source=collection_link"
 	},
 	"item": [
 		{
@@ -15,7 +17,7 @@
 					"raw": "{\n    \"batchsize\": 3,\n    \"data\": \"bmFtZSxjbGFzc2lmaWNhdGlvbixyYW5rLGNhdGVnb3J5X2Fzc29jaWF0aW9uc1xuVGFiIEEsUHJvZHVjdCw1LDEyMDIyXG5UYWIgQixQcm9kdWN0LDYsMTIwMzM7MTEwMjFcbg==\",\n    \"dataType\": \"csv\",\n    \"isTest\": true,\n    \"mapping\": {},\n    \"namespace\": \"\",\n    \"orgId\": \"00D7i000000UO0T\",\n    \"options\": {},\n    \"skipDB\": true,\n    \"user\": \"test-xqahb6uhwa70@example.com\"\n}",
 					"options": {
 						"raw": {
-							"language": "text"
+							"language": "json"
 						}
 					}
 				},
@@ -44,7 +46,7 @@
 					"raw": "{\n    \"batchsize\": 3,\n    \"data\": \"bmFtZSxhdHRyaWJ1dGVfdGFiLGNsYXNzaWZpY2F0aW9uLHJhbmssY2F0ZWdvcnlfYXNzb2NpYXRpb25zXG5Hcm91cCBBLFRhYiBBLFByb2R1Y3QsNSwxMjAyMlxuR3JvdXAgQixUYWIgQixQcm9kdWN0LDYsMTIwMzM7MTEwMjFcbg==\",\n    \"isTest\": true,\n    \"mapping\": {},\n    \"namespace\": \"\",\n    \"orgId\": \"00D7i000000UO0T\",\n    \"options\": {},\n    \"skipDB\": true,\n    \"user\": \"test-xqahb6uhwa70@example.com\"\n}",
 					"options": {
 						"raw": {
-							"language": "text"
+							"language": "json"
 						}
 					}
 				},
@@ -70,10 +72,10 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"batchsize\": 3,\n    \"data\": \"bmFtZSxhdHRyaWJ1dGVfZ3JvdXAsbG9jYWxpemFibGUsc2VhcmNoYWJsZSxjbGFzc2lmaWNhdGlvbixyYW5rLGNhdGVnb3J5X2Fzc29jaWF0aW9uc1xuTGFiZWwgQSxHcm91cCBBLGZhbHNlLHRydWUsUHJvZHVjdCwxLDMwMDMwMDs1MDAwMDBcbkxhYmVsIEIsR3JvdXAgQix0cnVlLGZhbHNlLFByb2R1Y3QsMSwzNTAzNTA7MzUxMzUwXG4=\",\n    \"isTest\": true,\n    \"mapping\": {},\n    \"namespace\": \"\",\n    \"orgId\": \"00D7i000000UO0T\",\n    \"options\": {},\n    \"skipDB\": true,\n    \"user\": \"test-xqahb6uhwa70@example.com\"\n}",
+					"raw": "{\n    \"batchsize\": 3,\n    \"data\": \"bmFtZSxhdHRyaWJ1dGVfZ3JvdXAsbG9jYWxpemFibGUsc2VhcmNoYWJsZSxjbGFzc2lmaWNhdGlvbix0eXBlLHBpY2tsaXN0X3ZhbHVlcyxyYW5rLGNhdGVnb3J5X2Fzc29jaWF0aW9ucw0KTGFiZWwgQSxHcm91cCBBLEZBTFNFLFRSVUUsUHJvZHVjdCxkYXRldGltZSwsMSwzMDAzMDA7NTAwMDAwDQpMYWJlbCBCLEdyb3VwIEIsVFJVRSxGQUxTRSxQcm9kdWN0LHBpY2tsaXN0LHllcztubywxLDM1MDM1MDszNTEzNTA=\",\n    \"isTest\": true,\n    \"mapping\": {},\n    \"namespace\": \"\",\n    \"orgId\": \"00D7i000000UO0T\",\n    \"options\": {},\n    \"skipDB\": true,\n    \"user\": \"test-xqahb6uhwa70@example.com\"\n}",
 					"options": {
 						"raw": {
-							"language": "text"
+							"language": "json"
 						}
 					}
 				},
