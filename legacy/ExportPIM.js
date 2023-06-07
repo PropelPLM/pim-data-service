@@ -138,6 +138,7 @@ function convertArrayOfObjectsToCSV(
     // eslint-disable-next-line guard-for-in
     for (let sTempkey in keys) {
       let skey = keys[sTempkey];
+      console.log('skey: ', skey);
       // add , [comma] after every String value,. [except first]
       if (counter > 0) {
         csvStringResult += columnDivider;
