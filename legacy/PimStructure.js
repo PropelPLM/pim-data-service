@@ -823,6 +823,20 @@ class PimStructure {
                   type: 'text'
                 }
               ];
+            } else {
+              // field name specified does not exist, treat as raw value
+              templateHeaderValueMap.set(
+                templateHeaders[lastHeaderRowIndex][i],
+                field
+              );
+              exportColumns = [
+                ...exportColumns,
+                {
+                  fieldName: templateHeaders[lastHeaderRowIndex][i],
+                  label: templateHeaders[lastHeaderRowIndex][i],
+                  type: 'text'
+                }
+              ];
             }
           });
         } else {
