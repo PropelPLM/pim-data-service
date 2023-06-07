@@ -820,7 +820,9 @@ class PimStructure {
         if (field.includes(ATTRIBUTE_FLAG)) {
           // template specifies that the column's rows should contain a field's value
           field = field.slice(11, -1);
+          console.log('field: ', field);
           if (supportedAttributes.has(field)) {
+            console.log('1');
             // push columns specified in template
             exportColumns = [
               ...exportColumns,
@@ -831,6 +833,7 @@ class PimStructure {
               }
             ];
           } else {
+            console.log('2');
             // invalid attribute name provided
             templateHeaderValueMap.set(
               templateHeaders[lastHeaderRowIndex][i],
@@ -846,6 +849,7 @@ class PimStructure {
             ];
           }
         } else {
+          console.log('3');
           // template specifies that the column's rows should contain the raw value in the template
           templateHeaderValueMap.set(
             templateHeaders[lastHeaderRowIndex][i],
