@@ -783,6 +783,7 @@ class PimStructure {
   ) {
     let exportColumns = [];
     let templateHeaderValueMap = new Map();
+    const lastHeaderRowIndex = templateHeaders.length - 1;
     if (!templateFields || templateFields.length === 0) {
       // if not template export, push all attribute columns except sobject id and rename Category__r.Name to Category
       exportColumns = Array.from(productVariantValueMapList[0].keys())
@@ -812,7 +813,7 @@ class PimStructure {
                 ...exportColumns,
                 {
                   fieldName: col,
-                  label: templateHeaders[i],
+                  label: templateHeaders[lastHeaderRowIndex - 1][i],
                   type: 'text'
                 }
               ];
@@ -820,14 +821,20 @@ class PimStructure {
           });
         } else {
           // template specifies that the column's rows should contain the raw value in the template
-          console.log('templateHeader: ', templateHeaders[i]);
+          console.log(
+            'templateHeader: ',
+            templateHeaders[lastHeaderRowIndex - 1][i]
+          );
           console.log('field: ', field);
-          templateHeaderValueMap.set(templateHeaders[i], field);
+          templateHeaderValueMap.set(
+            templateHeaders[lastHeaderRowIndex - 1][i],
+            field
+          );
           exportColumns = [
             ...exportColumns,
             {
-              fieldName: templateHeaders[i],
-              label: templateHeaders[i],
+              fieldName: templateHeaders[lastHeaderRowIndex - 1][i],
+              label: templateHeaders[lastHeaderRowIndex - 1][i],
               type: 'text'
             }
           ];
