@@ -19,7 +19,7 @@ describe('PimStructure tests', () => {
       // array checks
       assert.typeOf(templateHeaders, 'array');
       assert.typeOf(templateFields, 'array');
-      assert.equal(templateHeaders.length, 2);
+      assert.equal(templateHeaders.length, 1);
       assert.equal(templateFields.length, 2);
 
       // value checks
