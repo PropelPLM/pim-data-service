@@ -190,7 +190,8 @@ async function PimRecordListHelper(
       exportRecordsAndColumns,
       DEFAULT_COLUMNS,
       isProduct
-    )
+    ),
+    templateAdditionalHeaders: []
   };
 }
 
@@ -708,6 +709,7 @@ async function addExportColumns(
       let isAttributeField;
       let isDefaultColumn;
       const defaultColumnNames = Array.from(defaultColumns.keys());
+      const lastHeaderRowIndex = templateHeaders.length - 1;
       for (let i = 0; i < templateFields.length; i++) {
         field = templateFields[i];
         isAttributeField = field.includes(ATTRIBUTE_FLAG);
@@ -717,7 +719,7 @@ async function addExportColumns(
           field = field.slice(11, -1);
           exportColumns.push({
             fieldName: defaultColumns.get(field),
-            label: templateHeaders[i],
+            label: templateHeaders[lastHeaderRowIndex][i],
             type: 'text'
           });
         } else if (isAttributeField && !isDefaultColumn) {
@@ -727,17 +729,20 @@ async function addExportColumns(
             if (helper.getValue(colAttr, 'Label__c') === field) {
               exportColumns.push({
                 fieldName: helper.getValue(colAttr, 'Primary_Key__c'),
-                label: templateHeaders[i],
+                label: templateHeaders[lastHeaderRowIndex][i],
                 type: 'text'
               });
             }
           });
         } else if (!isAttributeField) {
           // col's value specified in template is a raw value
-          templateHeaderValueMap.set(templateHeaders[i], field);
+          templateHeaderValueMap.set(
+            templateHeaders[lastHeaderRowIndex][i],
+            field
+          );
           exportColumns.push({
-            fieldName: templateHeaders[i],
-            label: templateHeaders[i],
+            fieldName: templateHeaders[lastHeaderRowIndex][i],
+            label: templateHeaders[lastHeaderRowIndex][i],
             type: 'text'
           });
         }

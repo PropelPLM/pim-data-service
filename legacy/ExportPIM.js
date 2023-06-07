@@ -126,8 +126,6 @@ function convertArrayOfObjectsToCSV(
       }
     }
   });
-  console.log('keys: ', keys);
-  console.log('cols: ', cols);
   csvStringResult = '';
   for (let headerRow of templateAdditionalHeaders) {
     csvStringResult += headerRow.join(columnDivider);
