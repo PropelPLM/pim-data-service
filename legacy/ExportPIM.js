@@ -132,6 +132,7 @@ function convertArrayOfObjectsToCSV(records, columns) {
   ];
   for (let headerRow of headerRows) {
     csvStringResult += headerRow.join(columnDivider);
+    csvStringResult += lineDivider;
   }
   csvStringResult += cols.join(columnDivider);
   csvStringResult += lineDivider;
