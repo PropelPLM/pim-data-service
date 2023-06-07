@@ -738,8 +738,12 @@ async function addExportColumns(
               });
             } else if (count === numOfColumnAttributes) {
               // Invalid attribute field
+              templateHeaderValueMap.set(
+                templateHeaders[lastHeaderRowIndex][i],
+                '<Invalid Attribute>'
+              );
               exportColumns.push({
-                fieldName: '<Invalid Attribute>',
+                fieldName: templateHeaders[lastHeaderRowIndex][i],
                 label: templateHeaders[lastHeaderRowIndex][i],
                 type: 'text'
               });
