@@ -126,7 +126,10 @@ function convertArrayOfObjectsToCSV(records, columns) {
   console.log('keys: ', keys);
   console.log('cols: ', cols);
   csvStringResult = '';
-  const headerRows = ['bla1, bla2'];
+  const headerRows = [
+    ['bla1', 'bla2'],
+    ['bla11', 'bla22']
+  ];
   for (let headerRow of headerRows) {
     csvStringResult += headerRow.join(columnDivider);
   }
