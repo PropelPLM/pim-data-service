@@ -27,9 +27,11 @@ async function LegacyExportPIM(req) {
     isTest: reqBody.isTest,
     privateKey: process.env.PIM_DATA_SERVICE_KEY,
     user: reqBody.user
-  })
+  });
   reqBody.sessionId = response.access_token;
-  if (!reqBody.sessionId) { return 'Error - no session id'; }
+  if (!reqBody.sessionId) {
+    return 'Error - no session id';
+  }
 
   let daDownloadDetailsList, recordsAndCols;
   try {
@@ -111,6 +113,7 @@ function convertArrayOfObjectsToCSV(records, columns) {
   // in the keys valirable store fields API Names as a key
   // this labels use in CSV file header
   columns.forEach(col => {
+    console.log('col: ', col);
     if (col.fieldName) {
       if (col.fieldName === 'ProductLink') {
         keys.push(col.typeAttributes.label.fieldName);
