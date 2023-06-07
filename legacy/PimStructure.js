@@ -890,14 +890,33 @@ class PimStructure {
     if (!templateVersionData) return { templateFields, templateHeaders };
 
     const templateRows = templateVersionData.split(/\r?\n/);
-    templateHeaders = templateRows?.[0]?.split(',') || [];
-    templateFields = templateRows?.[1]?.split(',') || [];
-    return {
-      templateFields: templateFields
-        .filter(field => field.includes(ATTRIBUTE_FLAG))
-        .map(attrField => removeDoubleQuotes(attrField)),
-      templateHeaders
+    let isDataRow = false;
+    let templateHeadersAndFields = {
+      templateFields: [],
+      templateHeaders: []
     };
+    for (let row of templateRows) {
+      if (row.includes(ATTRIBUTE_FLAG)) {
+        isDataRow = true;
+        templateHeadersAndFields.templateFields = row
+          .split(',')
+          .filter(field => field.includes(ATTRIBUTE_FLAG))
+          .map(attrField => removeDoubleQuotes(attrField));
+        break;
+      }
+      templateHeadersAndFields.templateHeaders.push(row.split(','));
+    }
+    // templateHeaders = templateRows?.[0]?.split(',') || [];
+    // templateFields = templateRows?.[1]?.split(',') || [];
+    // return {
+    //   templateFields: templateFields
+    //     .filter(field => field.includes(ATTRIBUTE_FLAG))
+    //     .map(attrField => removeDoubleQuotes(attrField)),
+    //   templateHeaders
+    // };
+    console.log('templateHeaders: ', templateHeadersAndFields.templateHeaders);
+    console.log('templateFields: ', templateHeadersAndFields.templateFields);
+    return templateHeadersAndFields;
   }
 }
 
