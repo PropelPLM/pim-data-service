@@ -452,7 +452,7 @@ class PimStructure {
       return { daDownloadDetailsList };
     }
     if (templateHeaders.length > 1) {
-      // template has more than 1 header row
+      // template has more than 1 header row, pop the last header row as it is already tied to the data row
       templateHeaders.pop();
       exportRecordsColsAndAssets.templateAdditionalHeaders = templateHeaders;
     }
@@ -911,14 +911,6 @@ class PimStructure {
       }
       templateHeadersAndFields.templateHeaders.push(row.split(','));
     }
-    // templateHeaders = templateRows?.[0]?.split(',') || [];
-    // templateFields = templateRows?.[1]?.split(',') || [];
-    // return {
-    //   templateFields: templateFields
-    //     .filter(field => field.includes(ATTRIBUTE_FLAG))
-    //     .map(attrField => removeDoubleQuotes(attrField)),
-    //   templateHeaders
-    // };
     return templateHeadersAndFields;
   }
 }
