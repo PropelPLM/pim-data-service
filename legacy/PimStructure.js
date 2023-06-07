@@ -829,7 +829,7 @@ class PimStructure {
             exportColumns = [
               ...exportColumns,
               {
-                fieldName: field,
+                fieldName: field === RECORD_ID_LABEL ? RECORD_ID_FIELD : field,
                 label: templateHeaders[lastHeaderRowIndex][i],
                 type: 'text'
               }
