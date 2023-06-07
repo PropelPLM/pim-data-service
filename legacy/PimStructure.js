@@ -439,7 +439,8 @@ class PimStructure {
           templateFields,
           templateHeaders,
           exportRecordsAndColumns
-        )
+        ),
+        templateAdditionalHeaders: []
       };
       Object.assign(asposeInput, {
         detailPageData: exportRecordsColsAndAssets?.recordsAndCols[0],
@@ -449,6 +450,14 @@ class PimStructure {
     if (useAspose) {
       await callAsposeToExport(asposeInput);
       return { daDownloadDetailsList };
+    }
+    if (templateHeaders.length > 1) {
+      // template has more than 1 header row
+      exportRecordsColsAndAssets.templateAdditionalHeaders =
+        templateHeaders.splice(
+          templateHeaders.length - 1,
+          templateHeaders.length
+        );
     }
     return exportRecordsColsAndAssets;
   }
@@ -783,7 +792,6 @@ class PimStructure {
   ) {
     let exportColumns = [];
     let templateHeaderValueMap = new Map();
-    const lastHeaderRowIndex = templateHeaders.length - 1;
     if (!templateFields || templateFields.length === 0) {
       // if not template export, push all attribute columns except sobject id and rename Category__r.Name to Category
       exportColumns = Array.from(productVariantValueMapList[0].keys())
@@ -796,6 +804,7 @@ class PimStructure {
         });
     } else if (templateFields && templateFields.length > 0) {
       // template export
+      const lastHeaderRowIndex = templateHeaders.length - 1;
       let field;
       for (let i = 0; i < templateFields.length; i++) {
         field = templateFields[i];

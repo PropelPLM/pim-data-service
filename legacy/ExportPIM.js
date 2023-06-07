@@ -33,12 +33,10 @@ async function LegacyExportPIM(req) {
     return 'Error - no session id';
   }
 
-  let daDownloadDetailsList, recordsAndCols;
+  let daDownloadDetailsList, recordsAndCols, templateAdditionalHeaders;
   try {
-    ({ daDownloadDetailsList, recordsAndCols } = await new PimStructure().build(
-      reqBody,
-      isListPageExport
-    ));
+    ({ daDownloadDetailsList, recordsAndCols, templateAdditionalHeaders } =
+      await new PimStructure().build(reqBody, isListPageExport));
   } catch (err) {
     console.log('error: ', err);
   }
@@ -61,7 +59,8 @@ async function LegacyExportPIM(req) {
 
   let csvString = convertArrayOfObjectsToCSV(
     recordsAndCols[0],
-    recordsAndCols[1]
+    recordsAndCols[1],
+    templateAdditionalHeaders
   );
   if (csvString == null) {
     logErrorResponse('csvString is empty!', '[ExportPIM]');
@@ -93,7 +92,11 @@ async function LegacyExportPIM(req) {
   return csvString;
 }
 
-function convertArrayOfObjectsToCSV(records, columns) {
+function convertArrayOfObjectsToCSV(
+  records,
+  columns,
+  templateAdditionalHeaders
+) {
   let csvStringResult,
     counter,
     keys = [],
@@ -126,11 +129,7 @@ function convertArrayOfObjectsToCSV(records, columns) {
   console.log('keys: ', keys);
   console.log('cols: ', cols);
   csvStringResult = '';
-  const headerRows = [
-    ['bla1', 'bla2'],
-    ['bla11', 'bla22']
-  ];
-  for (let headerRow of headerRows) {
+  for (let headerRow of templateAdditionalHeaders) {
     csvStringResult += headerRow.join(columnDivider);
     csvStringResult += lineDivider;
   }
