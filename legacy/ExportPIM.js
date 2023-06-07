@@ -133,6 +133,7 @@ function convertArrayOfObjectsToCSV(
   }
   csvStringResult += cols.join(columnDivider);
   csvStringResult += lineDivider;
+  console.log('records: ', records);
   for (let i = 0; i < records.length; i++) {
     counter = 0;
     // eslint-disable-next-line guard-for-in
