@@ -809,25 +809,32 @@ class PimStructure {
         if (field.includes(ATTRIBUTE_FLAG)) {
           // template specifies that the column's rows should contain a field's value
           field = field.slice(11, -1);
-          Array.from(productVariantValueMapList[0].keys()).forEach(col => {
-            const isMatchingColAndField =
-              (field !== 'Record ID' && field === col) ||
-              (col === 'Record_ID' && field === 'Record ID');
-            if (col !== 'Id' && isMatchingColAndField) {
-              // push columns specified in template
-              console.log('field1: ', field);
-              exportColumns = [
-                ...exportColumns,
-                {
-                  fieldName: col,
-                  label: templateHeaders[lastHeaderRowIndex][i],
-                  type: 'text'
-                }
-              ];
-            } else {
-              console.log('field2: ', field);
-            }
-          });
+          if (productVariantValueMapList[0].has(field)) {
+            console.log('yes');
+          }
+          console.log(
+            'Array.from(productVariantValueMapList[0].keys()): ',
+            Array.from(productVariantValueMapList[0].keys())
+          );
+          // Array.from(productVariantValueMapList[0].keys()).forEach(col => {
+          //   const isMatchingColAndField =
+          //     (field !== 'Record ID' && field === col) ||
+          //     (col === 'Record_ID' && field === 'Record ID');
+          //   if (col !== 'Id' && isMatchingColAndField) {
+          //     // push columns specified in template
+          //     console.log('field1: ', field);
+          //     exportColumns = [
+          //       ...exportColumns,
+          //       {
+          //         fieldName: col,
+          //         label: templateHeaders[lastHeaderRowIndex][i],
+          //         type: 'text'
+          //       }
+          //     ];
+          //   } else {
+          //     console.log('field2: ', field);
+          //   }
+          // });
         } else {
           // template specifies that the column's rows should contain the raw value in the template
           console.log('field3: ', field);
