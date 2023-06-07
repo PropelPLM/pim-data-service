@@ -900,7 +900,6 @@ class PimStructure {
         isDataRow = true;
         templateHeadersAndFields.templateFields = row
           .split(',')
-          .filter(field => field.includes(ATTRIBUTE_FLAG))
           .map(attrField => removeDoubleQuotes(attrField));
         break;
       }
