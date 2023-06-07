@@ -808,11 +808,11 @@ class PimStructure {
       // clean up data for easier parsing
       const supportedAttributes = productVariantValueMapList[0];
       supportedAttributes.delete(ID_FIELD);
-      supportedAttributes.set(
-        RECORD_ID_LABEL,
-        supportedAttributes.get(RECORD_ID_FIELD)
-      );
-      supportedAttributes.delete(RECORD_ID_FIELD);
+      // supportedAttributes.set(
+      //   RECORD_ID_LABEL,
+      //   supportedAttributes.get(RECORD_ID_FIELD)
+      // );
+      // supportedAttributes.delete(RECORD_ID_FIELD);
 
       for (let i = 0; i < templateFields.length; i++) {
         field = templateFields[i];
@@ -820,7 +820,11 @@ class PimStructure {
         if (field.includes(ATTRIBUTE_FLAG)) {
           // template specifies that the column's rows should contain a field's value
           field = field.slice(11, -1);
-          if (supportedAttributes.has(field)) {
+          if (
+            (field !== RECORD_ID_LABEL && supportedAttributes.has(field)) ||
+            (field === RECORD_ID_LABEL &&
+              supportedAttributes.has(RECORD_ID_FIELD))
+          ) {
             // push columns specified in template
             exportColumns = [
               ...exportColumns,
