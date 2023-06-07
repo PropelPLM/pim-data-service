@@ -711,7 +711,7 @@ async function addExportColumns(
       const defaultColumnNames = Array.from(defaultColumns.keys());
       const lastHeaderRowIndex = templateHeaders.length - 1;
       const numOfColumnAttributes = columnAttributes.length;
-      let count;
+      let missedCount;
       for (let i = 0; i < templateFields.length; i++) {
         field = templateFields[i];
         isAttributeField = field.includes(ATTRIBUTE_FLAG);
@@ -727,16 +727,18 @@ async function addExportColumns(
         } else if (isAttributeField && !isDefaultColumn) {
           // value specified in template is a field's value, and col in template is an attribute column
           field = field.slice(11, -1);
-          count = 0;
-          columnAttributes.forEach(colAttr => {
-            count++;
+          missedCount = 0;
+          for (let colAttr of columnAttributes) {
             if (helper.getValue(colAttr, 'Label__c') === field) {
               exportColumns.push({
                 fieldName: helper.getValue(colAttr, 'Primary_Key__c'),
                 label: templateHeaders[lastHeaderRowIndex][i],
                 type: 'text'
               });
-            } else if (count === numOfColumnAttributes) {
+              break;
+            }
+            missedCount++;
+            if (missedCount === numOfColumnAttributes - 1) {
               // Invalid attribute field
               templateHeaderValueMap.set(
                 templateHeaders[lastHeaderRowIndex][i],
@@ -748,7 +750,7 @@ async function addExportColumns(
                 type: 'text'
               });
             }
-          });
+          }
         } else if (!isAttributeField) {
           // col's value specified in template is a raw value
           templateHeaderValueMap.set(
