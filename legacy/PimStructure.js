@@ -815,6 +815,7 @@ class PimStructure {
               (col === 'Record_ID' && field === 'Record ID');
             if (col !== 'Id' && isMatchingColAndField) {
               // push columns specified in template
+              console.log('field1: ', field);
               exportColumns = [
                 ...exportColumns,
                 {
@@ -824,23 +825,12 @@ class PimStructure {
                 }
               ];
             } else {
-              // field name specified does not exist, treat as raw value
-              templateHeaderValueMap.set(
-                templateHeaders[lastHeaderRowIndex][i],
-                field
-              );
-              exportColumns = [
-                ...exportColumns,
-                {
-                  fieldName: templateHeaders[lastHeaderRowIndex][i],
-                  label: templateHeaders[lastHeaderRowIndex][i],
-                  type: 'text'
-                }
-              ];
+              console.log('field2: ', field);
             }
           });
         } else {
           // template specifies that the column's rows should contain the raw value in the template
+          console.log('field3: ', field);
           templateHeaderValueMap.set(
             templateHeaders[lastHeaderRowIndex][i],
             field
