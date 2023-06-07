@@ -813,7 +813,7 @@ class PimStructure {
         supportedAttributes.get(RECORD_ID_FIELD)
       );
       supportedAttributes.delete(RECORD_ID_FIELD);
-
+      console.log('templateFields.length: ', templateFields.length);
       for (let i = 0; i < templateFields.length; i++) {
         field = templateFields[i];
 
