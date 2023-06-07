@@ -820,6 +820,8 @@ class PimStructure {
           });
         } else {
           // template specifies that the column's rows should contain the raw value in the template
+          console.log('templateHeader: ', templateHeaders[i]);
+          console.log('field: ', field);
           templateHeaderValueMap.set(templateHeaders[i], field);
           exportColumns = [
             ...exportColumns,
@@ -913,8 +915,6 @@ class PimStructure {
     //     .map(attrField => removeDoubleQuotes(attrField)),
     //   templateHeaders
     // };
-    console.log('templateHeaders: ', templateHeadersAndFields.templateHeaders);
-    console.log('templateFields: ', templateHeadersAndFields.templateFields);
     return templateHeadersAndFields;
   }
 }
