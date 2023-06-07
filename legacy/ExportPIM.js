@@ -113,7 +113,6 @@ function convertArrayOfObjectsToCSV(records, columns) {
   // in the keys valirable store fields API Names as a key
   // this labels use in CSV file header
   columns.forEach(col => {
-    console.log('col: ', col);
     if (col.fieldName) {
       if (col.fieldName === 'ProductLink') {
         keys.push(col.typeAttributes.label.fieldName);
@@ -124,6 +123,8 @@ function convertArrayOfObjectsToCSV(records, columns) {
       }
     }
   });
+  console.log('keys: ', keys);
+  console.log('cols: ', cols);
   csvStringResult = '';
   csvStringResult += cols.join(columnDivider);
   csvStringResult += lineDivider;
