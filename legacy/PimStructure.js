@@ -813,7 +813,7 @@ class PimStructure {
                 ...exportColumns,
                 {
                   fieldName: col,
-                  label: templateHeaders[lastHeaderRowIndex - 1][i],
+                  label: templateHeaders[lastHeaderRowIndex][i],
                   type: 'text'
                 }
               ];
@@ -823,18 +823,18 @@ class PimStructure {
           // template specifies that the column's rows should contain the raw value in the template
           console.log(
             'templateHeader: ',
-            templateHeaders[lastHeaderRowIndex - 1][i]
+            templateHeaders[lastHeaderRowIndex][i]
           );
           console.log('field: ', field);
           templateHeaderValueMap.set(
-            templateHeaders[lastHeaderRowIndex - 1][i],
+            templateHeaders[lastHeaderRowIndex][i],
             field
           );
           exportColumns = [
             ...exportColumns,
             {
-              fieldName: templateHeaders[lastHeaderRowIndex - 1][i],
-              label: templateHeaders[lastHeaderRowIndex - 1][i],
+              fieldName: templateHeaders[lastHeaderRowIndex][i],
+              label: templateHeaders[lastHeaderRowIndex][i],
               type: 'text'
             }
           ];
