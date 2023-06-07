@@ -453,11 +453,8 @@ class PimStructure {
     }
     if (templateHeaders.length > 1) {
       // template has more than 1 header row
-      exportRecordsColsAndAssets.templateAdditionalHeaders =
-        templateHeaders.splice(
-          templateHeaders.length - 1,
-          templateHeaders.length
-        );
+      templateHeaders.pop();
+      exportRecordsColsAndAssets.templateAdditionalHeaders = templateHeaders;
     }
     return exportRecordsColsAndAssets;
   }
