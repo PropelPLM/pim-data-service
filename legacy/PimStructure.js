@@ -23,6 +23,8 @@ const CATEGORY_NAME_LABEL = 'Category';
 const DA_TYPE = 'DigitalAsset';
 const ID_FIELD = 'Id';
 const PRODUCT_REFERENCE_TYPE = 'ProductReference';
+const RECORD_ID_FIELD = 'Record_ID';
+const RECORD_ID_LABEL = 'Record ID';
 
 class PimStructure {
   constructor() {}
@@ -803,19 +805,26 @@ class PimStructure {
       // template export
       const lastHeaderRowIndex = templateHeaders.length - 1;
       let field;
+      // clean up data for easier parsing
+      const supportedAttributes = productVariantValueMapList[0];
+      supportedAttributes.delete(ID_FIELD);
+      supportedAttributes.set(
+        RECORD_ID_LABEL,
+        supportedAttributes.get(RECORD_ID_FIELD)
+      );
+      supportedAttributes.delete(RECORD_ID_FIELD);
+
       for (let i = 0; i < templateFields.length; i++) {
         field = templateFields[i];
 
         if (field.includes(ATTRIBUTE_FLAG)) {
           // template specifies that the column's rows should contain a field's value
           field = field.slice(11, -1);
-          if (productVariantValueMapList[0].has(field)) {
+          if (supportedAttributes.has(field)) {
             console.log('yes');
+          } else {
+            console.log(field);
           }
-          console.log(
-            'Array.from(productVariantValueMapList[0].keys()): ',
-            Array.from(productVariantValueMapList[0].keys())
-          );
           // Array.from(productVariantValueMapList[0].keys()).forEach(col => {
           //   const isMatchingColAndField =
           //     (field !== 'Record ID' && field === col) ||
