@@ -827,6 +827,10 @@ class PimStructure {
           });
         } else {
           // template specifies that the column's rows should contain the raw value in the template
+          templateHeaderValueMap.set(
+            templateHeaders[lastHeaderRowIndex][i],
+            field
+          );
           exportColumns = [
             ...exportColumns,
             {
