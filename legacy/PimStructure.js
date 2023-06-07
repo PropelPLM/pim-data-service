@@ -825,7 +825,7 @@ class PimStructure {
             exportColumns = [
               ...exportColumns,
               {
-                fieldName: col,
+                fieldName: field,
                 label: templateHeaders[lastHeaderRowIndex][i],
                 type: 'text'
               }
