@@ -18,6 +18,7 @@ class DADownloadDetails {
     this.fileName = asset.Name;
     this.fileId = this.helper.getValue(asset, 'External_File_Id__c');
     this.key = this.helper.getValue(asset, 'View_Link__c');
+    this.mimeType = this.helper.getValue(asset, 'Mime_Type__c');
   }
 }
 
@@ -46,7 +47,7 @@ logErrorResponse = (err, functionName) => {
 getDigitalAssetMap = async (service, helper) => {
   const digitalAssetList = await service.simpleQuery(
     helper.namespaceQuery(
-      `select Id, Name, External_File_Id__c, View_Link__c
+      `select Id, Name, External_File_Id__c, View_Link__c, Mime_Type__c
       from Digital_Asset__c`
     )
   );
@@ -94,8 +95,10 @@ module.exports = {
   validateNamespaceForPath,
   validateNamespaceForField,
   DADownloadDetails,
+  parseProductReferenceAttrVal,
   ATTRIBUTE_FLAG,
   DA_DOWNLOAD_DETAIL_KEY,
+  DEFAULT_COLUMNS,
   PRODUCT_TYPE
 };
 /**
@@ -277,23 +280,21 @@ function getNestedField(object, field) {
 }
 
 // Escape special characters for build a clean .CSV file
-function cleanString(value) {
-  if (value !== undefined && value !== null) {
-    value = value.toString();
-    let useEnclosingQuotes = value.indexOf(',') > -1;
-    if (value.indexOf('"') > 0) {
-      value = value.replace(/"/g, '""');
-      useEnclosingQuotes = true;
-    }
-    if (value.indexOf('\n') > -1) {
-      useEnclosingQuotes = true;
-    }
-    if (useEnclosingQuotes) {
-      value = `"${value}"`;
-    }
-    return value;
+function cleanString(str) {
+  // check for fields which actually contain a quote, newline or comma char, need to protect those
+  str = str.toString() ? str.toString() : '';
+  let useEnclosingQuotes = str.indexOf(',') > -1;
+  if (str.includes('"')) {
+    str = str.replace(/"/g, '""');
+    useEnclosingQuotes = true;
   }
-  return '';
+  if (str.indexOf('\n') > -1) {
+    useEnclosingQuotes = true;
+  }
+  if (useEnclosingQuotes) {
+    str = '"' + str + '"';
+  }
+  return str;
 }
 
 function removeFileFromDisk(nameOnDisk) {
@@ -499,30 +500,84 @@ async function callAsposeToExport({
 // returns a list of the lowest level variant values' ids (i.e. SKUs) from a list of variant values
 async function getLowestVariantValuesList(valuesList, namespace) {
   const helper = new PimExportHelper(namespace);
-  let parentValueLengthMap = new Map(),
-    numOfParentValues,
+  let numOfParentValues,
     highestNumOfParentValues = 0,
     parentValues,
-    vvId;
-  valuesList.forEach(val => {
+    vvId,
+    parentProduct,
+    productParentValueLengthMap = new Map(), // Map<product id, integer>, key: variant value's parent product id, value: current highest no. of parent variant values
+    productSKUListMap = new Map(); // Map<product id, list<vv id>, key: variant value's parent product id, value: list of variant value ids with highest no. of parent variant values
+
+  // get the variant value's product
+  for (let val of valuesList) {
+    parentProduct = helper.getValue(val, 'Variant__r.Product__c');
     parentValues = helper.getValue(val, 'Parent_Value_Path__c');
     if (parentValues == null) {
       numOfParentValues = 0;
     } else {
       numOfParentValues = parentValues.split(',').length;
     }
-    // sort variant values according to their variant level
     vvId = val.Name;
-    if (parentValueLengthMap.get(numOfParentValues)) {
-      parentValueLengthMap.get(numOfParentValues).push(vvId);
+
+    if (productParentValueLengthMap.has(parentProduct)) {
+      // parent product has entry in highest num of parent values tally
+      highestNumOfParentValues = productParentValueLengthMap.get(parentProduct);
+      if (numOfParentValues === highestNumOfParentValues) {
+        if (productSKUListMap.has(parentProduct)) {
+          // add vvId to the list of lowest variants aka SKUs
+          productSKUListMap.get(parentProduct).push(vvId);
+        } else {
+          // create new list of lowest variants consisting of vvId for product
+          productSKUListMap.set(parentProduct, [vvId]);
+        }
+      } else if (numOfParentValues > highestNumOfParentValues) {
+        // replace list of lowest variants with list consisting of only vvId
+        productParentValueLengthMap.set(parentProduct, numOfParentValues);
+        productSKUListMap.set(parentProduct, [vvId]);
+      }
     } else {
-      parentValueLengthMap.set(numOfParentValues, [vvId]);
+      // create new entry for parent product in highest num of parent values tally
+      productParentValueLengthMap.set(parentProduct, numOfParentValues);
+      productSKUListMap.set(parentProduct, [vvId]);
     }
-    // update highest tally
-    highestNumOfParentValues =
-      numOfParentValues > highestNumOfParentValues
-        ? numOfParentValues
-        : highestNumOfParentValues;
-  });
-  return parentValueLengthMap.get(highestNumOfParentValues);
+  }
+  // return each product's list of SKUs
+  return Array.from(productSKUListMap.values()).flat();
+}
+
+/**
+ * converts attribute value's value__c's SObject ID to name of Product/Variant Value for Product Reference fields
+ * @param attrValValue - a comma separated String of referenced products' Product__c.Id/Variant_Value__c.Id value
+ * @param reqBody - the export request body
+ * @returns {String} - a comma separated String of referenced products' Product__c.Name/Variant_Value__c.Name value
+ *  */
+async function parseProductReferenceAttrVal(attrValValue, reqBody) {
+  if (!attrValValue) return '';
+  const service = new ForceService(reqBody.hostUrl, reqBody.sessionId);
+  const helper = new PimExportHelper(reqBody.namespace);
+
+  // split the value to get the individual Product__c/Variant_Value__c SObject Ids
+  let sobjectIds = attrValValue.split(', ');
+
+  sobjectIds = await module.exports.prepareIdsForSOQL(sobjectIds);
+  let products = await service.simpleQuery(
+    helper.namespaceQuery(
+      `select Id, Name
+      from Product__c 
+      where Id IN (${sobjectIds})`
+    )
+  );
+  let variantValues = await service.simpleQuery(
+    helper.namespaceQuery(
+      `select Id, Name
+      from Variant_Value__c 
+      where Id IN (${sobjectIds})`
+    )
+  );
+  return products
+    .concat(variantValues)
+    .map(record => {
+      return record.Name;
+    })
+    .join(', ');
 }

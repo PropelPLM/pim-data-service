@@ -1,4 +1,0 @@
-product_id,parent_id,v_level,manufacturer_id,lifecycle_stage,release_status,active_quality_issues,highest_level_product_id,category_id,variant_0,variant_1,
-Try_test,,0,Manufacture-id -Printer Parent-1,In Progress,Not Released,None,,11011,,,
-Try_test_child,Try_test,1,Manufacture-id -DR-Printer child-1-1,,,,Try_test,11011,black,,
-Try_test_grandchild,Try_test_child,2,Manufacture-id -DR-Printer grandchild-1-11-6,Complete,In Review,,Try_test,11011,,small,

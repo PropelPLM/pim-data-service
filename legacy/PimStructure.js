@@ -11,12 +11,18 @@ const {
   getDigitalAssetMap,
   initAssetDownloadDetailsList,
   parseDigitalAssetAttrVal,
-  prepareIdsForSOQL
+  prepareIdsForSOQL,
+  parseProductReferenceAttrVal
 } = require('./utils');
 
 let helper;
 let service;
+const CATEGORY_ID_FIELD = 'Category__c';
+const CATEGORY_NAME_FIELD = 'Category__r.Name';
+const CATEGORY_NAME_LABEL = 'Category';
 const DA_TYPE = 'DigitalAsset';
+const ID_FIELD = 'Id';
+const PRODUCT_REFERENCE_TYPE = 'ProductReference';
 
 class PimStructure {
   constructor() {}
@@ -33,7 +39,11 @@ class PimStructure {
 
     const asposeInput = { reqBody };
     const isProduct = reqBody.recordType == PRODUCT_TYPE;
-    let currentVariantName, templateFields, templateHeaders, useAspose;
+    let currentVariantName,
+      templateFields,
+      templateHeaders,
+      useAspose,
+      daDownloadDetailsList;
     if (reqBody.options.isTemplateExport) {
       if (reqBody.templateVersionData) {
         ({ templateFields, templateHeaders } = this.getTemplateHeadersAndFields(
@@ -78,14 +88,14 @@ class PimStructure {
         baseRecord = productVariantValueMapList[0],
         exportRecords = [baseRecord],
         exportRecordsAndColumns = [exportRecords],
-        attrValValue,
-        daDownloadDetailsList = initAssetDownloadDetailsList(
-          isProduct,
-          includeRecordAsset,
-          recordList.map(record => record.Id),
-          digitalAssetMap,
-          namespace
-        );
+        attrValValue;
+      daDownloadDetailsList = initAssetDownloadDetailsList(
+        isProduct,
+        includeRecordAsset,
+        recordList.map(record => record.Id),
+        digitalAssetMap,
+        namespace
+      );
       appearingLabelIds = prepareIdsForSOQL(appearingLabelIds);
       const { appearingLabels, appearingValues } =
         await this.parseAppearringAttrLabelsAndValues(
@@ -116,6 +126,14 @@ class PimStructure {
               helper,
               reqBody
             );
+          } else if (
+            helper.getValue(appearingValues[j], 'Attribute_Label_Type__c') ===
+            PRODUCT_REFERENCE_TYPE
+          ) {
+            attrValValue = await parseProductReferenceAttrVal(
+              attrValValue,
+              reqBody
+            );
           }
           exportRecords[0].set(appearingLabels[i].Name, attrValValue);
         }
@@ -130,8 +148,10 @@ class PimStructure {
         let valuesList = [];
 
         if (exportType === 'currentVariant') {
-          let variantValuePath = prepareIdsForSOQL(reqBody.variantValuePath);
-          if (variantValuePath.length > 0) {
+          if (reqBody.variantValuePath.length > 0) {
+            const variantValuePath = prepareIdsForSOQL(
+              reqBody.variantValuePath
+            );
             // get Variant__c object and Variant_Value__c object for every variant value in current variant
             const variantAndValueMap = await this.getVariantAndVariantValues(
               variantValuePath,
@@ -199,11 +219,21 @@ class PimStructure {
                       'Attribute_Label_Type__c'
                     ) === DA_TYPE
                   ) {
-                    attrValValue = await parseDigitalAssetAttrVal(
+                    newValue = await parseDigitalAssetAttrVal(
                       digitalAssetMap,
-                      attrValValue,
+                      newValue,
                       daDownloadDetailsList,
                       helper,
+                      reqBody
+                    );
+                  } else if (
+                    helper.getValue(
+                      overwrittenValues[j],
+                      'Attribute_Label_Type__c'
+                    ) === PRODUCT_REFERENCE_TYPE
+                  ) {
+                    newValue = await parseProductReferenceAttrVal(
+                      newValue,
                       reqBody
                     );
                   }
@@ -215,7 +245,8 @@ class PimStructure {
               }
             }
             currentVariantName = currentVariant.get('Record_ID');
-            exportRecords.push(currentVariant);
+            // overwrite base product with current variant
+            exportRecords = [currentVariant];
           }
         } else if (
           exportType === 'allVariants' ||
@@ -334,11 +365,21 @@ class PimStructure {
                     'Attribute_Label_Type__c'
                   ) === DA_TYPE
                 ) {
-                  attrValValue = await parseDigitalAssetAttrVal(
+                  newValue = await parseDigitalAssetAttrVal(
                     digitalAssetMap,
-                    attrValValue,
+                    newValue,
                     daDownloadDetailsList,
                     helper,
+                    reqBody
+                  );
+                } else if (
+                  helper.getValue(
+                    overwrittenValues[j],
+                    'Attribute_Label_Type__c'
+                  ) === PRODUCT_REFERENCE_TYPE
+                ) {
+                  newValue = await parseProductReferenceAttrVal(
+                    newValue,
                     reqBody
                   );
                 }
@@ -366,24 +407,30 @@ class PimStructure {
         } else {
           throw 'Invalid Export Type';
         }
-        exportRecordsAndColumns = reqBody.isInherited
-          ? [
-              await this.fillInInheritedData(
-                baseRecord,
-                exportRecords,
-                valuesList,
-                exportType,
-                productVariantValueMapList,
-                recordIds,
-                appearingLabelIds,
-                appearingLabels,
-                currentVariantName,
-                reqBody,
-                digitalAssetMap,
-                daDownloadDetailsList
-              )
-            ]
-          : [exportRecords];
+
+        if (reqBody.isInherited) {
+          exportRecordsAndColumns = [
+            await this.fillInInheritedData(
+              baseRecord,
+              exportRecords,
+              valuesList,
+              exportType,
+              productVariantValueMapList,
+              recordIds,
+              appearingLabelIds,
+              appearingLabels,
+              currentVariantName,
+              reqBody,
+              digitalAssetMap,
+              daDownloadDetailsList
+            )
+          ];
+        } else if (exportType === 'lowestVariants') {
+          // remove base product from list of lowest variants
+          exportRecordsAndColumns = [exportRecords.slice(1)];
+        } else {
+          exportRecordsAndColumns = [exportRecords];
+        }
       }
       exportRecordsColsAndAssets = {
         daDownloadDetailsList,
@@ -565,13 +612,20 @@ class PimStructure {
                 'Attribute_Label_Type__c'
               ) === DA_TYPE
             ) {
-              attrValValue = await parseDigitalAssetAttrVal(
+              newValue = await parseDigitalAssetAttrVal(
                 digitalAssetMap,
-                attrValValue,
+                newValue,
                 daDownloadDetailsList,
                 helper,
                 reqBody
               );
+            } else if (
+              helper.getValue(
+                overwrittenValues[j],
+                'Attribute_Label_Type__c'
+              ) === PRODUCT_REFERENCE_TYPE
+            ) {
+              newValue = await parseProductReferenceAttrVal(newValue, reqBody);
             }
             // update the newVariant object with the overwritten values
             if (valuesList[i].Id === affectedVariantValue) {
@@ -669,7 +723,12 @@ class PimStructure {
         });
       });
     });
-    return filledInExportRecords;
+    // remove base product from SKU export or current variant export (if current record is not base product)
+    return (exportType === 'currentVariant' &&
+      reqBody.variantValuePath.length > 0) ||
+      exportType === 'lowestVariants'
+      ? filledInExportRecords.slice(1)
+      : filledInExportRecords;
   }
 
   async createVariantValueTree(valuesList, baseProduct) {
@@ -725,10 +784,13 @@ class PimStructure {
     let exportColumns = [];
     let templateHeaderValueMap = new Map();
     if (!templateFields || templateFields.length === 0) {
-      // if not template export, push all attribute columns
+      // if not template export, push all attribute columns except sobject id and rename Category__r.Name to Category
       exportColumns = Array.from(productVariantValueMapList[0].keys())
-        .filter(col => col !== 'Id')
+        .filter(col => col !== ID_FIELD && col !== CATEGORY_ID_FIELD)
         .map(col => {
+          if (col === CATEGORY_NAME_FIELD) {
+            return { fieldName: col, label: CATEGORY_NAME_LABEL, type: 'text' };
+          }
           return { fieldName: col, label: col, type: 'text' };
         });
     } else if (templateFields && templateFields.length > 0) {

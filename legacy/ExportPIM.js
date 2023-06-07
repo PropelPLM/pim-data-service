@@ -2,8 +2,12 @@ var fs = require('fs');
 var crypto = require('crypto');
 const https = require('https');
 
+// adding the propel-sfdc-connect package
+const propelConnect = require('@propelsoftwaresolutions/propel-sfdc-connect');
+
 const PimStructure = require('./PimStructure');
 const {
+  cleanString,
   postToChatter,
   logErrorResponse,
   sendCsvToAsposeCells
@@ -16,6 +20,17 @@ async function LegacyExportPIM(req) {
   if (reqBody.recordIds.length == 0) {
     return 'Error';
   }
+
+  // highjacking the flow here are inserting the session id from the JWT flow
+  const response = await propelConnect.jwtSession({
+    clientId: process.env.PIM_DATA_SERVICE_CLIENT_ID,
+    isTest: reqBody.isTest,
+    privateKey: process.env.PIM_DATA_SERVICE_KEY,
+    user: reqBody.user
+  })
+  reqBody.sessionId = response.access_token;
+  if (!reqBody.sessionId) { return 'Error - no session id'; }
+
   let daDownloadDetailsList, recordsAndCols;
   try {
     ({ daDownloadDetailsList, recordsAndCols } = await new PimStructure().build(
@@ -35,6 +50,8 @@ async function LegacyExportPIM(req) {
     reqBody.sessionId,
     reqBody.hostUrl
   );
+
+  if (!reqBody.includeAttributes) return;
   if (recordsAndCols?.length !== 2) {
     // non CSV template export, exported file will be written to chatter by Aspose
     return;
@@ -123,7 +140,7 @@ function convertArrayOfObjectsToCSV(records, columns) {
       ) {
         recordAttributes.set(skey, recordAttributes.get(skey).Name);
       }
-      csvStringResult += escapeString(records[i].get(skey) || '');
+      csvStringResult += cleanString(records[i].get(skey) || '');
 
       counter++;
     }
@@ -182,23 +199,6 @@ async function sendDADownloadRequests(
   request.write(payload);
   request.end();
   console.log('Payload sent: ', payload);
-}
-
-function escapeString(str) {
-  // check for fields which actually contain a quote, newline or comma char, need to protect those
-  str = str.toString() ? str.toString() : '';
-  let useEnclosingQuotes = str.indexOf(',') > -1;
-  if (str.indexOf('"') > 0) {
-    str = str.replace(/['"']/g, '""');
-    useEnclosingQuotes = true;
-  }
-  if (str.indexOf('\n') > -1) {
-    useEnclosingQuotes = true;
-  }
-  if (useEnclosingQuotes) {
-    str = '"' + str + '"';
-  }
-  return str;
 }
 
 module.exports = LegacyExportPIM;

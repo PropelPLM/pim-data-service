@@ -3,20 +3,18 @@ const PimRecordService = require('./PimRecordService');
 const {
   ATTRIBUTE_FLAG,
   DA_DOWNLOAD_DETAIL_KEY,
+  DEFAULT_COLUMNS,
   getLowestVariantValuesList,
   initAssetDownloadDetailsList,
   prepareIdsForSOQL,
-  parseDigitalAssetAttrVal
+  parseDigitalAssetAttrVal,
+  parseProductReferenceAttrVal
 } = require('./utils');
 
 let helper;
 let service;
 const DA_TYPE = 'DigitalAsset';
-const DEFAULT_COLUMNS = new Map([
-  ['Record ID', 'Record_ID'],
-  ['Title', 'Title'],
-  ['Category Name', 'Category__r.Name']
-]);
+const PRODUCT_REFERENCE_TYPE = 'ProductReference';
 
 async function PimRecordListHelper(
   reqBody,
@@ -449,6 +447,14 @@ async function getAttributesForRecordMap(
           helper,
           reqBody
         );
+      } else if (
+        helper.getValue(attribute, 'Attribute_Label__r.Type__c') ===
+        PRODUCT_REFERENCE_TYPE
+      ) {
+        attrValValue = await parseProductReferenceAttrVal(
+          attrValValue,
+          reqBody
+        );
       }
       tempMap.set(
         helper.getValue(attribute, 'Attribute_Label__r.Primary_Key__c'),
@@ -487,6 +493,14 @@ async function getAttributesForRecordMap(
               helper,
               reqBody
             );
+          } else if (
+            helper.getValue(attribute, 'Attribute_Label__r.Type__c') ===
+            PRODUCT_REFERENCE_TYPE
+          ) {
+            attrValValue = await parseProductReferenceAttrVal(
+              attrValValue,
+              reqBody
+            );
           }
           tempVariantMap.set(
             helper.getValue(attribute, 'Attribute_Label__r.Primary_Key__c'),
@@ -510,6 +524,14 @@ async function getAttributesForRecordMap(
             attrValValue,
             daDownloadDetailsList,
             helper,
+            reqBody
+          );
+        } else if (
+          helper.getValue(attribute, 'Attribute_Label__r.Type__c') ===
+          PRODUCT_REFERENCE_TYPE
+        ) {
+          attrValValue = await parseProductReferenceAttrVal(
+            attrValValue,
             reqBody
           );
         }
@@ -604,6 +626,7 @@ async function addExportColumns(
   // populate default columns first if not templated export
   if (!templateFields || templateFields.length === 0) {
     Array.from(defaultColumns.keys()).forEach(defaultCol => {
+      if (!isProduct && defaultCol === 'Title') return;
       exportColumns.push({
         fieldName: defaultColumns.get(defaultCol),
         label: defaultCol,

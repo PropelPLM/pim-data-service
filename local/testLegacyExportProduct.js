@@ -2,17 +2,18 @@ const LegacyExportProduct = require('../legacy/ExportPIM')
 
 const treq = {
   body: {
-    sessionId:
-      '00D8c0000086640!AQkAQJklfqn0y0vCAfxvvalymHKjIKIxkA8PhFcSY_RuRapuI4giTIsIw_WF8ksItsUJ2A_PPmS0LgrOp8wfxhtRKhi7cGfF',
-    namespace: '',
-    instanceUrl: 'https://pim-qa.my.salesforce.com',
-    hostUrl: 'pim-qa.my.salesforce.com',
+    clientId: '3MVG9vDPWAliPr7qI2eOWh9MTRBEzmvX6wKco2wZIs46S42fsNODO7MyZIMxJgQB0qycwRNnwAFCebFZ7Pspf',
+    isTest: true,
+    user: 'test-lwa0dgwoissf@example.com',
+    sessionId: '',
+    namespace: 'PIM__',
+    instanceUrl: 'https://velocity-momentum-7312-dev-ed.scratch.my.salesforce.com',
+    hostUrl: 'velocity-momentum-7312-dev-ed.scratch.my.salesforce.com',
     variantValuePath: null,
     variantValueIds: [
-      'a098c00000t7IQeAAM',
-      'a098c00000t7IQtAAM',
-      'a098c00000t7IQYAA2',
-      'a098c00000t7IQaAAM',
+      'a0L7e00000VuqnPEAR',
+      'a0L7e00000VuqnMEAR',
+      'a0L7e00000VuqnQEAR',
     ],
     templateVersionData: null,
     recordIds: [
@@ -21,7 +22,7 @@ const treq = {
       // 'a068c00000o5C4PAAU',
       // 'a068c00000o5C4QAAU',
       // 'a068c00000o5C4RAAU',
-      'a068c00000o5C4nAAE',
+      'a0G7e00000bv1ZWEAY',
     ],
     options: { isTemplateExport: false, isListPageExport: true },
     linkedLabels: [],
@@ -31,7 +32,7 @@ const treq = {
     isInherited: null,
     exportType: null,
     excludedLabelIds: null,
-    categoryId: 'a058c00000e9RkDAAU',
+    categoryId: 'a097e00000O0xeiAAB',
   }
 }
 
