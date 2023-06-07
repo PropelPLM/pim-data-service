@@ -821,32 +821,32 @@ class PimStructure {
           // template specifies that the column's rows should contain a field's value
           field = field.slice(11, -1);
           if (supportedAttributes.has(field)) {
-            console.log('yes');
+            // push columns specified in template
+            exportColumns = [
+              ...exportColumns,
+              {
+                fieldName: col,
+                label: templateHeaders[lastHeaderRowIndex][i],
+                type: 'text'
+              }
+            ];
           } else {
-            console.log(field);
+            // invalid attribute name provided, the field will be considered as a raw value
+            templateHeaderValueMap.set(
+              templateHeaders[lastHeaderRowIndex][i],
+              field
+            );
+            exportColumns = [
+              ...exportColumns,
+              {
+                fieldName: templateHeaders[lastHeaderRowIndex][i],
+                label: templateHeaders[lastHeaderRowIndex][i],
+                type: 'text'
+              }
+            ];
           }
-          // Array.from(productVariantValueMapList[0].keys()).forEach(col => {
-          //   const isMatchingColAndField =
-          //     (field !== 'Record ID' && field === col) ||
-          //     (col === 'Record_ID' && field === 'Record ID');
-          //   if (col !== 'Id' && isMatchingColAndField) {
-          //     // push columns specified in template
-          //     console.log('field1: ', field);
-          //     exportColumns = [
-          //       ...exportColumns,
-          //       {
-          //         fieldName: col,
-          //         label: templateHeaders[lastHeaderRowIndex][i],
-          //         type: 'text'
-          //       }
-          //     ];
-          //   } else {
-          //     console.log('field2: ', field);
-          //   }
-          // });
         } else {
           // template specifies that the column's rows should contain the raw value in the template
-          console.log('field3: ', field);
           templateHeaderValueMap.set(
             templateHeaders[lastHeaderRowIndex][i],
             field
