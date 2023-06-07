@@ -808,11 +808,6 @@ class PimStructure {
       // clean up data for easier parsing
       const supportedAttributes = productVariantValueMapList[0];
       supportedAttributes.delete(ID_FIELD);
-      // supportedAttributes.set(
-      //   RECORD_ID_LABEL,
-      //   supportedAttributes.get(RECORD_ID_FIELD)
-      // );
-      // supportedAttributes.delete(RECORD_ID_FIELD);
 
       for (let i = 0; i < templateFields.length; i++) {
         field = templateFields[i];
@@ -838,7 +833,7 @@ class PimStructure {
             // invalid attribute name provided
             templateHeaderValueMap.set(
               templateHeaders[lastHeaderRowIndex][i],
-              'Invalid Attribute'
+              '<Invalid Attribute>'
             );
             exportColumns = [
               ...exportColumns,
