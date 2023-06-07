@@ -831,10 +831,10 @@ class PimStructure {
               }
             ];
           } else {
-            // invalid attribute name provided, the field will be considered as a raw value
+            // invalid attribute name provided
             templateHeaderValueMap.set(
               templateHeaders[lastHeaderRowIndex][i],
-              field
+              'Invalid Attribute'
             );
             exportColumns = [
               ...exportColumns,
