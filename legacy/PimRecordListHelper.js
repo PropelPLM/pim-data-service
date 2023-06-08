@@ -742,7 +742,7 @@ async function addExportColumns(
               // Invalid attribute field
               templateHeaderValueMap.set(
                 templateHeaders[lastHeaderRowIndex][i],
-                '<Invalid Attribute>'
+                ''
               );
               exportColumns.push({
                 fieldName: templateHeaders[lastHeaderRowIndex][i],

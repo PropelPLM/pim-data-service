@@ -833,7 +833,7 @@ class PimStructure {
             // invalid attribute name provided
             templateHeaderValueMap.set(
               templateHeaders[lastHeaderRowIndex][i],
-              '<Invalid Attribute>'
+              ''
             );
             exportColumns = [
               ...exportColumns,
