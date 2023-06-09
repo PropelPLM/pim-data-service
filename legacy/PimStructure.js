@@ -149,6 +149,7 @@ class PimStructure {
 
         if (exportType === 'currentVariant') {
           if (reqBody.variantValuePath.length > 0) {
+            console.log('reqBody.variantValuePath: ', reqBody.variantValuePath);
             const variantValuePath = prepareIdsForSOQL(
               reqBody.variantValuePath
             );
