@@ -23,6 +23,8 @@ const CATEGORY_NAME_LABEL = 'Category';
 const DA_TYPE = 'DigitalAsset';
 const ID_FIELD = 'Id';
 const PRODUCT_REFERENCE_TYPE = 'ProductReference';
+const RECORD_ID_FIELD = 'Record_ID';
+const RECORD_ID_LABEL = 'Record ID';
 
 class PimStructure {
   constructor() {}
@@ -439,7 +441,8 @@ class PimStructure {
           templateFields,
           templateHeaders,
           exportRecordsAndColumns
-        )
+        ),
+        templateAdditionalHeaders: []
       };
       Object.assign(asposeInput, {
         detailPageData: exportRecordsColsAndAssets?.recordsAndCols[0],
@@ -449,6 +452,11 @@ class PimStructure {
     if (useAspose) {
       await callAsposeToExport(asposeInput);
       return { daDownloadDetailsList };
+    }
+    if (templateHeaders.length > 1) {
+      // template has more than 1 header row, pop the last header row as it is already tied to the data row
+      templateHeaders.pop();
+      exportRecordsColsAndAssets.templateAdditionalHeaders = templateHeaders;
     }
     return exportRecordsColsAndAssets;
   }
@@ -795,37 +803,58 @@ class PimStructure {
         });
     } else if (templateFields && templateFields.length > 0) {
       // template export
+      const lastHeaderRowIndex = templateHeaders.length - 1;
       let field;
+      // clean up data for easier parsing
+      const supportedAttributes = productVariantValueMapList[0];
+      supportedAttributes.delete(ID_FIELD);
+
       for (let i = 0; i < templateFields.length; i++) {
         field = templateFields[i];
 
         if (field.includes(ATTRIBUTE_FLAG)) {
           // template specifies that the column's rows should contain a field's value
           field = field.slice(11, -1);
-          Array.from(productVariantValueMapList[0].keys()).forEach(col => {
-            const isMatchingColAndField =
-              (field !== 'Record ID' && field === col) ||
-              (col === 'Record_ID' && field === 'Record ID');
-            if (col !== 'Id' && isMatchingColAndField) {
-              // push columns specified in template
-              exportColumns = [
-                ...exportColumns,
-                {
-                  fieldName: col,
-                  label: templateHeaders[i],
-                  type: 'text'
-                }
-              ];
-            }
-          });
+          if (
+            (field !== RECORD_ID_LABEL && supportedAttributes.has(field)) ||
+            (field === RECORD_ID_LABEL &&
+              supportedAttributes.has(RECORD_ID_FIELD))
+          ) {
+            // push columns specified in template
+            exportColumns = [
+              ...exportColumns,
+              {
+                fieldName: field === RECORD_ID_LABEL ? RECORD_ID_FIELD : field,
+                label: templateHeaders[lastHeaderRowIndex][i],
+                type: 'text'
+              }
+            ];
+          } else {
+            // invalid attribute name provided
+            templateHeaderValueMap.set(
+              templateHeaders[lastHeaderRowIndex][i],
+              ''
+            );
+            exportColumns = [
+              ...exportColumns,
+              {
+                fieldName: templateHeaders[lastHeaderRowIndex][i],
+                label: templateHeaders[lastHeaderRowIndex][i],
+                type: 'text'
+              }
+            ];
+          }
         } else {
           // template specifies that the column's rows should contain the raw value in the template
-          templateHeaderValueMap.set(templateHeaders[i], field);
+          templateHeaderValueMap.set(
+            templateHeaders[lastHeaderRowIndex][i],
+            field
+          );
           exportColumns = [
             ...exportColumns,
             {
-              fieldName: templateHeaders[i],
-              label: templateHeaders[i],
+              fieldName: templateHeaders[lastHeaderRowIndex][i],
+              label: templateHeaders[lastHeaderRowIndex][i],
               type: 'text'
             }
           ];
@@ -890,14 +919,22 @@ class PimStructure {
     if (!templateVersionData) return { templateFields, templateHeaders };
 
     const templateRows = templateVersionData.split(/\r?\n/);
-    templateHeaders = templateRows?.[0]?.split(',') || [];
-    templateFields = templateRows?.[1]?.split(',') || [];
-    return {
-      templateFields: templateFields
-        .filter(field => field.includes(ATTRIBUTE_FLAG))
-        .map(attrField => removeDoubleQuotes(attrField)),
-      templateHeaders
+    let isDataRow = false;
+    let templateHeadersAndFields = {
+      templateFields: [],
+      templateHeaders: []
     };
+    for (let row of templateRows) {
+      if (row.includes(ATTRIBUTE_FLAG)) {
+        isDataRow = true;
+        templateHeadersAndFields.templateFields = row
+          .split(',')
+          .map(attrField => removeDoubleQuotes(attrField));
+        break;
+      }
+      templateHeadersAndFields.templateHeaders.push(row.split(','));
+    }
+    return templateHeadersAndFields;
   }
 }
 
