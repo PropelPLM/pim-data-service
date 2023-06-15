@@ -453,7 +453,7 @@ class PimStructure {
       await callAsposeToExport(asposeInput);
       return { daDownloadDetailsList };
     }
-    if (templateHeaders.length > 1) {
+    if (templateHeaders?.length > 1) {
       // template has more than 1 header row, pop the last header row as it is already tied to the data row
       templateHeaders.pop();
       exportRecordsColsAndAssets.templateAdditionalHeaders = templateHeaders;
@@ -919,14 +919,12 @@ class PimStructure {
     if (!templateVersionData) return { templateFields, templateHeaders };
 
     const templateRows = templateVersionData.split(/\r?\n/);
-    let isDataRow = false;
     let templateHeadersAndFields = {
       templateFields: [],
       templateHeaders: []
     };
     for (let row of templateRows) {
       if (row.includes(ATTRIBUTE_FLAG)) {
-        isDataRow = true;
         templateHeadersAndFields.templateFields = row
           .split(',')
           .map(attrField => removeDoubleQuotes(attrField));
