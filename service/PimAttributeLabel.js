@@ -15,7 +15,7 @@ class PimAttributeLabel {
     try {
       let basedQueryStr = `select Id, Name, Primary_Key__c from Attribute_Label__c`
       if (this.attributeLabelNames?.length) {
-        basedQueryStr += ` where Name in (${this.attributeLabelNames.join(',')})`
+        basedQueryStr += ` where Primary_Key__c in (${this.attributeLabelNames.join(',')})`
       }
       this.attributeLabels = await this.helper.connection.queryLimit(this.helper.namespaceQuery(
         basedQueryStr
