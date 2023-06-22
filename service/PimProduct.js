@@ -9,19 +9,31 @@ class PimProduct {
     this.helper = helper
     this.log = log
     this.products = []
+    this.productIdName = {}
+    this.productVariantMap = new Map()
     this.productNames = productNames
   }
 
   async populate() {
     try {
-      const formatedNames = this.productNames.join(',')
+      this.products = await this.helper.connection.queryExtend(this.helper.namespaceQuery(
+        `select Id, Name from Product__c where Name in (${this.helper.connection.QUERY_LIST})`
+      ), this.productNames)
 
-      const result = await this.helper.connection.simpleQuery(this.helper.namespaceQuery(
-        `select Id, Name, 
-          (select Id, Name, Order__c from ${this.helper.namespace('Variants__r')}) 
-          from Product__c where Name in (${formatedNames})`
-      ))
-      this.products = result.records
+      for (let product of this.products) {
+        this.productIdName[product.Id] = product.Name
+      }
+      this.productVariants = await this.helper.connection.queryExtend(this.helper.namespaceQuery(
+        `select Id, Name, Order__c, Product__c from Variant__c where Product__c in (${this.helper.connection.QUERY_LIST})`
+      ), Object.keys(this.productIdName).map((pId) => `'${pId}'`))
+
+      for (let variant of this.productVariants) {
+        const productName = this.productIdName[variant[this.helper.namespace('Product__c')]]
+        if (!this.productVariantMap.has(productName)) {
+          this.productVariantMap.set(productName, [])
+        }
+        this.productVariantMap.get(productName).push(variant)
+      }
     } catch(error) {
       this.log.addToLogs([{errors: [error] }], this.helper.namespace('Product__c'))
 
@@ -38,11 +50,7 @@ class PimProduct {
   }
 
   getHasVariantMap() {
-    return new Map(
-      this.products.map(product => {
-        return [product['Name'], product[this.helper.namespace('Variants__r')]]
-      })
-    )
+    return this.productVariantMap
   }
 }
 
