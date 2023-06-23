@@ -66,6 +66,7 @@ initAssetDownloadDetailsList = (
   namespace
 ) => {
   const daDownloadDetails = [];
+  console.log('isProduct: ', isProduct);
   if (isProduct || !includeRecordAsset) return daDownloadDetails;
 
   recordIds.forEach(recordId => {

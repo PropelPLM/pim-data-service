@@ -121,6 +121,7 @@ class PimStructure {
             helper.getValue(appearingValues[j], 'Attribute_Label_Type__c') ===
             DA_TYPE
           ) {
+            console.log('0: ', newValue);
             attrValValue = await parseDigitalAssetAttrVal(
               digitalAssetMap,
               attrValValue,
@@ -221,6 +222,7 @@ class PimStructure {
                       'Attribute_Label_Type__c'
                     ) === DA_TYPE
                   ) {
+                    console.log('1: ', newValue);
                     newValue = await parseDigitalAssetAttrVal(
                       digitalAssetMap,
                       newValue,
