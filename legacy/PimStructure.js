@@ -121,17 +121,6 @@ class PimStructure {
             helper.getValue(appearingValues[j], 'Attribute_Label_Type__c') ===
             DA_TYPE
           ) {
-            console.log(
-              'Prod: ',
-              helper.getValue(appearingValues[j], 'Product__c')
-            );
-            console.log(
-              'OVV: ',
-              helper.getValue(
-                appearingValues[j],
-                'Overwritten_Variant_Value__c'
-              )
-            );
             attrValValue = await parseDigitalAssetAttrVal(
               digitalAssetMap,
               attrValValue,
@@ -235,7 +224,6 @@ class PimStructure {
                       'Attribute_Label_Type__c'
                     ) === DA_TYPE
                   ) {
-                    console.log('1: ', newValue);
                     newValue = await parseDigitalAssetAttrVal(
                       digitalAssetMap,
                       newValue,
