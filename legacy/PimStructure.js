@@ -162,8 +162,8 @@ class PimStructure {
 
         if (exportType === 'currentVariant') {
           if (reqBody.variantValuePath.length > 0) {
+            // exporting current variant value (base product not included in export)
             // remove base product's digital assets that were previously added
-            console.log('daDownloadDetailsList: ', daDownloadDetailsList);
             daDownloadDetailsList = [];
             const variantValuePath = prepareIdsForSOQL(
               reqBody.variantValuePath
@@ -533,6 +533,7 @@ class PimStructure {
   ) {
     let lowestLevelVariantValues;
     if (exportType === 'currentVariant') {
+      console.log('reqBody.variantValuePath: ', reqBody.variantValuePath);
       exportType = 'allVariants';
       exportRecords = [baseProduct];
       // query all variants to populate inherited values
