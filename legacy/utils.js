@@ -403,7 +403,12 @@ async function parseDaAttrValWithVarMap(
   );
 }
 
-async function getDigitalAssetViewLink(attrValValue, helper, reqBody) {
+async function getDigitalAssetViewLink(
+  digitalAsset,
+  attrValValue,
+  helper,
+  reqBody
+) {
   const viewLink = helper.getValue(digitalAsset, 'View_Link__c');
   // if value is already complete url, add it to the map, else prepend the CDN url to the partial url then add to map
   attrValValue = viewLink.includes('https')
