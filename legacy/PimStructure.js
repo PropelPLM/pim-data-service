@@ -167,7 +167,7 @@ class PimStructure {
           if (reqBody.variantValuePath.length > 0) {
             // exporting current variant value (base product not included in export)
             // remove base product's digital assets that were previously added
-            daDownloadDetailsList = [];
+            // daDownloadDetailsList = [];
             const variantValuePath = prepareIdsForSOQL(
               reqBody.variantValuePath
             );
