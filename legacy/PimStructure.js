@@ -142,10 +142,6 @@ class PimStructure {
               helper,
               reqBody
             );
-            console.log(
-              'productVariantsDaDetailsMap: ',
-              productVariantsDaDetailsMap
-            );
           } else if (
             helper.getValue(appearingValues[j], 'Attribute_Label_Type__c') ===
             PRODUCT_REFERENCE_TYPE
@@ -242,10 +238,23 @@ class PimStructure {
                       'Attribute_Label_Type__c'
                     ) === DA_TYPE
                   ) {
-                    newValue = await parseDigitalAssetAttrVal(
+                    // newValue = await parseDigitalAssetAttrVal(
+                    //   digitalAssetMap,
+                    //   newValue,
+                    //   daDownloadDetailsList,
+                    //   helper,
+                    //   reqBody
+                    // );
+                    console.log('vvId: ', currentVariant.get('Record_ID'));
+                    newValue = await parseDaAttrValWithVarMap(
+                      currentVariant.get('Record_ID'),
                       digitalAssetMap,
+                      helper.getValue(
+                        overwrittenValues[j],
+                        'Attribute_Label__c'
+                      ),
                       newValue,
-                      daDownloadDetailsList,
+                      productVariantsDaDetailsMap,
                       helper,
                       reqBody
                     );
