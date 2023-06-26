@@ -157,21 +157,23 @@ class PimStructure {
             const variantValuePath = prepareIdsForSOQL(
               reqBody.variantValuePath
             );
+            console.log('vvpath: ', reqBody.variantValuePath);
             // get Variant__c object and Variant_Value__c object for every variant value in current variant
             const variantAndValueMap = await this.getVariantAndVariantValues(
               variantValuePath,
               exportType,
               namespace
             );
+            console.log('variantAndValueMap: ', variantAndValueMap);
 
             let currentVariant = new Map();
             const varList = Array.from(variantAndValueMap.keys());
             valuesList = Array.from(variantAndValueMap.values()); // note: this is an array of arrays
+            console.log('valuesList: ', valuesList);
             let valuesIdList = [];
             valuesList.forEach(val => {
               valuesIdList.push(val[0].Id);
             });
-            console.log(valuesIdList);
             valuesIdList = prepareIdsForSOQL(valuesIdList);
             let overwrittenValues = [];
             if (valuesIdList.length > 0) {
