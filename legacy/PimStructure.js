@@ -171,7 +171,7 @@ class PimStructure {
             valuesList.forEach(val => {
               valuesIdList.push(val[0].Id);
             });
-            console.log('valuesIdList: ', valuesIdList);
+            console.log(valuesIdList);
             valuesIdList = prepareIdsForSOQL(valuesIdList);
             let overwrittenValues = [];
             if (valuesIdList.length > 0) {
