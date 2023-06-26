@@ -245,7 +245,6 @@ class PimStructure {
                     //   helper,
                     //   reqBody
                     // );
-                    console.log('vvId: ', valuesList[i][0].Id);
                     newValue = await parseDaAttrValWithVarMap(
                       valuesList[i][0].Id,
                       digitalAssetMap,
@@ -397,10 +396,19 @@ class PimStructure {
                     'Attribute_Label_Type__c'
                   ) === DA_TYPE
                 ) {
-                  newValue = await parseDigitalAssetAttrVal(
+                  // newValue = await parseDigitalAssetAttrVal(
+                  //   digitalAssetMap,
+                  //   newValue,
+                  //   daDownloadDetailsList,
+                  //   helper,
+                  //   reqBody
+                  // );
+                  newValue = await parseDaAttrValWithVarMap(
+                    valuesList[i].Id,
                     digitalAssetMap,
+                    helper.getValue(overwrittenValues[j], 'Attribute_Label__c'),
                     newValue,
-                    daDownloadDetailsList,
+                    productVariantsDaDetailsMap,
                     helper,
                     reqBody
                   );
@@ -454,7 +462,7 @@ class PimStructure {
               currentVariantName,
               reqBody,
               digitalAssetMap,
-              daDownloadDetailsList
+              productVariantsDaDetailsMap
             )
           ];
         } else if (exportType === 'lowestVariants') {
@@ -465,7 +473,7 @@ class PimStructure {
         }
       }
       exportRecordsColsAndAssets = {
-        daDownloadDetailsList,
+        daDownloadDetailsList: await this.getFinalizedDaList(),
         recordsAndCols: await this.addExportColumns(
           productVariantValueMapList,
           templateFields,
@@ -544,10 +552,14 @@ class PimStructure {
     currentVariantName,
     reqBody,
     digitalAssetMap,
-    daDownloadDetailsList
+    productVariantsDaDetailsMap
   ) {
     let lowestLevelVariantValues;
     if (exportType === 'currentVariant') {
+      console.log(
+        'productVariantsDaDetailsMap1: ',
+        productVariantsDaDetailsMap
+      );
       console.log('reqBody.variantValuePath: ', reqBody.variantValuePath);
       exportType = 'allVariants';
       exportRecords = [baseProduct];
@@ -651,10 +663,19 @@ class PimStructure {
                 'Attribute_Label_Type__c'
               ) === DA_TYPE
             ) {
-              newValue = await parseDigitalAssetAttrVal(
+              // newValue = await parseDigitalAssetAttrVal(
+              //   digitalAssetMap,
+              //   newValue,
+              //   daDownloadDetailsList,
+              //   helper,
+              //   reqBody
+              // );
+              newValue = await parseDaAttrValWithVarMap(
+                valuesList[i].Id,
                 digitalAssetMap,
+                helper.getValue(overwrittenValues[j], 'Attribute_Label__c'),
                 newValue,
-                daDownloadDetailsList,
+                productVariantsDaDetailsMap,
                 helper,
                 reqBody
               );
@@ -674,6 +695,10 @@ class PimStructure {
         }
         exportRecords.push(newVariant);
       }
+      console.log(
+        'productVariantsDaDetailsMap2: ',
+        productVariantsDaDetailsMap
+      );
       exportType = 'currentVariant';
     } else if (exportType === 'lowestVariants') {
       lowestLevelVariantValues = await getLowestVariantValuesList(
@@ -812,6 +837,16 @@ class PimStructure {
       childMap.set(variant.get('Record_ID'), variant.get('Children'));
     });
     return childMap;
+  }
+
+  async getFinalizedDaList() {
+    // Option 1: Check if is inherited
+    // if so: iterate over the product's DA labels (where prod has DA)
+    // if vv slated for export does not have DA for this label: iteratively search its parent vv for DA until product
+    // else: add prod/vv's DA to daDownloadDetailsList
+    // else: not inherited, so add all the DAs belonging to vvs and prod slated for export to daDownloadDetailsList
+    // Option 2: Update the Map with inheritance at the fillInInherited() method so here we just add all DAs belonging to
+    // prod and vvs slated for export to daDownloadDetailsList
   }
 
   async addExportColumns(
