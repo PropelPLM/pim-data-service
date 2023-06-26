@@ -133,6 +133,7 @@ class PimStructure {
             //   helper,
             //   reqBody
             // );
+            console.log('1');
             attrValValue = await parseDaAttrValWithVarMap(
               baseRecord.get('Id'),
               digitalAssetMap,
@@ -159,6 +160,10 @@ class PimStructure {
           exportRecords[0].set(appearingLabels[i].Name, null);
         }
       }
+      console.log(
+        'productVariantsDaDetailsMap1: ',
+        productVariantsDaDetailsMap
+      );
       /** get product's appearing attribute labels end */
       if (isProduct) {
         let valuesList = [];
@@ -245,6 +250,7 @@ class PimStructure {
                     //   helper,
                     //   reqBody
                     // );
+                    console.log('2');
                     newValue = await parseDaAttrValWithVarMap(
                       valuesList[i][0].Id,
                       digitalAssetMap,
@@ -275,6 +281,10 @@ class PimStructure {
                 }
               }
             }
+            console.log(
+              'productVariantsDaDetailsMap2: ',
+              productVariantsDaDetailsMap
+            );
             currentVariantName = currentVariant.get('Record_ID');
             // overwrite base product with current variant
             exportRecords = [currentVariant];
@@ -403,6 +413,7 @@ class PimStructure {
                   //   helper,
                   //   reqBody
                   // );
+                  console.log('3');
                   newValue = await parseDaAttrValWithVarMap(
                     valuesList[i].Id,
                     digitalAssetMap,
@@ -444,6 +455,10 @@ class PimStructure {
               exportRecords.push(newVariant);
             }
           }
+          console.log(
+            'productVariantsDaDetailsMap3: ',
+            productVariantsDaDetailsMap
+          );
         } else {
           throw 'Invalid Export Type';
         }
@@ -556,11 +571,6 @@ class PimStructure {
   ) {
     let lowestLevelVariantValues;
     if (exportType === 'currentVariant') {
-      console.log(
-        'productVariantsDaDetailsMap1: ',
-        productVariantsDaDetailsMap
-      );
-      console.log('reqBody.variantValuePath: ', reqBody.variantValuePath);
       exportType = 'allVariants';
       exportRecords = [baseProduct];
       // query all variants to populate inherited values
@@ -670,15 +680,15 @@ class PimStructure {
               //   helper,
               //   reqBody
               // );
-              newValue = await parseDaAttrValWithVarMap(
-                valuesList[i].Id,
-                digitalAssetMap,
-                helper.getValue(overwrittenValues[j], 'Attribute_Label__c'),
-                newValue,
-                productVariantsDaDetailsMap,
-                helper,
-                reqBody
-              );
+              // newValue = await parseDaAttrValWithVarMap(
+              //   valuesList[i].Id,
+              //   digitalAssetMap,
+              //   helper.getValue(overwrittenValues[j], 'Attribute_Label__c'),
+              //   newValue,
+              //   productVariantsDaDetailsMap,
+              //   helper,
+              //   reqBody
+              // );
             } else if (
               helper.getValue(
                 overwrittenValues[j],
@@ -695,10 +705,6 @@ class PimStructure {
         }
         exportRecords.push(newVariant);
       }
-      console.log(
-        'productVariantsDaDetailsMap2: ',
-        productVariantsDaDetailsMap
-      );
       exportType = 'currentVariant';
     } else if (exportType === 'lowestVariants') {
       lowestLevelVariantValues = await getLowestVariantValuesList(
