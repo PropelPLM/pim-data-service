@@ -121,7 +121,6 @@ class PimStructure {
             helper.getValue(appearingValues[j], 'Attribute_Label_Type__c') ===
             DA_TYPE
           ) {
-            console.log('DA');
             attrValValue = await parseDigitalAssetAttrVal(
               digitalAssetMap,
               attrValValue,
@@ -139,7 +138,6 @@ class PimStructure {
             );
           }
           exportRecords[0].set(appearingLabels[i].Name, attrValValue);
-          console.log('attrValValue type: ', typeof attrValValue);
         }
 
         if (!exportRecords[0].has(appearingLabels[i].Name)) {
@@ -173,6 +171,7 @@ class PimStructure {
             valuesList.forEach(val => {
               valuesIdList.push(val[0].Id);
             });
+            console.log('valuesIdList: ', valuesIdList);
             valuesIdList = prepareIdsForSOQL(valuesIdList);
             let overwrittenValues = [];
             if (valuesIdList.length > 0) {
