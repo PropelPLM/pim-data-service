@@ -377,8 +377,7 @@ async function parseDaAttrValWithVarMap(
     productVariantsDaDetailsMap.set(
       recordId,
       new Map([
-        attrLabel,
-        new DADownloadDetails(digitalAsset, reqBody.namespace)
+        [attrLabel, new DADownloadDetails(digitalAsset, reqBody.namespace)]
       ])
     );
   } else {
