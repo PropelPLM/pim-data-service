@@ -500,6 +500,7 @@ class PimStructure {
       exportRecordsColsAndAssets = {
         daDownloadDetailsList: await this.getFinalizedDaList(
           reqBody.isInherited,
+          nonEmptyProductDaAttrLabelsIds,
           productVariantsDaDetailsMap,
           daDownloadDetailsList,
           productVariantValueMapList,
@@ -868,6 +869,7 @@ class PimStructure {
 
   async getFinalizedDaList(
     isInherited,
+    nonEmptyProductDaAttrLabelsIds,
     productVariantsDaDetailsMap,
     daDownloadDetailsList,
     productVariantValueMapList,
