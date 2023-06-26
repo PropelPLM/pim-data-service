@@ -355,7 +355,12 @@ async function parseDigitalAssetAttrVal(
   daDownloadDetailsList.push(
     new DADownloadDetails(digitalAsset, reqBody.namespace)
   );
-  return await getDigitalAssetViewLink(attrValValue, helper, reqBody);
+  return await getDigitalAssetViewLink(
+    digitalAsset,
+    attrValValue,
+    helper,
+    reqBody
+  );
 }
 
 // stores digital asset in Map<productId or vvId, Map<Attribute Label Id, DADownloadDetails object>>
@@ -390,7 +395,12 @@ async function parseDaAttrValWithVarMap(
   // productVariantsDaDetailsMap.push(
   //   new DADownloadDetails(digitalAsset, reqBody.namespace)
   // );
-  return await getDigitalAssetViewLink(attrValValue, helper, reqBody);
+  return await getDigitalAssetViewLink(
+    digitalAsset,
+    attrValValue,
+    helper,
+    reqBody
+  );
 }
 
 async function getDigitalAssetViewLink(attrValValue, helper, reqBody) {
