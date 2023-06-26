@@ -245,9 +245,9 @@ class PimStructure {
                     //   helper,
                     //   reqBody
                     // );
-                    console.log('vvId: ', currentVariant.get('Record_ID'));
+                    console.log('vvId: ', valuesList[i][0].Id);
                     newValue = await parseDaAttrValWithVarMap(
-                      currentVariant.get('Record_ID'),
+                      valuesList[i][0].Id,
                       digitalAssetMap,
                       helper.getValue(
                         overwrittenValues[j],
