@@ -217,6 +217,14 @@ class PimStructure {
               // add any overwritten values
               if (overwrittenValues.length > 0) {
                 for (let j = 0; j < overwrittenValues.length; j++) {
+                  const affectedVariantValue = helper.getValue(
+                    overwrittenValues[j],
+                    'Overwritten_Variant_Value__c'
+                  );
+                  if (valuesList[i][0].Id !== affectedVariantValue) {
+                    // attribute value is not overwriting the current variant value -> skip
+                    continue;
+                  }
                   let affectedLabelName;
                   appearingLabels.forEach(label => {
                     if (
@@ -229,10 +237,7 @@ class PimStructure {
                       affectedLabelName = label.Name;
                     }
                   });
-                  const affectedVariantValue = helper.getValue(
-                    overwrittenValues[j],
-                    'Overwritten_Variant_Value__c'
-                  );
+
                   let newValue = helper.getValue(
                     overwrittenValues[j],
                     'Value__c'
@@ -275,9 +280,7 @@ class PimStructure {
                     );
                   }
                   // update the currentVariant object with the overwritten values
-                  if (valuesList[i][0].Id === affectedVariantValue) {
-                    currentVariant.set(affectedLabelName, newValue);
-                  }
+                  currentVariant.set(affectedLabelName, newValue);
                 }
               }
             }
