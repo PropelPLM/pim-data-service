@@ -138,6 +138,10 @@ class PimStructure {
             );
           }
           exportRecords[0].set(appearingLabels[i].Name, attrValValue);
+          console.log(
+            'is Obj?: ' + typeof attrValValue ===
+              'object' + ', label: ' + appearingLabels[i].Name
+          );
         }
 
         if (!exportRecords[0].has(appearingLabels[i].Name)) {
