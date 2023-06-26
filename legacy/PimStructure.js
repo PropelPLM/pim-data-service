@@ -222,7 +222,7 @@ class PimStructure {
                     'Overwritten_Variant_Value__c'
                   );
                   if (valuesList[i][0].Id !== affectedVariantValue) {
-                    // attribute value is not overwriting the current variant value -> skip
+                    // skip attribute values which are not overwriting the current variant value
                     continue;
                   }
                   let affectedLabelName;
@@ -386,6 +386,14 @@ class PimStructure {
             // add any overwritten values
             if (overwrittenValues.length > 0) {
               for (let j = 0; j < overwrittenValues.length; j++) {
+                const affectedVariantValue = helper.getValue(
+                  overwrittenValues[j],
+                  'Overwritten_Variant_Value__c'
+                );
+                if (valuesList[i].Id !== affectedVariantValue) {
+                  // skip attribute values which are not overwriting the current variant value
+                  continue;
+                }
                 let affectedLabelName;
                 appearingLabels.forEach(label => {
                   if (
@@ -395,10 +403,6 @@ class PimStructure {
                     affectedLabelName = label.Name;
                   }
                 });
-                const affectedVariantValue = helper.getValue(
-                  overwrittenValues[j],
-                  'Overwritten_Variant_Value__c'
-                );
                 let newValue = helper.getValue(
                   overwrittenValues[j],
                   'Value__c'
@@ -438,9 +442,7 @@ class PimStructure {
                   );
                 }
                 // update the newVariant object with the overwritten values
-                if (valuesList[i].Id === affectedVariantValue) {
-                  newVariant.set(affectedLabelName, newValue);
-                }
+                newVariant.set(affectedLabelName, newValue);
               }
             }
             if (exportType === 'lowestVariants' && !reqBody.isInherited) {
