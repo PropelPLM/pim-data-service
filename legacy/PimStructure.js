@@ -11,6 +11,7 @@ const {
   getDigitalAssetMap,
   initAssetDownloadDetailsList,
   parseDigitalAssetAttrVal,
+  parseDaAttrValWithVarMap,
   prepareIdsForSOQL,
   parseProductReferenceAttrVal
 } = require('./utils');
@@ -45,7 +46,8 @@ class PimStructure {
       templateFields,
       templateHeaders,
       useAspose,
-      daDownloadDetailsList;
+      // daDownloadDetailsList;
+      productVariantsDaDetailsMap;
     if (reqBody.options.isTemplateExport) {
       if (reqBody.templateVersionData) {
         ({ templateFields, templateHeaders } = this.getTemplateHeadersAndFields(
@@ -91,13 +93,16 @@ class PimStructure {
         exportRecords = [baseRecord],
         exportRecordsAndColumns = [exportRecords],
         attrValValue;
-      daDownloadDetailsList = initAssetDownloadDetailsList(
-        isProduct,
-        includeRecordAsset,
-        recordList.map(record => record.Id),
-        digitalAssetMap,
-        namespace
-      );
+      // daDownloadDetailsList = initAssetDownloadDetailsList(
+      //   isProduct,
+      //   includeRecordAsset,
+      //   recordList.map(record => record.Id),
+      //   digitalAssetMap,
+      //   namespace
+      // );
+
+      // Map<productId or vvId, Map<Attribute Label Id, DADownloadDetails object>>
+      productVariantsDaDetailsMap = new Map();
       appearingLabelIds = prepareIdsForSOQL(appearingLabelIds);
       const { appearingLabels, appearingValues } =
         await this.parseAppearringAttrLabelsAndValues(
@@ -121,12 +126,26 @@ class PimStructure {
             helper.getValue(appearingValues[j], 'Attribute_Label_Type__c') ===
             DA_TYPE
           ) {
-            attrValValue = await parseDigitalAssetAttrVal(
+            // attrValValue = await parseDigitalAssetAttrVal(
+            //   digitalAssetMap,
+            //   attrValValue,
+            //   daDownloadDetailsList,
+            //   helper,
+            //   reqBody
+            // );
+            console.log('recordId: ', baseRecord.get('Id'));
+            attrValValue = await parseDaAttrValWithVarMap(
+              baseRecord.get('Id'),
               digitalAssetMap,
+              appearingLabels[i].Id,
               attrValValue,
-              daDownloadDetailsList,
+              productVariantsDaDetailsMap,
               helper,
               reqBody
+            );
+            console.log(
+              'productVariantsDaDetailsMap: ',
+              productVariantsDaDetailsMap
             );
           } else if (
             helper.getValue(appearingValues[j], 'Attribute_Label_Type__c') ===
@@ -150,8 +169,6 @@ class PimStructure {
         let valuesList = [];
 
         if (exportType === 'currentVariant') {
-          console.log('sldkfj');
-          console.log('vvPath length: ', reqBody.variantValuePath);
           if (reqBody.variantValuePath.length > 0) {
             // exporting current variant value (base product not included in export)
             // remove base product's digital assets that were previously added
@@ -159,19 +176,16 @@ class PimStructure {
             const variantValuePath = prepareIdsForSOQL(
               reqBody.variantValuePath
             );
-            console.log('vvpath: ', reqBody.variantValuePath);
             // get Variant__c object and Variant_Value__c object for every variant value in current variant
             const variantAndValueMap = await this.getVariantAndVariantValues(
               variantValuePath,
               exportType,
               namespace
             );
-            console.log('variantAndValueMap: ', variantAndValueMap);
 
             let currentVariant = new Map();
             const varList = Array.from(variantAndValueMap.keys());
             valuesList = Array.from(variantAndValueMap.values()); // note: this is an array of arrays
-            console.log('valuesList: ', valuesList);
             let valuesIdList = [];
             valuesList.forEach(val => {
               valuesIdList.push(val[0].Id);
