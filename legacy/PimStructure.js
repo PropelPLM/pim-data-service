@@ -12,6 +12,7 @@ const {
   initAssetDownloadDetailsList,
   parseDigitalAssetAttrVal,
   parseDaAttrValWithVarMap,
+  getDigitalAssetViewLink,
   prepareIdsForSOQL,
   parseProductReferenceAttrVal
 } = require('./utils');
@@ -658,6 +659,14 @@ class PimStructure {
         // add any overwritten values
         if (overwrittenValues.length > 0) {
           for (let j = 0; j < overwrittenValues.length; j++) {
+            const affectedVariantValue = helper.getValue(
+              overwrittenValues[j],
+              'Overwritten_Variant_Value__c'
+            );
+            if (valuesList[i].Id !== affectedVariantValue) {
+              // skip attribute values which are not overwriting the current variant value
+              continue;
+            }
             let affectedLabelName;
             appearingLabels.forEach(label => {
               if (
@@ -667,10 +676,7 @@ class PimStructure {
                 affectedLabelName = label.Name;
               }
             });
-            const affectedVariantValue = helper.getValue(
-              overwrittenValues[j],
-              'Overwritten_Variant_Value__c'
-            );
+
             let newValue = helper.getValue(overwrittenValues[j], 'Value__c');
             if (
               helper.getValue(
@@ -685,15 +691,17 @@ class PimStructure {
               //   helper,
               //   reqBody
               // );
-              // newValue = await parseDaAttrValWithVarMap(
-              //   valuesList[i].Id,
-              //   digitalAssetMap,
-              //   helper.getValue(overwrittenValues[j], 'Attribute_Label__c'),
-              //   newValue,
-              //   productVariantsDaDetailsMap,
-              //   helper,
-              //   reqBody
-              // );
+              const digitalAsset = digitalAssetMap?.get(newValue);
+              if (!digitalAsset) {
+                continue;
+              }
+              // just need conversion to view link since DA has been stored in productVariantsDaDetailsMap in prev steps
+              newValue = await getDigitalAssetViewLink(
+                digitalAsset,
+                newValue,
+                helper,
+                reqBody
+              );
             } else if (
               helper.getValue(
                 overwrittenValues[j],
@@ -703,9 +711,7 @@ class PimStructure {
               newValue = await parseProductReferenceAttrVal(newValue, reqBody);
             }
             // update the newVariant object with the overwritten values
-            if (valuesList[i].Id === affectedVariantValue) {
-              newVariant.set(affectedLabelName, newValue);
-            }
+            newVariant.set(affectedLabelName, newValue);
           }
         }
         exportRecords.push(newVariant);

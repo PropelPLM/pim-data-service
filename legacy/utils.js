@@ -87,6 +87,7 @@ module.exports = {
   logErrorResponse,
   parseDigitalAssetAttrVal,
   parseDaAttrValWithVarMap,
+  getDigitalAssetViewLink,
   postToChatter,
   prependCDNToViewLink,
   prepareIdsForSOQL,
