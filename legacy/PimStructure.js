@@ -47,8 +47,9 @@ class PimStructure {
       templateFields,
       templateHeaders,
       useAspose,
-      // daDownloadDetailsList;
-      productVariantsDaDetailsMap;
+      daDownloadDetailsList = [],
+      productVariantsDaDetailsMap,
+      nonEmptyProductDaAttrLabelsIds = [];
     if (reqBody.options.isTemplateExport) {
       if (reqBody.templateVersionData) {
         ({ templateFields, templateHeaders } = this.getTemplateHeadersAndFields(
@@ -143,6 +144,9 @@ class PimStructure {
               productVariantsDaDetailsMap,
               helper,
               reqBody
+            );
+            nonEmptyProductDaAttrLabelsIds.push(
+              helper.getValue(appearingValues[j], 'Attribute_Label__c')
             );
           } else if (
             helper.getValue(appearingValues[j], 'Attribute_Label_Type__c') ===
@@ -494,7 +498,13 @@ class PimStructure {
         }
       }
       exportRecordsColsAndAssets = {
-        daDownloadDetailsList: await this.getFinalizedDaList(),
+        daDownloadDetailsList: await this.getFinalizedDaList(
+          reqBody.isInherited,
+          productVariantsDaDetailsMap,
+          daDownloadDetailsList,
+          productVariantValueMapList,
+          exportRecordsAndColumns[0]
+        ),
         recordsAndCols: await this.addExportColumns(
           productVariantValueMapList,
           templateFields,
@@ -856,14 +866,45 @@ class PimStructure {
     return childMap;
   }
 
-  async getFinalizedDaList() {
+  async getFinalizedDaList(
+    isInherited,
+    productVariantsDaDetailsMap,
+    daDownloadDetailsList,
+    productVariantValueMapList,
+    exportRecords
+  ) {
     // Option 1: Check if is inherited
-    // if so: iterate over the product's DA labels (where prod has DA)
-    // if vv slated for export does not have DA for this label: iteratively search its parent vv for DA until product
-    // else: add prod/vv's DA to daDownloadDetailsList
-    // else: not inherited, so add all the DAs belonging to vvs and prod slated for export to daDownloadDetailsList
-    // Option 2: Update the Map with inheritance at the fillInInherited() method so here we just add all DAs belonging to
-    // prod and vvs slated for export to daDownloadDetailsList
+    if (isInherited) {
+      // iterate over the product's DA labels (where prod has DA)
+      for (let labelId of nonEmptyProductDaAttrLabelsIds) {
+        console.log('labelId: ', labelId);
+        for (let record of exportRecords) {
+          console.log('record: ', record);
+          console.log('record.Id: ', record.Id);
+          const overwrittenDigitalAsset = productVariantsDaDetailsMap
+            .get(record.Id)
+            ?.get(labelId);
+          if (overwrittenDigitalAsset) {
+            // add prod/vv's DA to daDownloadDetailsList
+            daDownloadDetailsList.push(overwrittenDigitalAsset);
+          } else {
+            // variant val doesn't have DA for this attr label, search upwards for DA i.e. parent variant vals then product
+            console.log(
+              'productVariantValueMapList: ',
+              productVariantValueMapList
+            );
+          }
+        }
+      }
+    } else {
+      for (let record of exportRecords) {
+        // add all the DAs belonging to variant vals and product slated for export to daDownloadDetailsList
+        daDownloadDetailsList.push(
+          Array.from(productVariantsDaDetailsMap.get(record.Id)?.values())
+        );
+      }
+    }
+    return daDownloadDetailsList;
   }
 
   async addExportColumns(
