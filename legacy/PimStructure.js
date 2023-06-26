@@ -685,15 +685,15 @@ class PimStructure {
               //   helper,
               //   reqBody
               // );
-              // newValue = await parseDaAttrValWithVarMap(
-              //   valuesList[i].Id,
-              //   digitalAssetMap,
-              //   helper.getValue(overwrittenValues[j], 'Attribute_Label__c'),
-              //   newValue,
-              //   productVariantsDaDetailsMap,
-              //   helper,
-              //   reqBody
-              // );
+              newValue = await parseDaAttrValWithVarMap(
+                valuesList[i].Id,
+                digitalAssetMap,
+                helper.getValue(overwrittenValues[j], 'Attribute_Label__c'),
+                newValue,
+                productVariantsDaDetailsMap,
+                helper,
+                reqBody
+              );
             } else if (
               helper.getValue(
                 overwrittenValues[j],
