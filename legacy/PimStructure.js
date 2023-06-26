@@ -121,6 +121,7 @@ class PimStructure {
             helper.getValue(appearingValues[j], 'Attribute_Label_Type__c') ===
             DA_TYPE
           ) {
+            console.log('DA');
             attrValValue = await parseDigitalAssetAttrVal(
               digitalAssetMap,
               attrValValue,
@@ -138,10 +139,7 @@ class PimStructure {
             );
           }
           exportRecords[0].set(appearingLabels[i].Name, attrValValue);
-          console.log(
-            'is Obj?: ' + typeof attrValValue ===
-              'object' + ', label: ' + appearingLabels[i].Name
-          );
+          console.log('attrValValue type: ', typeof attrValValue);
         }
 
         if (!exportRecords[0].has(appearingLabels[i].Name)) {
