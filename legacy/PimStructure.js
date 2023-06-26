@@ -150,6 +150,8 @@ class PimStructure {
         let valuesList = [];
 
         if (exportType === 'currentVariant') {
+          console.log('sldkfj');
+          console.log('vvPath length: ', reqBody.variantValuePath);
           if (reqBody.variantValuePath.length > 0) {
             // exporting current variant value (base product not included in export)
             // remove base product's digital assets that were previously added
