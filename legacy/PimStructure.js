@@ -49,7 +49,8 @@ class PimStructure {
       useAspose,
       daDownloadDetailsList = [],
       productVariantsDaDetailsMap,
-      nonEmptyProductDaAttrLabelsIds = [];
+      nonEmptyProductDaAttrLabelsIds = [],
+      variantValueHierarchyMap;
     if (reqBody.options.isTemplateExport) {
       if (reqBody.templateVersionData) {
         ({ templateFields, templateHeaders } = this.getTemplateHeadersAndFields(
@@ -191,8 +192,12 @@ class PimStructure {
             let currentVariant = new Map();
             const varList = Array.from(variantAndValueMap.keys());
             valuesList = Array.from(variantAndValueMap.values()); // note: this is an array of arrays
+            this.populateVariantValueHierarchyMap(
+              valuesList,
+              variantValueHierarchyMap,
+              baseRecord.get('Id')
+            );
             let valuesIdList = [];
-            console.log('valuesList: ', valuesList);
             valuesList.forEach(val => {
               valuesIdList.push(val[0].Id);
             });
@@ -327,6 +332,11 @@ class PimStructure {
           Array.from(variantAndValueListMap.values()).forEach(valList => {
             valuesList.push.apply(valuesList, valList); // flatten array
           });
+          this.populateVariantValueHierarchyMap(
+            valuesList,
+            variantValueHierarchyMap,
+            baseRecord.get('Id')
+          );
           let valuesIdList = [];
           valuesList.forEach(val => {
             valuesIdList.push(val.Id);
@@ -504,7 +514,7 @@ class PimStructure {
           nonEmptyProductDaAttrLabelsIds,
           productVariantsDaDetailsMap,
           daDownloadDetailsList,
-          productVariantValueMapList,
+          variantValueHierarchyMap,
           exportRecordsAndColumns[0]
         ),
         recordsAndCols: await this.addExportColumns(
@@ -571,6 +581,26 @@ class PimStructure {
       }
     });
     return returnMap;
+  }
+
+  // creates a Map <Id, Id> with key value pairs being [variantValueId, parentVariantValueId] or [variantValueId, productId]
+  populateVariantValueHierarchyMap(
+    valuesList,
+    variantValueHierarchyMap,
+    productId
+  ) {
+    variantValueHierarchyMap = new Map();
+    for (let vv of valuesList) {
+      const parentVariantValueId = helper.getValue(
+        vv,
+        'Parent_Variant_Value__c'
+      );
+      if (parentVariantValueId) {
+        variantValueHierarchyMap.set(vv.Id, parentVariantValueId);
+      } else {
+        variantValueHierarchyMap.set(vv.Id, productId);
+      }
+    }
   }
 
   async fillInInheritedData(
@@ -873,7 +903,7 @@ class PimStructure {
     nonEmptyProductDaAttrLabelsIds,
     productVariantsDaDetailsMap,
     daDownloadDetailsList,
-    productVariantValueMapList,
+    variantValueHierarchyMap,
     exportRecords
   ) {
     // Option 1: Check if is inherited
@@ -892,10 +922,7 @@ class PimStructure {
             daDownloadDetailsList.push(overwrittenDigitalAsset);
           } else {
             // variant val doesn't have DA for this attr label, search upwards for DA i.e. parent variant vals then product
-            console.log(
-              'productVariantValueMapList: ',
-              productVariantValueMapList
-            );
+            console.log('variantValueHierarchyMap: ', variantValueHierarchyMap);
           }
         }
       }
