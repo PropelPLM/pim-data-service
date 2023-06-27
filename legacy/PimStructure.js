@@ -816,10 +816,13 @@ class PimStructure {
       });
     console.log('valuesList: ', valuesList);
     console.log('exportRecords: ', exportRecords);
+    this.updateExportRecordsWithVariantValueIds(valuesList, exportRecords);
     // loop through each variant (top down) to settle inheritance from parent variants
     exportRecords.forEach(variant => {
       console.log('variant: ', variant);
+      // loop through each variant value's child variant values
       variantValueTree.get(variant.get('Record_ID')).forEach(childVariant => {
+        // find the child variant value's object in exportRecords
         exportRecords.forEach(variantValue => {
           if (variantValue.get('Record_ID') === childVariant) {
             Array.from(variant.keys()).forEach(key => {
@@ -902,6 +905,21 @@ class PimStructure {
       childMap.set(variant.get('Record_ID'), variant.get('Children'));
     });
     return childMap;
+  }
+
+  updateExportRecordsWithVariantValueIds(valuesList, exportRecords) {
+    let vvIdNameMap = new Map();
+    console.log('vvId: ', valuesList[0].Id);
+    console.log('vvName: ', valuesList[0].Name);
+    for (let variantValue of valuesList) {
+      vvIdNameMap.set(variantValue.Name, variantValue.Id);
+    }
+    for (let record of exportRecords) {
+      const recordName = record.get('Record_ID');
+      if (recordName) {
+        record.set('Id', vvIdNameMap.get(recordName));
+      }
+    }
   }
 
   async getFinalizedDaList(
