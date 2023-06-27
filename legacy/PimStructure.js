@@ -815,11 +815,12 @@ class PimStructure {
         });
       });
     console.log('valuesList: ', valuesList);
+    console.log('exportRecords: ', exportRecords);
     // loop through each variant (top down) to settle inheritance from parent variants
     exportRecords.forEach(variant => {
+      console.log('variant: ', variant);
       variantValueTree.get(variant.get('Record_ID')).forEach(childVariant => {
         exportRecords.forEach(variantValue => {
-          console.log('variantValue: ', variantValue);
           if (variantValue.get('Record_ID') === childVariant) {
             Array.from(variant.keys()).forEach(key => {
               if (
