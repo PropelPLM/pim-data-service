@@ -614,8 +614,7 @@ class PimStructure {
     appearingLabels,
     currentVariantName,
     reqBody,
-    digitalAssetMap,
-    productVariantsDaDetailsMap
+    digitalAssetMap
   ) {
     let lowestLevelVariantValues;
     if (exportType === 'currentVariant') {
@@ -913,9 +912,9 @@ class PimStructure {
         console.log('labelId: ', labelId);
         for (let record of exportRecords) {
           console.log('record: ', record);
-          console.log('record.Id: ', record.Id);
+          console.log('record.Id: ', record.get('Id'));
           const overwrittenDigitalAsset = productVariantsDaDetailsMap
-            .get(record.Id)
+            .get(record.get('Id'))
             ?.get(labelId);
           if (overwrittenDigitalAsset) {
             // add prod/vv's DA to daDownloadDetailsList
@@ -930,7 +929,9 @@ class PimStructure {
       for (let record of exportRecords) {
         // add all the DAs belonging to variant vals and product slated for export to daDownloadDetailsList
         daDownloadDetailsList.push(
-          Array.from(productVariantsDaDetailsMap.get(record.Id)?.values())
+          Array.from(
+            productVariantsDaDetailsMap.get(record.get('Id'))?.values()
+          )
         );
       }
     }
