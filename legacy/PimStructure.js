@@ -334,7 +334,7 @@ class PimStructure {
           Array.from(variantAndValueListMap.values()).forEach(valList => {
             valuesList.push.apply(valuesList, valList); // flatten array
           });
-          this.populateVariantValueHierarchyMap(
+          await this.populateVariantValueHierarchyMap(
             valuesList,
             variantValueHierarchyMap,
             baseRecord.get('Id')
@@ -588,7 +588,7 @@ class PimStructure {
   }
 
   // creates a Map <Id, Id> with key value pairs being [variantValueId, parentVariantValueId] or [variantValueId, productId]
-  populateVariantValueHierarchyMap(
+  async populateVariantValueHierarchyMap(
     valuesList,
     variantValueHierarchyMap,
     productId
@@ -606,7 +606,6 @@ class PimStructure {
         variantValueHierarchyMap.set(vv[0].Id, productId);
       }
     }
-    console.log('variantValueHierarchyMap1: ', variantValueHierarchyMap);
   }
 
   async fillInInheritedData(
@@ -818,7 +817,10 @@ class PimStructure {
       });
     console.log('valuesList: ', valuesList);
     console.log('exportRecords: ', exportRecords);
-    this.updateExportRecordsWithVariantValueIds(valuesList, exportRecords);
+    await this.updateExportRecordsWithVariantValueIds(
+      valuesList,
+      exportRecords
+    );
     // loop through each variant (top down) to settle inheritance from parent variants
     exportRecords.forEach(variant => {
       console.log('variant: ', variant);
@@ -909,7 +911,7 @@ class PimStructure {
     return childMap;
   }
 
-  updateExportRecordsWithVariantValueIds(valuesList, exportRecords) {
+  async updateExportRecordsWithVariantValueIds(valuesList, exportRecords) {
     let vvIdNameMap = new Map();
     console.log('vvId: ', valuesList[0].Id);
     console.log('vvName: ', valuesList[0].Name);
