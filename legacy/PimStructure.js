@@ -600,9 +600,9 @@ class PimStructure {
         'Parent_Variant_Value__c'
       );
       if (parentVariantValueId) {
-        variantValueHierarchyMap.set(vv.Id, parentVariantValueId);
+        variantValueHierarchyMap.set(vv.get('Id'), parentVariantValueId);
       } else {
-        variantValueHierarchyMap.set(vv.Id, productId);
+        variantValueHierarchyMap.set(vv.get('Id'), productId);
       }
     }
   }
