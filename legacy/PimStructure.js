@@ -914,16 +914,19 @@ class PimStructure {
       // iterate over digital asset attribute labels which the base product has digital assets for
       let currRecordId;
       for (let labelId of nonEmptyProductDaAttrLabelsIds) {
-        console.log('labelId: ', labelId);
         for (let record of exportRecords) {
           currRecordId = record.get('Id');
           while (true) {
             // check if variant value has digital asset for this label, if not iteratively search parent variant values
             // until product is reached
+            console.log('========================');
+            console.log('currRecordId: ', currRecordId);
+            console.log('labelId: ', labelId);
             const currRecordDigitalAsset = productVariantsDaDetailsMap
               .get(currRecordId)
               ?.get(labelId);
             if (currRecordDigitalAsset) {
+              console.log('record with DA: ', currRecordId);
               // add prod/variant val's digital asset for list of assets for export, no need to search in parent
               daDownloadDetailsList.push(currRecordDigitalAsset);
               break;
