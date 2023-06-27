@@ -756,6 +756,7 @@ class PimStructure {
               newValue = await parseProductReferenceAttrVal(newValue, reqBody);
             }
             // update the newVariant object with the overwritten values
+            console.log('affectedLabelname: ', affectedLabelName);
             newVariant.set(affectedLabelName, newValue);
           }
         }
