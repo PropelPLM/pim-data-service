@@ -498,7 +498,7 @@ class PimStructure {
       exportRecordsColsAndAssets = {
         daDownloadDetailsList: await this.getFinalizedDaList(
           reqBody.isInherited,
-          appearingLabelIds,
+          appearingLabelIds.split(', '),
           productVariantsDaDetailsMap,
           daDownloadDetailsList,
           variantValueHierarchyMap,
