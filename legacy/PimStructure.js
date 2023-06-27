@@ -599,10 +599,11 @@ class PimStructure {
         vv,
         'Parent_Variant_Value__c'
       );
+      console.log('vv: ', vv);
       if (parentVariantValueId) {
-        variantValueHierarchyMap.set(vv.get('Id'), parentVariantValueId);
+        variantValueHierarchyMap.set(vv.Id, parentVariantValueId);
       } else {
-        variantValueHierarchyMap.set(vv.get('Id'), productId);
+        variantValueHierarchyMap.set(vv.Id, productId);
       }
     }
   }
