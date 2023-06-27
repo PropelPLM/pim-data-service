@@ -224,6 +224,7 @@ class PimStructure {
                 varList[i].Name,
                 helper.getValue(valuesList[i][0], 'Label__c')
               );
+              currentVariant.set('Id', valuesList[i][0].Id);
 
               // add any overwritten values
               if (overwrittenValues.length > 0) {
@@ -368,6 +369,7 @@ class PimStructure {
               // add variant value's Record ID
               if (isFirstLevelVariant) {
                 newVariant.set('Record_ID', currValue.Name);
+                newVariant.set('Id', currValue.Id);
                 isFirstLevelVariant = false;
               }
               // add Variant__c's Label (e.g. for Variant 'Size', Label is 'Large')
