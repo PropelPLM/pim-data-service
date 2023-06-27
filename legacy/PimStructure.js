@@ -508,6 +508,7 @@ class PimStructure {
           exportRecordsAndColumns = [exportRecords];
         }
       }
+      console.log('exportRecordsAndColumns: ', exportRecordsAndColumns);
       exportRecordsColsAndAssets = {
         daDownloadDetailsList: await this.getFinalizedDaList(
           reqBody.isInherited,
