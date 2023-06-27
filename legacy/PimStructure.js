@@ -924,23 +924,15 @@ class PimStructure {
           while (true) {
             // check if variant value has digital asset for this label, if not iteratively search parent variant values
             // until product
-            console.log('========================');
-            console.log('currRecordId: ', currRecordId);
-            console.log('labelId: ', labelId);
             const currRecordDigitalAsset = productVariantsDaDetailsMap
               .get(currRecordId)
               ?.get(labelId);
             if (currRecordDigitalAsset) {
-              console.log('record with DA: ', currRecordId);
               // add prod/variant val's digital asset for list of assets for export, move on to next label
               daDownloadDetailsList.push(currRecordDigitalAsset);
               break;
             } else {
               // variant val doesn't have DA for this attr label, search upwards for DA i.e. parent variant vals then product
-              console.log(
-                'variantValueHierarchyMap: ',
-                variantValueHierarchyMap
-              );
               const parentRecordId = variantValueHierarchyMap.get(currRecordId);
               if (parentRecordId) {
                 currRecordId = parentRecordId;
