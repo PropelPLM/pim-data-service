@@ -232,6 +232,9 @@ class PimStructure {
                     overwrittenValues[j],
                     'Overwritten_Variant_Value__c'
                   );
+                  console.log(
+                    valuesList[i][0].Id + ', ' + affectedVariantValue
+                  );
                   if (valuesList[i][0].Id !== affectedVariantValue) {
                     // skip attribute values which are not overwriting the current variant value
                     continue;
@@ -907,6 +910,10 @@ class PimStructure {
   ) {
     // Option 1: Check if is inherited
     if (isInherited) {
+      console.log(
+        'productVariantsDaDetailsMap FINAL: ',
+        productVariantsDaDetailsMap
+      );
       // iterate over digital asset attribute labels which the base product has digital assets for
       let currRecordId;
       for (let labelId of nonEmptyProductDaAttrLabelsIds) {
