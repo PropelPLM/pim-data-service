@@ -756,12 +756,12 @@ class PimStructure {
               newValue = await parseProductReferenceAttrVal(newValue, reqBody);
             }
             // update the newVariant object with the overwritten values
-            console.log('affectedLabelname: ', affectedLabelName);
             newVariant.set(affectedLabelName, newValue);
           }
         }
         exportRecords.push(newVariant);
       }
+      console.log('exportRecords1: ', exportRecords);
       exportType = 'currentVariant';
     } else if (exportType === 'lowestVariants') {
       lowestLevelVariantValues = await getLowestVariantValuesList(
@@ -815,7 +815,7 @@ class PimStructure {
           }
         });
       });
-
+    console.log('filledInExportRecord1: ', filledInExportRecords);
     // loop through each variant (top down) to settle inheritance from parent variants
     exportRecords.forEach(variant => {
       variantValueTree.get(variant.get('Record_ID')).forEach(childVariant => {
@@ -850,6 +850,7 @@ class PimStructure {
         });
       });
     });
+    console.log('filledInExportRecord2: ', filledInExportRecords);
     // remove base product from SKU export or current variant export (if current record is not base product)
     return (exportType === 'currentVariant' &&
       reqBody.variantValuePath.length > 0) ||
