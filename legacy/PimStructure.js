@@ -302,6 +302,7 @@ class PimStructure {
             currentVariantName = currentVariant.get('Record_ID');
             // overwrite base product with current variant
             exportRecords = [currentVariant];
+            console.log('currentVariant: ', currentVariant);
           }
         } else if (
           exportType === 'allVariants' ||
