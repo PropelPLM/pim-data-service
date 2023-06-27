@@ -858,7 +858,6 @@ class PimStructure {
   }
 
   async createVariantValueTree(valuesList, baseProduct) {
-    console.log('tree Val list: ', valuesList);
     let variantValueTree = [];
     let treeNode;
 
@@ -899,6 +898,7 @@ class PimStructure {
     variantValueTree.forEach(variant => {
       childMap.set(variant.get('Record_ID'), variant.get('Children'));
     });
+    console.log('childMap: ', childMap);
     return childMap;
   }
 
