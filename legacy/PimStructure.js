@@ -606,6 +606,7 @@ class PimStructure {
         variantValueHierarchyMap.set(vv[0].Id, productId);
       }
     }
+    console.log('variantValueHierarchyMap1: ', variantValueHierarchyMap);
   }
 
   async fillInInheritedData(
