@@ -232,9 +232,6 @@ class PimStructure {
                     overwrittenValues[j],
                     'Overwritten_Variant_Value__c'
                   );
-                  console.log(
-                    valuesList[i][0].Id + ', ' + affectedVariantValue
-                  );
                   if (valuesList[i][0].Id !== affectedVariantValue) {
                     // skip attribute values which are not overwriting the current variant value
                     continue;
