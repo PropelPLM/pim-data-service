@@ -912,13 +912,13 @@ class PimStructure {
     // Option 1: Check if is inherited
     let currRecordId;
     if (isInherited) {
+      console.log('appearingLabelIds: ', appearingLabelIds);
       console.log(
         'productVariantsDaDetailsMap FINAL: ',
         productVariantsDaDetailsMap
       );
       // iterate over all attribute labels included in the export
       for (let labelId of appearingLabelIds) {
-        console.log('labelId: ', labelId);
         for (let record of exportRecords) {
           currRecordId = record.get('Id');
           while (true) {
