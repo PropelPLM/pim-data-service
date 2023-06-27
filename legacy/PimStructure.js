@@ -339,6 +339,7 @@ class PimStructure {
             variantValueHierarchyMap,
             baseRecord.get('Id')
           );
+          console.log('variantValueHierarchyMap2: ', variantValueHierarchyMap);
           let valuesIdList = [];
           valuesList.forEach(val => {
             valuesIdList.push(val.Id);
@@ -606,6 +607,7 @@ class PimStructure {
         variantValueHierarchyMap.set(vv[0].Id, productId);
       }
     }
+    console.log('variantValueHierarchyMap1: ', variantValueHierarchyMap);
   }
 
   async fillInInheritedData(
