@@ -907,21 +907,34 @@ class PimStructure {
   ) {
     // Option 1: Check if is inherited
     if (isInherited) {
-      // iterate over the product's DA labels (where prod has DA)
+      // iterate over digital asset attribute labels which the base product has digital assets for
+      let currRecordId;
       for (let labelId of nonEmptyProductDaAttrLabelsIds) {
         console.log('labelId: ', labelId);
         for (let record of exportRecords) {
-          console.log('record: ', record);
-          console.log('record.Id: ', record.get('Id'));
-          const overwrittenDigitalAsset = productVariantsDaDetailsMap
-            .get(record.get('Id'))
-            ?.get(labelId);
-          if (overwrittenDigitalAsset) {
-            // add prod/vv's DA to daDownloadDetailsList
-            daDownloadDetailsList.push(overwrittenDigitalAsset);
-          } else {
-            // variant val doesn't have DA for this attr label, search upwards for DA i.e. parent variant vals then product
-            console.log('variantValueHierarchyMap: ', variantValueHierarchyMap);
+          currRecordId = record.get('Id');
+          while (true) {
+            // check if variant value has digital asset for this label, if not iteratively search parent variant values
+            // until product is reached
+            const currRecordDigitalAsset = productVariantsDaDetailsMap
+              .get(currRecordId)
+              ?.get(labelId);
+            if (currRecordDigitalAsset) {
+              // add prod/variant val's digital asset for list of assets for export, no need to search in parent
+              daDownloadDetailsList.push(currRecordDigitalAsset);
+              break;
+            } else {
+              // variant val doesn't have DA for this attr label, search upwards for DA i.e. parent variant vals then product
+              const parentRecordId = variantValueHierarchyMap.get(currRecordId);
+              if (parentRecordId) {
+                currRecordId = parentRecordId;
+              } else {
+                // only record that has no parent id should be product, which should have asset for this label (as we
+                // are only looping through labels where product has assets). Break is just to prevent infinite loop in
+                // event of bug
+                break;
+              }
+            }
           }
         }
       }
@@ -935,6 +948,7 @@ class PimStructure {
         );
       }
     }
+    console.log('daDownloadDetailsList: ', daDownloadDetailsList);
     return daDownloadDetailsList;
   }
 
