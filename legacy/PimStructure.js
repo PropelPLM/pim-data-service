@@ -192,6 +192,7 @@ class PimStructure {
             const varList = Array.from(variantAndValueMap.keys());
             valuesList = Array.from(variantAndValueMap.values()); // note: this is an array of arrays
             let valuesIdList = [];
+            console.log('valuesList: ', valuesList);
             valuesList.forEach(val => {
               valuesIdList.push(val[0].Id);
             });
@@ -330,7 +331,6 @@ class PimStructure {
           valuesList.forEach(val => {
             valuesIdList.push(val.Id);
           });
-          console.log('valuesList: ', valuesList);
           valuesIdList = prepareIdsForSOQL(valuesIdList);
           let overwrittenValues = [];
           if (valuesIdList.length > 0) {
