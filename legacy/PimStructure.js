@@ -761,7 +761,6 @@ class PimStructure {
         }
         exportRecords.push(newVariant);
       }
-      console.log('exportRecords1: ', exportRecords);
       exportType = 'currentVariant';
     } else if (exportType === 'lowestVariants') {
       lowestLevelVariantValues = await getLowestVariantValuesList(
@@ -815,7 +814,6 @@ class PimStructure {
           }
         });
       });
-    console.log('filledInExportRecord1: ', filledInExportRecords);
     // loop through each variant (top down) to settle inheritance from parent variants
     exportRecords.forEach(variant => {
       variantValueTree.get(variant.get('Record_ID')).forEach(childVariant => {
@@ -860,6 +858,7 @@ class PimStructure {
   }
 
   async createVariantValueTree(valuesList, baseProduct) {
+    console.log('tree Val list: ', valuesList);
     let variantValueTree = [];
     let treeNode;
 
