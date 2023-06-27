@@ -508,7 +508,7 @@ class PimStructure {
           exportRecordsAndColumns = [exportRecords];
         }
       }
-      console.log('exportRecordsAndColumns: ', exportRecordsAndColumns);
+      console.log('exportRecordsAndColumns[0]: ', exportRecordsAndColumns[0]);
       exportRecordsColsAndAssets = {
         daDownloadDetailsList: await this.getFinalizedDaList(
           reqBody.isInherited,
@@ -907,13 +907,13 @@ class PimStructure {
     exportRecords
   ) {
     // Option 1: Check if is inherited
+    let currRecordId;
     if (isInherited) {
       console.log(
         'productVariantsDaDetailsMap FINAL: ',
         productVariantsDaDetailsMap
       );
       // iterate over digital asset attribute labels which the base product has digital assets for
-      let currRecordId;
       for (let labelId of nonEmptyProductDaAttrLabelsIds) {
         for (let record of exportRecords) {
           currRecordId = record.get('Id');
@@ -949,11 +949,12 @@ class PimStructure {
     } else {
       for (let record of exportRecords) {
         // add all the DAs belonging to variant vals and product slated for export to daDownloadDetailsList
-        daDownloadDetailsList.push(
-          Array.from(
-            productVariantsDaDetailsMap.get(record.get('Id'))?.values()
-          )
-        );
+        currRecordId = record.get('Id');
+        if (currRecordId) {
+          daDownloadDetailsList.push(
+            Array.from(productVariantsDaDetailsMap.get(currRecordId)?.values())
+          );
+        }
       }
     }
     console.log('daDownloadDetailsList: ', daDownloadDetailsList);
