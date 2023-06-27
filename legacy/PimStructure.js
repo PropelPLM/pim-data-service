@@ -192,19 +192,10 @@ class PimStructure {
             let currentVariant = new Map();
             const varList = Array.from(variantAndValueMap.keys());
             valuesList = Array.from(variantAndValueMap.values()); // note: this is an array of arrays
-            console.log(
-              'variantValueHierarchyMap before: ',
-              variantValueHierarchyMap
-            );
-            variantValueHierarchyMap =
-              await this.populateVariantValueHierarchyMap(
-                valuesList,
-                variantValueHierarchyMap,
-                baseRecord.get('Id')
-              );
-            console.log(
-              'variantValueHierarchyMap 2: ',
-              variantValueHierarchyMap
+            this.populateVariantValueHierarchyMap(
+              valuesList,
+              variantValueHierarchyMap,
+              baseRecord.get('Id')
             );
             let valuesIdList = [];
             valuesList.forEach(val => {
@@ -343,12 +334,11 @@ class PimStructure {
           Array.from(variantAndValueListMap.values()).forEach(valList => {
             valuesList.push.apply(valuesList, valList); // flatten array
           });
-          variantValueHierarchyMap =
-            await this.populateVariantValueHierarchyMap(
-              valuesList,
-              variantValueHierarchyMap,
-              baseRecord.get('Id')
-            );
+          this.populateVariantValueHierarchyMap(
+            valuesList,
+            variantValueHierarchyMap,
+            baseRecord.get('Id')
+          );
           let valuesIdList = [];
           valuesList.forEach(val => {
             valuesIdList.push(val.Id);
@@ -598,7 +588,7 @@ class PimStructure {
   }
 
   // creates a Map <Id, Id> with key value pairs being [variantValueId, parentVariantValueId] or [variantValueId, productId]
-  async populateVariantValueHierarchyMap(
+  populateVariantValueHierarchyMap(
     valuesList,
     variantValueHierarchyMap,
     productId
@@ -608,15 +598,12 @@ class PimStructure {
         vv[0],
         'Parent_Variant_Value__c'
       );
-      console.log('vv[0]: ', vv[0]);
       if (parentVariantValueId) {
         variantValueHierarchyMap.set(vv[0].Id, parentVariantValueId);
       } else {
         variantValueHierarchyMap.set(vv[0].Id, productId);
       }
     }
-    console.log('variantValueHierarchyMap1: ', variantValueHierarchyMap);
-    return variantValueHierarchyMap;
   }
 
   async fillInInheritedData(
