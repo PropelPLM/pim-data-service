@@ -50,7 +50,7 @@ class PimStructure {
       daDownloadDetailsList = [],
       productVariantsDaDetailsMap,
       nonEmptyProductDaAttrLabelsIds = [],
-      variantValueHierarchyMap;
+      variantValueHierarchyMap = new Map();
     if (reqBody.options.isTemplateExport) {
       if (reqBody.templateVersionData) {
         ({ templateFields, templateHeaders } = this.getTemplateHeadersAndFields(
@@ -603,7 +603,6 @@ class PimStructure {
     variantValueHierarchyMap,
     productId
   ) {
-    variantValueHierarchyMap = new Map();
     for (let vv of valuesList) {
       const parentVariantValueId = helper.getValue(
         vv[0],
@@ -617,6 +616,7 @@ class PimStructure {
       }
     }
     console.log('variantValueHierarchyMap1: ', variantValueHierarchyMap);
+    return variantValueHierarchyMap;
   }
 
   async fillInInheritedData(
