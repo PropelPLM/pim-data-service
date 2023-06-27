@@ -136,7 +136,6 @@ class PimStructure {
             //   helper,
             //   reqBody
             // );
-            console.log('1');
             attrValValue = await parseDaAttrValWithVarMap(
               baseRecord.get('Id'),
               digitalAssetMap,
@@ -166,10 +165,6 @@ class PimStructure {
           exportRecords[0].set(appearingLabels[i].Name, null);
         }
       }
-      console.log(
-        'productVariantsDaDetailsMap1: ',
-        productVariantsDaDetailsMap
-      );
       /** get product's appearing attribute labels end */
       if (isProduct) {
         let valuesList = [];
@@ -267,7 +262,6 @@ class PimStructure {
                     //   helper,
                     //   reqBody
                     // );
-                    console.log('2');
                     newValue = await parseDaAttrValWithVarMap(
                       valuesList[i][0].Id,
                       digitalAssetMap,
@@ -296,14 +290,9 @@ class PimStructure {
                 }
               }
             }
-            console.log(
-              'productVariantsDaDetailsMap2: ',
-              productVariantsDaDetailsMap
-            );
             currentVariantName = currentVariant.get('Record_ID');
             // overwrite base product with current variant
             exportRecords = [currentVariant];
-            console.log('currentVariant: ', currentVariant);
           }
         } else if (
           exportType === 'allVariants' ||
@@ -439,7 +428,6 @@ class PimStructure {
                   //   helper,
                   //   reqBody
                   // );
-                  console.log('3');
                   newValue = await parseDaAttrValWithVarMap(
                     valuesList[i].Id,
                     digitalAssetMap,
@@ -479,10 +467,6 @@ class PimStructure {
               exportRecords.push(newVariant);
             }
           }
-          console.log(
-            'productVariantsDaDetailsMap3: ',
-            productVariantsDaDetailsMap
-          );
         } else {
           throw 'Invalid Export Type';
         }
@@ -511,7 +495,6 @@ class PimStructure {
           exportRecordsAndColumns = [exportRecords];
         }
       }
-      console.log('exportRecordsAndColumns[0]: ', exportRecordsAndColumns[0]);
       exportRecordsColsAndAssets = {
         daDownloadDetailsList: await this.getFinalizedDaList(
           reqBody.isInherited,
@@ -813,15 +796,12 @@ class PimStructure {
           }
         });
       });
-    console.log('valuesList: ', valuesList);
-    console.log('exportRecords: ', exportRecords);
     await this.updateExportRecordsWithVariantValueIds(
       valuesList,
       exportRecords
     );
     // loop through each variant (top down) to settle inheritance from parent variants
     exportRecords.forEach(variant => {
-      console.log('variant: ', variant);
       // loop through each variant value's child variant values
       variantValueTree.get(variant.get('Record_ID')).forEach(childVariant => {
         // find the child variant value's object in exportRecords
@@ -856,7 +836,6 @@ class PimStructure {
         });
       });
     });
-    console.log('filledInExportRecord2: ', filledInExportRecords);
     // remove base product from SKU export or current variant export (if current record is not base product)
     return (exportType === 'currentVariant' &&
       reqBody.variantValuePath.length > 0) ||
@@ -911,8 +890,6 @@ class PimStructure {
 
   async updateExportRecordsWithVariantValueIds(valuesList, exportRecords) {
     let vvIdNameMap = new Map();
-    console.log('vvId: ', valuesList[0].Id);
-    console.log('vvName: ', valuesList[0].Name);
     for (let variantValue of valuesList) {
       vvIdNameMap.set(variantValue.Name, variantValue.Id);
     }
@@ -941,6 +918,7 @@ class PimStructure {
       );
       // iterate over all attribute labels included in the export
       for (let labelId of appearingLabelIds) {
+        console.log('labelId: ', labelId);
         for (let record of exportRecords) {
           currRecordId = record.get('Id');
           while (true) {
