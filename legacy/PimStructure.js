@@ -192,7 +192,7 @@ class PimStructure {
             let currentVariant = new Map();
             const varList = Array.from(variantAndValueMap.keys());
             valuesList = Array.from(variantAndValueMap.values()); // note: this is an array of arrays
-            this.populateVariantValueHierarchyMap(
+            await this.populateVariantValueHierarchyMap(
               valuesList,
               variantValueHierarchyMap,
               baseRecord.get('Id')
@@ -334,16 +334,11 @@ class PimStructure {
           Array.from(variantAndValueListMap.values()).forEach(valList => {
             valuesList.push.apply(valuesList, valList); // flatten array
           });
-          console.log(
-            'variantValueHierarchyMap before: ',
-            variantValueHierarchyMap
-          );
           await this.populateVariantValueHierarchyMap(
             valuesList,
             variantValueHierarchyMap,
             baseRecord.get('Id')
           );
-          console.log('variantValueHierarchyMap2: ', variantValueHierarchyMap);
           let valuesIdList = [];
           valuesList.forEach(val => {
             valuesIdList.push(val.Id);
