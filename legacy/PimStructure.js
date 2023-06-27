@@ -334,6 +334,10 @@ class PimStructure {
           Array.from(variantAndValueListMap.values()).forEach(valList => {
             valuesList.push.apply(valuesList, valList); // flatten array
           });
+          console.log(
+            'variantValueHierarchyMap before: ',
+            variantValueHierarchyMap
+          );
           await this.populateVariantValueHierarchyMap(
             valuesList,
             variantValueHierarchyMap,
