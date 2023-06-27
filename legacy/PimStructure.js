@@ -957,6 +957,10 @@ class PimStructure {
               break;
             } else {
               // variant val doesn't have DA for this attr label, search upwards for DA i.e. parent variant vals then product
+              console.log(
+                'variantValueHierarchyMap: ',
+                variantValueHierarchyMap
+              );
               const parentRecordId = variantValueHierarchyMap.get(currRecordId);
               if (parentRecordId) {
                 currRecordId = parentRecordId;
