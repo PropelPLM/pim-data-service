@@ -596,14 +596,14 @@ class PimStructure {
     variantValueHierarchyMap = new Map();
     for (let vv of valuesList) {
       const parentVariantValueId = helper.getValue(
-        vv,
+        vv[0],
         'Parent_Variant_Value__c'
       );
-      console.log('vv: ', vv);
+      console.log('vv[0]: ', vv[0]);
       if (parentVariantValueId) {
-        variantValueHierarchyMap.set(vv.Id, parentVariantValueId);
+        variantValueHierarchyMap.set(vv[0].Id, parentVariantValueId);
       } else {
-        variantValueHierarchyMap.set(vv.Id, productId);
+        variantValueHierarchyMap.set(vv[0].Id, productId);
       }
     }
   }
