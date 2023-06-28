@@ -12,7 +12,6 @@ const {
   initAssetDownloadDetailsList,
   parseDigitalAssetAttrVal,
   parseDaAttrValWithVarMap,
-  getDigitalAssetViewLink,
   prepareIdsForSOQL,
   parseProductReferenceAttrVal
 } = require('./utils');
@@ -602,7 +601,8 @@ class PimStructure {
     appearingLabels,
     currentVariantName,
     reqBody,
-    digitalAssetMap
+    digitalAssetMap,
+    productVariantsDaDetailsMap
   ) {
     let lowestLevelVariantValues;
     if (exportType === 'currentVariant') {
@@ -725,9 +725,12 @@ class PimStructure {
                 continue;
               }
               // just need conversion to view link since DA has been stored in productVariantsDaDetailsMap in prev steps
-              newValue = await getDigitalAssetViewLink(
-                digitalAsset,
+              newValue = await parseDaAttrValWithVarMap(
+                valuesList[i].Id,
+                digitalAssetMap,
+                helper.getValue(overwrittenValues[j], 'Attribute_Label__c'),
                 newValue,
+                productVariantsDaDetailsMap,
                 helper,
                 reqBody
               );
