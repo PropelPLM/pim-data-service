@@ -186,7 +186,6 @@ class PimStructure {
             Array.from(variantAndValueMap.values()).forEach(valList => {
               valuesList.push.apply(valuesList, valList); // flatten array
             });
-            console.log('valList[1]: ', valuesList[1]);
             this.populateVariantValueHierarchyMap(
               valuesList,
               variantValueHierarchyMap,
@@ -194,7 +193,7 @@ class PimStructure {
             );
             let valuesIdList = [];
             valuesList.forEach(val => {
-              valuesIdList.push(val[0].Id);
+              valuesIdList.push(val.Id);
             });
             valuesIdList = prepareIdsForSOQL(valuesIdList);
             let overwrittenValues = [];
@@ -214,12 +213,12 @@ class PimStructure {
 
             // add variant values to the current variant product
             for (let i = 0; i < varList.length; i++) {
-              currentVariant.set('Record_ID', valuesList[i][0].Name);
+              currentVariant.set('Record_ID', valuesList[i].Name);
               currentVariant.set(
                 varList[i].Name,
-                helper.getValue(valuesList[i][0], 'Label__c')
+                helper.getValue(valuesList[i], 'Label__c')
               );
-              currentVariant.set('Id', valuesList[i][0].Id);
+              currentVariant.set('Id', valuesList[i].Id);
 
               // add any overwritten values
               if (overwrittenValues.length > 0) {
@@ -228,7 +227,7 @@ class PimStructure {
                     overwrittenValues[j],
                     'Overwritten_Variant_Value__c'
                   );
-                  if (valuesList[i][0].Id !== affectedVariantValue) {
+                  if (valuesList[i].Id !== affectedVariantValue) {
                     // skip attribute values which are not overwriting the current variant value
                     continue;
                   }
@@ -263,7 +262,7 @@ class PimStructure {
                     //   reqBody
                     // );
                     newValue = await parseDaAttrValWithVarMap(
-                      valuesList[i][0].Id,
+                      valuesList[i].Id,
                       digitalAssetMap,
                       helper.getValue(
                         overwrittenValues[j],
