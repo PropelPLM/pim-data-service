@@ -49,7 +49,6 @@ class PimStructure {
       useAspose,
       daDownloadDetailsList = [],
       productVariantsDaDetailsMap,
-      nonEmptyProductDaAttrLabelsIds = [],
       variantValueHierarchyMap = new Map();
     if (reqBody.options.isTemplateExport) {
       if (reqBody.templateVersionData) {
@@ -144,9 +143,6 @@ class PimStructure {
               productVariantsDaDetailsMap,
               helper,
               reqBody
-            );
-            nonEmptyProductDaAttrLabelsIds.push(
-              helper.getValue(appearingValues[j], 'Attribute_Label__c')
             );
           } else if (
             helper.getValue(appearingValues[j], 'Attribute_Label_Type__c') ===
@@ -323,6 +319,8 @@ class PimStructure {
           Array.from(variantAndValueListMap.values()).forEach(valList => {
             valuesList.push.apply(valuesList, valList); // flatten array
           });
+          console.log('variantAndValueListMap: ', variantAndValueListMap);
+          console.log('valuesList: ', valuesList);
           this.populateVariantValueHierarchyMap(
             valuesList,
             variantValueHierarchyMap,
@@ -912,11 +910,6 @@ class PimStructure {
     // Option 1: Check if is inherited
     let currRecordId;
     if (isInherited) {
-      console.log('appearingLabelIds: ', appearingLabelIds);
-      console.log(
-        'productVariantsDaDetailsMap FINAL: ',
-        productVariantsDaDetailsMap
-      );
       // iterate over all attribute labels included in the export
       for (let labelId of appearingLabelIds) {
         for (let record of exportRecords) {
