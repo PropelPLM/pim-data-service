@@ -953,17 +953,20 @@ class PimStructure {
         }
 
         if (productVariantsDaDetailsMap.has(currRecordId)) {
-          daDownloadDetailsList.push(
+          // daDownloadDetailsList.push(
+          //   Array.from(productVariantsDaDetailsMap.get(currRecordId).values())
+          // );
+          daDownloadDetailsList = daDownloadDetailsList.concat(
             Array.from(productVariantsDaDetailsMap.get(currRecordId).values())
           );
         }
       }
     }
-    console.log('daDownloadDetailsList: ', daDownloadDetailsList)
+    console.log('daDownloadDetailsList: ', daDownloadDetailsList);
     daDownloadDetailsList = await this.removeDuplicatedAssets(
       daDownloadDetailsList
     );
-    console.log('daDownloadDetailsList2: ', daDownloadDetailsList)
+    console.log('daDownloadDetailsList2: ', daDownloadDetailsList);
     return daDownloadDetailsList;
   }
 
