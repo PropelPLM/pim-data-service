@@ -946,6 +946,7 @@ class PimStructure {
       for (let record of exportRecords) {
         // add all the DAs belonging to variant vals and product slated for export to daDownloadDetailsList
         currRecordId = record.get('Id');
+        console.log('currRecordId: ', currRecordId);
         if (!currRecordId) {
           continue;
         }
