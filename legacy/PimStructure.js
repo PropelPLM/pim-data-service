@@ -170,6 +170,8 @@ class PimStructure {
             // exporting current variant value (base product not included in export)
             // remove base product's digital assets that were previously added
             // daDownloadDetailsList = [];
+            const currentVariantId =
+              reqBody.variantValuePath[reqBody.variantValuePath.length - 1];
             const variantValuePath = prepareIdsForSOQL(
               reqBody.variantValuePath
             );
@@ -221,14 +223,14 @@ class PimStructure {
               currentVariant.set('Id', valuesList[i].Id);
               console.log('currentVariantL ', currentVariant);
 
-              // add any overwritten values
+              // add any overwritten values belonging to the current variant value
               if (overwrittenValues.length > 0) {
                 for (let j = 0; j < overwrittenValues.length; j++) {
                   const affectedVariantValue = helper.getValue(
                     overwrittenValues[j],
                     'Overwritten_Variant_Value__c'
                   );
-                  if (valuesList[i].Id !== affectedVariantValue) {
+                  if (currentVariantId !== affectedVariantValue) {
                     // skip attribute values which are not overwriting the current variant value
                     continue;
                   }
