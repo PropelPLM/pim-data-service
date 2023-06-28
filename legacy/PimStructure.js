@@ -579,13 +579,13 @@ class PimStructure {
   ) {
     for (let vv of valuesList) {
       const parentVariantValueId = helper.getValue(
-        vv[0],
+        vv,
         'Parent_Variant_Value__c'
       );
       if (parentVariantValueId) {
-        variantValueHierarchyMap.set(vv[0].Id, parentVariantValueId);
+        variantValueHierarchyMap.set(vv.Id, parentVariantValueId);
       } else {
-        variantValueHierarchyMap.set(vv[0].Id, productId);
+        variantValueHierarchyMap.set(vv.Id, productId);
       }
     }
   }
