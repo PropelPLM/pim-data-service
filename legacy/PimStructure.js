@@ -248,6 +248,10 @@ class PimStructure {
                     overwrittenValues[j],
                     'Value__c'
                   );
+                  if (newValue === 'from BLK') {
+                    console.log('valuesList[i].Id: ', valuesList[i].Id);
+                    console.log('affectedVariantValue: ', affectedVariantValue);
+                  }
                   if (
                     helper.getValue(
                       overwrittenValues[j],
