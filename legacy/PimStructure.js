@@ -219,6 +219,7 @@ class PimStructure {
                 helper.getValue(valuesList[i], 'Label__c')
               );
               currentVariant.set('Id', valuesList[i].Id);
+              console.log('currentVariantL ', currentVariant);
 
               // add any overwritten values
               if (overwrittenValues.length > 0) {
@@ -248,11 +249,6 @@ class PimStructure {
                     overwrittenValues[j],
                     'Value__c'
                   );
-                  if (newValue === 'from BLK') {
-                    console.log('valuesList[i].Name: ', valuesList[i].Name);
-                    console.log('valuesList[i].Id: ', valuesList[i].Id);
-                    console.log('affectedVariantValue: ', affectedVariantValue);
-                  }
                   if (
                     helper.getValue(
                       overwrittenValues[j],
@@ -293,7 +289,6 @@ class PimStructure {
                   currentVariant.set(affectedLabelName, newValue);
                 }
               }
-              console.log('currentVariant: ', currentVariant);
             }
 
             currentVariantName = currentVariant.get('Record_ID');
