@@ -686,7 +686,6 @@ class PimStructure {
               if (!digitalAsset) {
                 continue;
               }
-              // just need conversion to view link since DA has been stored in productVariantsDaDetailsMap in prev steps
               newValue = await parseDaAttrValWithVarMap(
                 valuesList[i].Id,
                 digitalAssetMap,
@@ -876,7 +875,6 @@ class PimStructure {
     variantValueHierarchyMap,
     exportRecords
   ) {
-    // Option 1: Check if is inherited
     let currRecordId;
     if (isInherited) {
       // iterate over all attribute labels included in the export
@@ -888,7 +886,7 @@ class PimStructure {
           }
           while (true) {
             // check if variant value has digital asset for this label, if not iteratively search parent variant values
-            // until product
+            // until product for digital assets for this label
             const currRecordDigitalAsset = productVariantsDaDetailsMap
               .get(currRecordId)
               ?.get(labelId);
