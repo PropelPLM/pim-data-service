@@ -966,7 +966,12 @@ class PimStructure {
     daDownloadDetailsList = daDownloadDetailsList.filter(
       (value, index, self) =>
         index ===
-        self.findIndex(t => t.place === value.place && t.name === value.name)
+        self.findIndex(
+          t =>
+            t.fileName === value.fileName &&
+            t.fileId === value.fileId &&
+            t.key === value.key
+        )
     );
   }
 
