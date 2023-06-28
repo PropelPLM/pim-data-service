@@ -183,7 +183,7 @@ class PimStructure {
             let currentVariant = new Map();
             const varList = Array.from(variantAndValueMap.keys());
             valuesList = Array.from(variantAndValueMap.values()); // note: this is an array of arrays
-            console.log('valList[1][0]: ', valuesList[1][0]);
+            console.log('valList[1]: ', valuesList[1]);
             this.populateVariantValueHierarchyMap(
               valuesList,
               variantValueHierarchyMap,
