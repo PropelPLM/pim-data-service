@@ -966,6 +966,7 @@ class PimStructure {
   }
 
   async removeDuplicatedAssets(daDownloadDetailsList) {
+    console.log('daDownloadDetailsList1: ', daDownloadDetailsList);
     return daDownloadDetailsList.filter(
       (value, index, self) =>
         index ===
