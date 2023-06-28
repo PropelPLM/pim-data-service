@@ -915,6 +915,9 @@ class PimStructure {
       for (let labelId of appearingLabelIds) {
         for (let record of exportRecords) {
           currRecordId = record.get('Id');
+          if (!currRecordId) {
+            continue;
+          }
           while (true) {
             // check if variant value has digital asset for this label, if not iteratively search parent variant values
             // until product
@@ -942,13 +945,14 @@ class PimStructure {
       console.log('productVariantsDaDetailsMap: ', productVariantsDaDetailsMap);
       for (let record of exportRecords) {
         // add all the DAs belonging to variant vals and product slated for export to daDownloadDetailsList
-        console.log('record: ', record);
         currRecordId = record.get('Id');
-        console.log('currRecordId 1: ', currRecordId);
-        if (currRecordId) {
-          console.log('currRecordId 2: ', currRecordId);
+        if (!currRecordId) {
+          continue;
+        }
+
+        if (productVariantsDaDetailsMap.has(currRecordId)) {
           daDownloadDetailsList.push(
-            Array.from(productVariantsDaDetailsMap.get(currRecordId)?.values())
+            Array.from(productVariantsDaDetailsMap.get(currRecordId).values())
           );
         }
       }
