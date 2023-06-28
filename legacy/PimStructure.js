@@ -957,13 +957,15 @@ class PimStructure {
         }
       }
     }
-    await this.removeDuplicatedAssets(daDownloadDetailsList);
+    daDownloadDetailsList = await this.removeDuplicatedAssets(
+      daDownloadDetailsList
+    );
     console.log('daDownloadDetailsList: ', daDownloadDetailsList);
     return daDownloadDetailsList;
   }
 
   async removeDuplicatedAssets(daDownloadDetailsList) {
-    daDownloadDetailsList = daDownloadDetailsList.filter(
+    return daDownloadDetailsList.filter(
       (value, index, self) =>
         index ===
         self.findIndex(
