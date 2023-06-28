@@ -87,7 +87,6 @@ module.exports = {
   logErrorResponse,
   parseDigitalAssetAttrVal,
   parseDaAttrValWithVarMap,
-  getDigitalAssetViewLink,
   postToChatter,
   prependCDNToViewLink,
   prepareIdsForSOQL,
@@ -392,10 +391,6 @@ async function parseDaAttrValWithVarMap(
       .get(recordId)
       .set(attrLabel, new DADownloadDetails(digitalAsset, reqBody.namespace));
   }
-
-  // productVariantsDaDetailsMap.push(
-  //   new DADownloadDetails(digitalAsset, reqBody.namespace)
-  // );
   return await getDigitalAssetViewLink(
     digitalAsset,
     attrValValue,

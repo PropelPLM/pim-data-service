@@ -94,13 +94,6 @@ class PimStructure {
         exportRecords = [baseRecord],
         exportRecordsAndColumns = [exportRecords],
         attrValValue;
-      // daDownloadDetailsList = initAssetDownloadDetailsList(
-      //   isProduct,
-      //   includeRecordAsset,
-      //   recordList.map(record => record.Id),
-      //   digitalAssetMap,
-      //   namespace
-      // );
 
       // Map<productId or vvId, Map<Attribute Label Id, DADownloadDetails object>>
       productVariantsDaDetailsMap = new Map();
@@ -127,13 +120,6 @@ class PimStructure {
             helper.getValue(appearingValues[j], 'Attribute_Label_Type__c') ===
             DA_TYPE
           ) {
-            // attrValValue = await parseDigitalAssetAttrVal(
-            //   digitalAssetMap,
-            //   attrValValue,
-            //   daDownloadDetailsList,
-            //   helper,
-            //   reqBody
-            // );
             attrValValue = await parseDaAttrValWithVarMap(
               baseRecord.get('Id'),
               digitalAssetMap,
@@ -167,8 +153,6 @@ class PimStructure {
         if (exportType === 'currentVariant') {
           if (reqBody.variantValuePath.length > 0) {
             // exporting current variant value (base product not included in export)
-            // remove base product's digital assets that were previously added
-            // daDownloadDetailsList = [];
             const currentVariantId =
               reqBody.variantValuePath[reqBody.variantValuePath.length - 1];
             const variantValuePath = prepareIdsForSOQL(
@@ -183,7 +167,6 @@ class PimStructure {
 
             let currentVariant = new Map();
             const varList = Array.from(variantAndValueMap.keys());
-            // valuesList = Array.from(variantAndValueMap.values()); // note: this is an array of arrays
             Array.from(variantAndValueMap.values()).forEach(valList => {
               valuesList.push.apply(valuesList, valList); // flatten array
             });
@@ -255,13 +238,6 @@ class PimStructure {
                       'Attribute_Label_Type__c'
                     ) === DA_TYPE
                   ) {
-                    // newValue = await parseDigitalAssetAttrVal(
-                    //   digitalAssetMap,
-                    //   newValue,
-                    //   daDownloadDetailsList,
-                    //   helper,
-                    //   reqBody
-                    // );
                     newValue = await parseDaAttrValWithVarMap(
                       valuesList[i].Id,
                       digitalAssetMap,
@@ -422,13 +398,6 @@ class PimStructure {
                     'Attribute_Label_Type__c'
                   ) === DA_TYPE
                 ) {
-                  // newValue = await parseDigitalAssetAttrVal(
-                  //   digitalAssetMap,
-                  //   newValue,
-                  //   daDownloadDetailsList,
-                  //   helper,
-                  //   reqBody
-                  // );
                   newValue = await parseDaAttrValWithVarMap(
                     valuesList[i].Id,
                     digitalAssetMap,
@@ -713,13 +682,6 @@ class PimStructure {
                 'Attribute_Label_Type__c'
               ) === DA_TYPE
             ) {
-              // newValue = await parseDigitalAssetAttrVal(
-              //   digitalAssetMap,
-              //   newValue,
-              //   daDownloadDetailsList,
-              //   helper,
-              //   reqBody
-              // );
               const digitalAsset = digitalAssetMap?.get(newValue);
               if (!digitalAsset) {
                 continue;
@@ -956,20 +918,15 @@ class PimStructure {
         }
 
         if (productVariantsDaDetailsMap.has(currRecordId)) {
-          // daDownloadDetailsList.push(
-          //   Array.from(productVariantsDaDetailsMap.get(currRecordId).values())
-          // );
           daDownloadDetailsList = daDownloadDetailsList.concat(
             Array.from(productVariantsDaDetailsMap.get(currRecordId).values())
           );
         }
       }
     }
-    console.log('daDownloadDetailsList: ', daDownloadDetailsList);
     daDownloadDetailsList = await this.removeDuplicatedAssets(
       daDownloadDetailsList
     );
-    console.log('daDownloadDetailsList2: ', daDownloadDetailsList);
     return daDownloadDetailsList;
   }
 
