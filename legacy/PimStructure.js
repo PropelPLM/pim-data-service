@@ -135,7 +135,6 @@ class PimStructure {
             //   helper,
             //   reqBody
             // );
-            console.log('prod Da');
             attrValValue = await parseDaAttrValWithVarMap(
               baseRecord.get('Id'),
               digitalAssetMap,
@@ -144,6 +143,10 @@ class PimStructure {
               productVariantsDaDetailsMap,
               helper,
               reqBody
+            );
+            console.log(
+              'productVariantsDaDetailsMap1: ',
+              productVariantsDaDetailsMap
             );
           } else if (
             helper.getValue(appearingValues[j], 'Attribute_Label_Type__c') ===
@@ -914,6 +917,8 @@ class PimStructure {
     exportRecords
   ) {
     // Option 1: Check if is inherited
+    console.log('productVariantsDaDetailsMap2: ', productVariantsDaDetailsMap);
+    console.log('exportRecords: ', exportRecords);
     let currRecordId;
     if (isInherited) {
       // iterate over all attribute labels included in the export
