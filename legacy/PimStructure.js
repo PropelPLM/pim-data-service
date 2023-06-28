@@ -144,10 +144,6 @@ class PimStructure {
               helper,
               reqBody
             );
-            console.log(
-              'productVariantsDaDetailsMap1: ',
-              productVariantsDaDetailsMap
-            );
           } else if (
             helper.getValue(appearingValues[j], 'Attribute_Label_Type__c') ===
             PRODUCT_REFERENCE_TYPE
@@ -225,7 +221,6 @@ class PimStructure {
                 helper.getValue(valuesList[i], 'Label__c')
               );
               currentVariant.set('Id', valuesList[i].Id);
-              console.log('currentVariantL ', currentVariant);
 
               // add any overwritten values belonging to the current variant value
               if (overwrittenValues.length > 0) {
@@ -917,8 +912,6 @@ class PimStructure {
     exportRecords
   ) {
     // Option 1: Check if is inherited
-    console.log('productVariantsDaDetailsMap2: ', productVariantsDaDetailsMap);
-    console.log('exportRecords: ', exportRecords);
     let currRecordId;
     if (isInherited) {
       // iterate over all attribute labels included in the export
@@ -966,9 +959,11 @@ class PimStructure {
         }
       }
     }
+    console.log('daDownloadDetailsList: ', daDownloadDetailsList)
     daDownloadDetailsList = await this.removeDuplicatedAssets(
       daDownloadDetailsList
     );
+    console.log('daDownloadDetailsList2: ', daDownloadDetailsList)
     return daDownloadDetailsList;
   }
 
