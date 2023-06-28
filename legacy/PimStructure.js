@@ -249,6 +249,7 @@ class PimStructure {
                     'Value__c'
                   );
                   if (newValue === 'from BLK') {
+                    console.log('valuesList[i].Name: ', valuesList[i].Name);
                     console.log('valuesList[i].Id: ', valuesList[i].Id);
                     console.log('affectedVariantValue: ', affectedVariantValue);
                   }
@@ -292,7 +293,9 @@ class PimStructure {
                   currentVariant.set(affectedLabelName, newValue);
                 }
               }
+              console.log('currentVariant: ', currentVariant);
             }
+
             currentVariantName = currentVariant.get('Record_ID');
             // overwrite base product with current variant
             exportRecords = [currentVariant];
