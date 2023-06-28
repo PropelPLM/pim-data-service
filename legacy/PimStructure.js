@@ -322,8 +322,6 @@ class PimStructure {
           Array.from(variantAndValueListMap.values()).forEach(valList => {
             valuesList.push.apply(valuesList, valList); // flatten array
           });
-          console.log('variantAndValueListMap: ', variantAndValueListMap);
-          console.log('valuesList: ', valuesList);
           this.populateVariantValueHierarchyMap(
             valuesList,
             variantValueHierarchyMap,
@@ -941,6 +939,7 @@ class PimStructure {
         }
       }
     } else {
+      console.log('productVariantsDaDetailsMap: ', productVariantsDaDetailsMap);
       for (let record of exportRecords) {
         // add all the DAs belonging to variant vals and product slated for export to daDownloadDetailsList
         console.log('record: ', record);
