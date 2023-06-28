@@ -967,16 +967,15 @@ class PimStructure {
 
   async removeDuplicatedAssets(daDownloadDetailsList) {
     console.log('daDownloadDetailsList1: ', daDownloadDetailsList);
-    return daDownloadDetailsList.filter(
-      (value, index, self) =>
+    return daDownloadDetailsList.filter((value, index) => {
+      const _value = JSON.stringify(value);
+      return (
         index ===
-        self.findIndex(
-          t =>
-            t.fileName === value.fileName &&
-            t.fileId === value.fileId &&
-            t.key === value.key
-        )
-    );
+        daDownloadDetailsList.findIndex(obj => {
+          return JSON.stringify(obj) === _value;
+        })
+      );
+    });
   }
 
   async addExportColumns(
