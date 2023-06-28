@@ -135,6 +135,7 @@ class PimStructure {
             //   helper,
             //   reqBody
             // );
+            console.log('prod Da');
             attrValValue = await parseDaAttrValWithVarMap(
               baseRecord.get('Id'),
               digitalAssetMap,
