@@ -942,11 +942,9 @@ class PimStructure {
         }
       }
     } else {
-      console.log('productVariantsDaDetailsMap: ', productVariantsDaDetailsMap);
       for (let record of exportRecords) {
         // add all the DAs belonging to variant vals and product slated for export to daDownloadDetailsList
         currRecordId = record.get('Id');
-        console.log('currRecordId: ', currRecordId);
         if (!currRecordId) {
           continue;
         }
@@ -961,12 +959,10 @@ class PimStructure {
     daDownloadDetailsList = await this.removeDuplicatedAssets(
       daDownloadDetailsList
     );
-    console.log('daDownloadDetailsList: ', daDownloadDetailsList);
     return daDownloadDetailsList;
   }
 
   async removeDuplicatedAssets(daDownloadDetailsList) {
-    console.log('daDownloadDetailsList1: ', daDownloadDetailsList);
     return daDownloadDetailsList.filter((value, index) => {
       const _value = JSON.stringify(value);
       return (
