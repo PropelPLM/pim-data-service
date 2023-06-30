@@ -875,57 +875,83 @@ class PimStructure {
     variantValueHierarchyMap,
     exportRecords
   ) {
-    let currRecordId;
     if (isInherited) {
-      // iterate over all attribute labels included in the export
-      for (let labelId of appearingLabelIds) {
-        for (let record of exportRecords) {
-          currRecordId = record.get('Id');
-          if (!currRecordId) {
-            continue;
-          }
-          while (true) {
-            // check if variant value has digital asset for this label, if not iteratively search parent variant values
-            // until product for digital assets for this label
-            const currRecordDigitalAsset = productVariantsDaDetailsMap
-              .get(currRecordId)
-              ?.get(labelId);
-            if (currRecordDigitalAsset) {
-              // add prod/variant val's digital asset for list of assets for export, move on to next label
-              daDownloadDetailsList.push(currRecordDigitalAsset);
-              break;
-            } else {
-              // variant val doesn't have DA for this attr label, search upwards for DA i.e. parent variant vals then product
-              const parentRecordId = variantValueHierarchyMap.get(currRecordId);
-              if (parentRecordId) {
-                currRecordId = parentRecordId;
-              } else {
-                // none of the variant values and product have DA for this label, move on to next label
-                break;
-              }
-            }
-          }
-        }
-      }
+      daDownloadDetailsList = await this.processDaListInherited(
+        appearingLabelIds,
+        exportRecords,
+        productVariantsDaDetailsMap,
+        variantValueHierarchyMap
+      );
     } else {
-      for (let record of exportRecords) {
-        // add all the DAs belonging to variant vals and product slated for export to daDownloadDetailsList
-        currRecordId = record.get('Id');
-        if (!currRecordId) {
-          continue;
-        }
-
-        if (productVariantsDaDetailsMap.has(currRecordId)) {
-          daDownloadDetailsList = daDownloadDetailsList.concat(
-            Array.from(productVariantsDaDetailsMap.get(currRecordId).values())
-          );
-        }
-      }
+      daDownloadDetailsList = await this.processDaList(
+        exportRecords,
+        productVariantsDaDetailsMap
+      );
     }
     daDownloadDetailsList = await this.removeDuplicatedAssets(
       daDownloadDetailsList
     );
     return daDownloadDetailsList;
+  }
+
+  async processDaListInherited(
+    appearingLabelIds,
+    exportRecords,
+    productVariantsDaDetailsMap,
+    variantValueHierarchyMap
+  ) {
+    let daList = [];
+    let currRecordId;
+    // iterate over all attribute labels included in the export
+    for (let labelId of appearingLabelIds) {
+      for (let record of exportRecords) {
+        currRecordId = record.get('Id');
+        if (!currRecordId) {
+          continue;
+        }
+        while (true) {
+          // check if variant value has digital asset for this label, if not iteratively search parent variant values
+          // until product for digital assets for this label
+          const currRecordDigitalAsset = productVariantsDaDetailsMap
+            .get(currRecordId)
+            ?.get(labelId);
+          if (currRecordDigitalAsset) {
+            // add prod/variant val's digital asset for list of assets for export, move on to next label
+            daList.push(currRecordDigitalAsset);
+            break;
+          } else {
+            // variant val doesn't have DA for this attr label, search upwards for DA i.e. parent variant vals then product
+            const parentRecordId = variantValueHierarchyMap.get(currRecordId);
+            if (parentRecordId) {
+              currRecordId = parentRecordId;
+            } else {
+              // none of the variant values and product have DA for this label, move on to next label
+              break;
+            }
+          }
+        }
+      }
+    }
+    return daList;
+  }
+
+  async processDaList(exportRecords, productVariantsDaDetailsMap) {
+    let currRecordId;
+    let daList = [];
+    for (let record of exportRecords) {
+      // add all the DAs belonging to variant vals and product slated for export to daList
+      currRecordId = record.get('Id');
+      if (!currRecordId) {
+        continue;
+      }
+
+      if (productVariantsDaDetailsMap.has(currRecordId)) {
+        daList = daList.concat(
+          Array.from(productVariantsDaDetailsMap.get(currRecordId).values())
+        );
+      }
+    }
+    return daList;
   }
 
   async removeDuplicatedAssets(daDownloadDetailsList) {
