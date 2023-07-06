@@ -43,15 +43,21 @@ class PimExportHelper {
    * @param {string} fieldApi
    */
   getValue(object, fieldApi) {
+    if (!object || !fieldApi) {
+      return null
+    }
     let fields = fieldApi.split('.');
     let queryResult = object;
-    fields.forEach(field => {
+    for (const field of fields) {
+      if (!queryResult) {
+        break
+      }
       if (field.endsWith('__c') || field.endsWith('__r')) {
         queryResult = queryResult[this.namespace(field)];
       } else {
-        queryResult = queryResult.field;
+        queryResult = queryResult[field];
       }
-    });
+    }
     return queryResult;
   }
 }
