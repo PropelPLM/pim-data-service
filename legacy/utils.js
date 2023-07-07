@@ -86,6 +86,7 @@ module.exports = {
   logSuccessResponse,
   logErrorResponse,
   parseDigitalAssetAttrVal,
+  parseDaAttrValWithVarMap,
   postToChatter,
   prependCDNToViewLink,
   prepareIdsForSOQL,
@@ -354,6 +355,56 @@ async function parseDigitalAssetAttrVal(
   daDownloadDetailsList.push(
     new DADownloadDetails(digitalAsset, reqBody.namespace)
   );
+  return await getDigitalAssetViewLink(
+    digitalAsset,
+    attrValValue,
+    helper,
+    reqBody
+  );
+}
+
+// stores digital asset in Map<productId or vvId, Map<Attribute Label Id, DADownloadDetails object>>
+// and returns view link of digital asset
+async function parseDaAttrValWithVarMap(
+  recordId,
+  digitalAssetMap,
+  attrLabel,
+  attrValValue,
+  productVariantsDaDetailsMap,
+  helper,
+  reqBody
+) {
+  const digitalAsset = digitalAssetMap?.get(attrValValue);
+  if (!digitalAsset) return attrValValue;
+
+  if (productVariantsDaDetailsMap.get(recordId) == null) {
+    // with the product id/variant value id as key, instantiate Map<attrLabel Id, DA download details obj>
+    productVariantsDaDetailsMap.set(
+      recordId,
+      new Map([
+        [attrLabel, new DADownloadDetails(digitalAsset, reqBody.namespace)]
+      ])
+    );
+  } else {
+    // with the product id/variant value id as key, add a new key value pair to the value - Map<attrLabel Id, DA download details obj>
+    productVariantsDaDetailsMap
+      .get(recordId)
+      .set(attrLabel, new DADownloadDetails(digitalAsset, reqBody.namespace));
+  }
+  return await getDigitalAssetViewLink(
+    digitalAsset,
+    attrValValue,
+    helper,
+    reqBody
+  );
+}
+
+async function getDigitalAssetViewLink(
+  digitalAsset,
+  attrValValue,
+  helper,
+  reqBody
+) {
   const viewLink = helper.getValue(digitalAsset, 'View_Link__c');
   // if value is already complete url, add it to the map, else prepend the CDN url to the partial url then add to map
   attrValValue = viewLink.includes('https')

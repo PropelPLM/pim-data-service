@@ -11,6 +11,7 @@ const {
   getDigitalAssetMap,
   initAssetDownloadDetailsList,
   parseDigitalAssetAttrVal,
+  parseDaAttrValWithVarMap,
   prepareIdsForSOQL,
   parseProductReferenceAttrVal
 } = require('./utils');
@@ -45,7 +46,9 @@ class PimStructure {
       templateFields,
       templateHeaders,
       useAspose,
-      daDownloadDetailsList;
+      daDownloadDetailsList = [],
+      productVariantsDaDetailsMap,
+      variantValueHierarchyMap = new Map();
     if (reqBody.options.isTemplateExport) {
       if (reqBody.templateVersionData) {
         ({ templateFields, templateHeaders } = this.getTemplateHeadersAndFields(
@@ -91,13 +94,9 @@ class PimStructure {
         exportRecords = [baseRecord],
         exportRecordsAndColumns = [exportRecords],
         attrValValue;
-      daDownloadDetailsList = initAssetDownloadDetailsList(
-        isProduct,
-        includeRecordAsset,
-        recordList.map(record => record.Id),
-        digitalAssetMap,
-        namespace
-      );
+
+      // Map<productId or vvId, Map<Attribute Label Id, DADownloadDetails object>>
+      productVariantsDaDetailsMap = new Map();
       appearingLabelIds = prepareIdsForSOQL(appearingLabelIds);
       const { appearingLabels, appearingValues } =
         await this.parseAppearringAttrLabelsAndValues(
@@ -121,10 +120,12 @@ class PimStructure {
             helper.getValue(appearingValues[j], 'Attribute_Label_Type__c') ===
             DA_TYPE
           ) {
-            attrValValue = await parseDigitalAssetAttrVal(
+            attrValValue = await parseDaAttrValWithVarMap(
+              baseRecord.get('Id'),
               digitalAssetMap,
+              appearingLabels[i].Id,
               attrValValue,
-              daDownloadDetailsList,
+              productVariantsDaDetailsMap,
               helper,
               reqBody
             );
@@ -151,6 +152,9 @@ class PimStructure {
 
         if (exportType === 'currentVariant') {
           if (reqBody.variantValuePath.length > 0) {
+            // exporting current variant value (base product not included in export)
+            const currentVariantId =
+              reqBody.variantValuePath[reqBody.variantValuePath.length - 1];
             const variantValuePath = prepareIdsForSOQL(
               reqBody.variantValuePath
             );
@@ -163,10 +167,17 @@ class PimStructure {
 
             let currentVariant = new Map();
             const varList = Array.from(variantAndValueMap.keys());
-            valuesList = Array.from(variantAndValueMap.values()); // note: this is an array of arrays
+            Array.from(variantAndValueMap.values()).forEach(valList => {
+              valuesList.push.apply(valuesList, valList); // flatten array
+            });
+            this.populateVariantValueHierarchyMap(
+              valuesList,
+              variantValueHierarchyMap,
+              baseRecord.get('Id')
+            );
             let valuesIdList = [];
             valuesList.forEach(val => {
-              valuesIdList.push(val[0].Id);
+              valuesIdList.push(val.Id);
             });
             valuesIdList = prepareIdsForSOQL(valuesIdList);
             let overwrittenValues = [];
@@ -186,15 +197,24 @@ class PimStructure {
 
             // add variant values to the current variant product
             for (let i = 0; i < varList.length; i++) {
-              currentVariant.set('Record_ID', valuesList[i][0].Name);
+              currentVariant.set('Record_ID', valuesList[i].Name);
               currentVariant.set(
                 varList[i].Name,
-                helper.getValue(valuesList[i][0], 'Label__c')
+                helper.getValue(valuesList[i], 'Label__c')
               );
+              currentVariant.set('Id', valuesList[i].Id);
 
-              // add any overwritten values
+              // add any overwritten values belonging to the current variant value
               if (overwrittenValues.length > 0) {
                 for (let j = 0; j < overwrittenValues.length; j++) {
+                  const affectedVariantValue = helper.getValue(
+                    overwrittenValues[j],
+                    'Overwritten_Variant_Value__c'
+                  );
+                  if (currentVariantId !== affectedVariantValue) {
+                    // skip attribute values which are not overwriting the current variant value
+                    continue;
+                  }
                   let affectedLabelName;
                   appearingLabels.forEach(label => {
                     if (
@@ -207,10 +227,7 @@ class PimStructure {
                       affectedLabelName = label.Name;
                     }
                   });
-                  const affectedVariantValue = helper.getValue(
-                    overwrittenValues[j],
-                    'Overwritten_Variant_Value__c'
-                  );
+
                   let newValue = helper.getValue(
                     overwrittenValues[j],
                     'Value__c'
@@ -221,10 +238,15 @@ class PimStructure {
                       'Attribute_Label_Type__c'
                     ) === DA_TYPE
                   ) {
-                    newValue = await parseDigitalAssetAttrVal(
+                    newValue = await parseDaAttrValWithVarMap(
+                      valuesList[i].Id,
                       digitalAssetMap,
+                      helper.getValue(
+                        overwrittenValues[j],
+                        'Attribute_Label__c'
+                      ),
                       newValue,
-                      daDownloadDetailsList,
+                      productVariantsDaDetailsMap,
                       helper,
                       reqBody
                     );
@@ -240,12 +262,11 @@ class PimStructure {
                     );
                   }
                   // update the currentVariant object with the overwritten values
-                  if (valuesList[i][0].Id === affectedVariantValue) {
-                    currentVariant.set(affectedLabelName, newValue);
-                  }
+                  currentVariant.set(affectedLabelName, newValue);
                 }
               }
             }
+
             currentVariantName = currentVariant.get('Record_ID');
             // overwrite base product with current variant
             exportRecords = [currentVariant];
@@ -279,6 +300,11 @@ class PimStructure {
           Array.from(variantAndValueListMap.values()).forEach(valList => {
             valuesList.push.apply(valuesList, valList); // flatten array
           });
+          this.populateVariantValueHierarchyMap(
+            valuesList,
+            variantValueHierarchyMap,
+            baseRecord.get('Id')
+          );
           let valuesIdList = [];
           valuesList.forEach(val => {
             valuesIdList.push(val.Id);
@@ -309,6 +335,7 @@ class PimStructure {
               // add variant value's Record ID
               if (isFirstLevelVariant) {
                 newVariant.set('Record_ID', currValue.Name);
+                newVariant.set('Id', currValue.Id);
                 isFirstLevelVariant = false;
               }
               // add Variant__c's Label (e.g. for Variant 'Size', Label is 'Large')
@@ -344,6 +371,14 @@ class PimStructure {
             // add any overwritten values
             if (overwrittenValues.length > 0) {
               for (let j = 0; j < overwrittenValues.length; j++) {
+                const affectedVariantValue = helper.getValue(
+                  overwrittenValues[j],
+                  'Overwritten_Variant_Value__c'
+                );
+                if (valuesList[i].Id !== affectedVariantValue) {
+                  // skip attribute values which are not overwriting the current variant value
+                  continue;
+                }
                 let affectedLabelName;
                 appearingLabels.forEach(label => {
                   if (
@@ -353,10 +388,6 @@ class PimStructure {
                     affectedLabelName = label.Name;
                   }
                 });
-                const affectedVariantValue = helper.getValue(
-                  overwrittenValues[j],
-                  'Overwritten_Variant_Value__c'
-                );
                 let newValue = helper.getValue(
                   overwrittenValues[j],
                   'Value__c'
@@ -367,10 +398,12 @@ class PimStructure {
                     'Attribute_Label_Type__c'
                   ) === DA_TYPE
                 ) {
-                  newValue = await parseDigitalAssetAttrVal(
+                  newValue = await parseDaAttrValWithVarMap(
+                    valuesList[i].Id,
                     digitalAssetMap,
+                    helper.getValue(overwrittenValues[j], 'Attribute_Label__c'),
                     newValue,
-                    daDownloadDetailsList,
+                    productVariantsDaDetailsMap,
                     helper,
                     reqBody
                   );
@@ -386,9 +419,7 @@ class PimStructure {
                   );
                 }
                 // update the newVariant object with the overwritten values
-                if (valuesList[i].Id === affectedVariantValue) {
-                  newVariant.set(affectedLabelName, newValue);
-                }
+                newVariant.set(affectedLabelName, newValue);
               }
             }
             if (exportType === 'lowestVariants' && !reqBody.isInherited) {
@@ -424,7 +455,7 @@ class PimStructure {
               currentVariantName,
               reqBody,
               digitalAssetMap,
-              daDownloadDetailsList
+              productVariantsDaDetailsMap
             )
           ];
         } else if (exportType === 'lowestVariants') {
@@ -435,7 +466,14 @@ class PimStructure {
         }
       }
       exportRecordsColsAndAssets = {
-        daDownloadDetailsList,
+        daDownloadDetailsList: await this.getFinalizedDaList(
+          reqBody.isInherited,
+          appearingLabelIds.replace(/'/g, '').split(','),
+          productVariantsDaDetailsMap,
+          daDownloadDetailsList,
+          variantValueHierarchyMap,
+          exportRecordsAndColumns[0]
+        ),
         recordsAndCols: await this.addExportColumns(
           productVariantValueMapList,
           templateFields,
@@ -502,6 +540,25 @@ class PimStructure {
     return returnMap;
   }
 
+  // creates a Map <Id, Id> with key value pairs being [variantValueId, parentVariantValueId] or [variantValueId, productId]
+  populateVariantValueHierarchyMap(
+    valuesList,
+    variantValueHierarchyMap,
+    productId
+  ) {
+    for (let vv of valuesList) {
+      const parentVariantValueId = helper.getValue(
+        vv,
+        'Parent_Variant_Value__c'
+      );
+      if (parentVariantValueId) {
+        variantValueHierarchyMap.set(vv.Id, parentVariantValueId);
+      } else {
+        variantValueHierarchyMap.set(vv.Id, productId);
+      }
+    }
+  }
+
   async fillInInheritedData(
     baseProduct,
     exportRecords,
@@ -514,7 +571,7 @@ class PimStructure {
     currentVariantName,
     reqBody,
     digitalAssetMap,
-    daDownloadDetailsList
+    productVariantsDaDetailsMap
   ) {
     let lowestLevelVariantValues;
     if (exportType === 'currentVariant') {
@@ -600,6 +657,14 @@ class PimStructure {
         // add any overwritten values
         if (overwrittenValues.length > 0) {
           for (let j = 0; j < overwrittenValues.length; j++) {
+            const affectedVariantValue = helper.getValue(
+              overwrittenValues[j],
+              'Overwritten_Variant_Value__c'
+            );
+            if (valuesList[i].Id !== affectedVariantValue) {
+              // skip attribute values which are not overwriting the current variant value
+              continue;
+            }
             let affectedLabelName;
             appearingLabels.forEach(label => {
               if (
@@ -609,10 +674,7 @@ class PimStructure {
                 affectedLabelName = label.Name;
               }
             });
-            const affectedVariantValue = helper.getValue(
-              overwrittenValues[j],
-              'Overwritten_Variant_Value__c'
-            );
+
             let newValue = helper.getValue(overwrittenValues[j], 'Value__c');
             if (
               helper.getValue(
@@ -620,10 +682,16 @@ class PimStructure {
                 'Attribute_Label_Type__c'
               ) === DA_TYPE
             ) {
-              newValue = await parseDigitalAssetAttrVal(
+              const digitalAsset = digitalAssetMap?.get(newValue);
+              if (!digitalAsset) {
+                continue;
+              }
+              newValue = await parseDaAttrValWithVarMap(
+                valuesList[i].Id,
                 digitalAssetMap,
+                helper.getValue(overwrittenValues[j], 'Attribute_Label__c'),
                 newValue,
-                daDownloadDetailsList,
+                productVariantsDaDetailsMap,
                 helper,
                 reqBody
               );
@@ -636,9 +704,7 @@ class PimStructure {
               newValue = await parseProductReferenceAttrVal(newValue, reqBody);
             }
             // update the newVariant object with the overwritten values
-            if (valuesList[i].Id === affectedVariantValue) {
-              newVariant.set(affectedLabelName, newValue);
-            }
+            newVariant.set(affectedLabelName, newValue);
           }
         }
         exportRecords.push(newVariant);
@@ -696,10 +762,15 @@ class PimStructure {
           }
         });
       });
-
+    await this.updateExportRecordsWithVariantValueIds(
+      valuesList,
+      exportRecords
+    );
     // loop through each variant (top down) to settle inheritance from parent variants
     exportRecords.forEach(variant => {
+      // loop through each variant value's child variant values
       variantValueTree.get(variant.get('Record_ID')).forEach(childVariant => {
+        // find the child variant value's object in exportRecords
         exportRecords.forEach(variantValue => {
           if (variantValue.get('Record_ID') === childVariant) {
             Array.from(variant.keys()).forEach(key => {
@@ -781,6 +852,118 @@ class PimStructure {
       childMap.set(variant.get('Record_ID'), variant.get('Children'));
     });
     return childMap;
+  }
+
+  async updateExportRecordsWithVariantValueIds(valuesList, exportRecords) {
+    let vvIdNameMap = new Map();
+    for (let variantValue of valuesList) {
+      vvIdNameMap.set(variantValue.Name, variantValue.Id);
+    }
+    for (let record of exportRecords) {
+      const recordName = record.get('Record_ID');
+      if (recordName) {
+        record.set('Id', vvIdNameMap.get(recordName));
+      }
+    }
+  }
+
+  async getFinalizedDaList(
+    isInherited,
+    appearingLabelIds,
+    productVariantsDaDetailsMap,
+    daDownloadDetailsList,
+    variantValueHierarchyMap,
+    exportRecords
+  ) {
+    if (isInherited) {
+      daDownloadDetailsList = await this.processDaListInherited(
+        appearingLabelIds,
+        exportRecords,
+        productVariantsDaDetailsMap,
+        variantValueHierarchyMap
+      );
+    } else {
+      daDownloadDetailsList = await this.processDaList(
+        exportRecords,
+        productVariantsDaDetailsMap
+      );
+    }
+    daDownloadDetailsList = await this.removeDuplicatedAssets(
+      daDownloadDetailsList
+    );
+    return daDownloadDetailsList;
+  }
+
+  async processDaListInherited(
+    appearingLabelIds,
+    exportRecords,
+    productVariantsDaDetailsMap,
+    variantValueHierarchyMap
+  ) {
+    let daList = [];
+    let currRecordId;
+    // iterate over all attribute labels included in the export
+    for (let labelId of appearingLabelIds) {
+      for (let record of exportRecords) {
+        currRecordId = record.get('Id');
+        if (!currRecordId) {
+          continue;
+        }
+        while (true) {
+          // check if variant value has digital asset for this label, if not iteratively search parent variant values
+          // until product for digital assets for this label
+          const currRecordDigitalAsset = productVariantsDaDetailsMap
+            .get(currRecordId)
+            ?.get(labelId);
+          if (currRecordDigitalAsset) {
+            // add prod/variant val's digital asset for list of assets for export, move on to next label
+            daList.push(currRecordDigitalAsset);
+            break;
+          } else {
+            // variant val doesn't have DA for this attr label, search upwards for DA i.e. parent variant vals then product
+            const parentRecordId = variantValueHierarchyMap.get(currRecordId);
+            if (parentRecordId) {
+              currRecordId = parentRecordId;
+            } else {
+              // none of the variant values and product have DA for this label, move on to next label
+              break;
+            }
+          }
+        }
+      }
+    }
+    return daList;
+  }
+
+  async processDaList(exportRecords, productVariantsDaDetailsMap) {
+    let currRecordId;
+    let daList = [];
+    for (let record of exportRecords) {
+      // add all the DAs belonging to variant vals and product slated for export to daList
+      currRecordId = record.get('Id');
+      if (!currRecordId) {
+        continue;
+      }
+
+      if (productVariantsDaDetailsMap.has(currRecordId)) {
+        daList = daList.concat(
+          Array.from(productVariantsDaDetailsMap.get(currRecordId).values())
+        );
+      }
+    }
+    return daList;
+  }
+
+  async removeDuplicatedAssets(daDownloadDetailsList) {
+    return daDownloadDetailsList.filter((value, index) => {
+      const _value = JSON.stringify(value);
+      return (
+        index ===
+        daDownloadDetailsList.findIndex(obj => {
+          return JSON.stringify(obj) === _value;
+        })
+      );
+    });
   }
 
   async addExportColumns(
