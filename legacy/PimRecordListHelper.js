@@ -433,8 +433,9 @@ async function getAttributesForRecordMap(
       if (
         helper.getValue(attribute, 'Overwritten_Variant_Value__c') !== null ||
         helper.getValue(attribute, 'Attribute_Label__r') === null
-      )
+      ) {
         continue;
+      }
 
       let attrValValue = helper.getValue(attribute, 'Value__c');
       // replace digital asset id with CDN url if Attribute_Label__c is of Type__c 'DigitalAsset'
@@ -482,6 +483,9 @@ async function getAttributesForRecordMap(
         if (!variantToAttributeMap.has(pathVVId)) continue;
 
         for (let attribute of variantToAttributeMap.get(pathVVId)) {
+          if ( helper.getValue(attribute, 'Attribute_Label__r') === null ) {
+            continue;
+          }
           let attrValValue = helper.getValue(attribute, 'Value__c');
           // replace digital asset id with CDN url if Attribute_Label__c is of Type__c 'DigitalAsset'
           if (
@@ -513,7 +517,9 @@ async function getAttributesForRecordMap(
 
     if (variantToAttributeMap.has(vvId)) {
       for (let attribute of variantToAttributeMap.get(vvId)) {
-        if (!helper.getValue(attribute, 'Attribute_Label__r')) continue;
+        if (!helper.getValue(attribute, 'Attribute_Label__r')) {
+          continue;
+        }
 
         let attrValValue = helper.getValue(attribute, 'Value__c');
         // replace digital asset id with CDN url if Attribute_Label__c is of Type__c 'DigitalAsset'
@@ -555,35 +561,20 @@ async function getAttributesForRecordMap(
 // PIM repo ProductManager.getVariantMap()
 async function getVariantMap(productsList) {
   let variantMap = new Map();
+  let currentValue
   productsList.forEach(product => {
     if (helper.getValue(product, 'Attributes__r') !== null) {
       helper.getValue(product, 'Attributes__r').records.forEach(attribute => {
+        currentValue = helper.getValue(attribute, 'Overwritten_Variant_Value__c')
         // iterate through each product's Attribute_Value__c
-        if (
-          helper.getValue(attribute, 'Overwritten_Variant_Value__c') !== null
-        ) {
+        if ( currentValue !== null ) {
           // if the Attribute_Value__c (e.g. 4kg) belongs to a variant (e.g. AC-SWSH-1001-BLK-M)
-          if (
-            variantMap.has(
-              helper.getValue(attribute, 'Overwritten_Variant_Value__c')
-            )
-          ) {
+          if ( variantMap.has(currentValue) ) {
             // add on the Attribute_Value__c to the list of attribute values belonging to the variant
-            variantMap.set(
-              helper.getValue(attribute, 'Overwritten_Variant_Value__c'),
-              [
-                ...variantMap.get(
-                  helper.getValue(attribute, 'Overwritten_Variant_Value__c')
-                ),
-                attribute
-              ]
-            );
+            variantMap.get(currentValue).push(attribute)
           } else {
             // instantiate the list of attribute values
-            variantMap.set(
-              helper.getValue(attribute, 'Overwritten_Variant_Value__c'),
-              [attribute]
-            );
+            variantMap.set( currentValue, [attribute] );
           }
         }
       });
