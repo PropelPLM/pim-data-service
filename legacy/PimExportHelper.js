@@ -48,16 +48,15 @@ class PimExportHelper {
     }
     let fields = fieldApi.split('.');
     let queryResult = object;
-    for (const field of fields) {
-      if (!queryResult) {
-        break
+    fields.forEach(field => {
+      if (queryResult) {
+        if (field.endsWith('__c') || field.endsWith('__r')) {
+          queryResult = queryResult[this.namespace(field)];
+        } else {
+          queryResult = queryResult[field];
+        }
       }
-      if (field.endsWith('__c') || field.endsWith('__r')) {
-        queryResult = queryResult[this.namespace(field)];
-      } else {
-        queryResult = queryResult[field];
-      }
-    }
+    });
     return queryResult;
   }
 }
