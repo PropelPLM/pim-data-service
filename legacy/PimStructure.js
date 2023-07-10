@@ -488,16 +488,15 @@ class PimStructure {
       });
     }
     if (useAspose) {
+      console.log('asposeInput:" ', asposeInput);
       await callAsposeToExport(asposeInput);
       return { daDownloadDetailsList };
     }
     if (templateHeaders?.length > 1) {
       // template has more than 1 header row, pop the last header row as it is already tied to the data row
       templateHeaders.pop();
-      console.log('template HEaders: ', templateHeaders);
       exportRecordsColsAndAssets.templateAdditionalHeaders = templateHeaders;
     }
-    console.log('exportRecordsColsAndAssets: ', exportRecordsColsAndAssets);
     return exportRecordsColsAndAssets;
   }
 
