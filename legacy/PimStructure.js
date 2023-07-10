@@ -497,6 +497,7 @@ class PimStructure {
       console.log('template HEaders: ', templateHeaders);
       exportRecordsColsAndAssets.templateAdditionalHeaders = templateHeaders;
     }
+    console.log('exportRecordsColsAndAssets: ', exportRecordsColsAndAssets);
     return exportRecordsColsAndAssets;
   }
 
