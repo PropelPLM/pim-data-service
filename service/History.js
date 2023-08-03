@@ -39,7 +39,7 @@ class HistoryService {
     const historyEntries = await this.createHistories(queryPromises);
     this.logHistories(historyEntries);
   };
-  
+
   setupHistoryMetadata = (successfulDMLLogs) => {
     const queryPromises = [];
     Object.entries(this.splitByRecordType(successfulDMLLogs))
@@ -268,6 +268,7 @@ class HistoryBuilder {
       oldValue: null,
       newValue: this.newValue,
       isImport: true,
+      importFileName: this.importFileName,
       importFileLink: this.importFileLink,
       entryKey: this.entryKey,
       createdDateTime: this.createdDateTime,
