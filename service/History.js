@@ -40,27 +40,27 @@ class HistoryService {
     this.logHistories(historyEntries);
   };
 
-  setupHistoryMetadata = (successfulDMLLogs) => {
+  setupHistoryMetadata = successfulDMLLogs => {
     const queryPromises = [];
-    Object.entries(this.splitByRecordType(successfulDMLLogs))
-    .forEach(([sobjName, recordIds]) => {
-      queryPromises.push(
-        this.connection.simpleQuery(
-          this.helper.namespaceQuery(
-            this.getAdditionalInfoQuery(sobjName, recordIds)
+    Object.entries(this.splitByRecordType(successfulDMLLogs)).forEach(
+      ([sobjName, recordIds]) => {
+        queryPromises.push(
+          this.connection.simpleQuery(
+            this.helper.namespaceQuery(
+              this.getAdditionalInfoQuery(sobjName, recordIds)
+            )
           )
-        )
-      );
-    });
+        );
+      }
+    );
     return queryPromises;
-  }
+  };
 
-  createHistories = async (queryPromises) => {
+  createHistories = async queryPromises => {
     const histories = [],
       createdDateTime = new Date().toISOString();
     let type;
-    (await Promise.all(queryPromises))
-    .forEach(result =>
+    (await Promise.all(queryPromises)).forEach(result =>
       result.records.forEach(record => {
         type = record.attributes.type.toLowerCase();
         if (!TRACKED_TYPES.has(type)) return;
@@ -68,17 +68,21 @@ class HistoryService {
       })
     );
     return histories;
-  }
+  };
 
-  logHistories = async (historyEntries) => {
+  logHistories = async historyEntries => {
     const generatedSObjs = historyEntries.map(hist => {
       return {
         [this.helper.namespace('ClassName__c')]: hist.recordId,
         [this.helper.namespace('ResponseBody__c')]: hist.finalise()
-      }
-    })
-    await this.connection.insertSlice(this.helper.namespace('Log__c'), generatedSObjs, 1000);
-  }
+      };
+    });
+    await this.connection.insertSlice(
+      this.helper.namespace('Log__c'),
+      generatedSObjs,
+      1000
+    );
+  };
 
   splitByRecordType = successfulDMLLogs => {
     const returnMap = {};
@@ -141,7 +145,7 @@ class HistoryBuilder {
     // monkey patch
     helper.getValue = function (object, fieldApi) {
       if (!object || !fieldApi) {
-        return null
+        return null;
       }
       let fields = fieldApi.split('.');
       let queryResult = object;
@@ -155,7 +159,7 @@ class HistoryBuilder {
         }
       });
       return queryResult;
-    }
+    };
     Object.assign(this, {
       helper,
       record,
@@ -220,7 +224,7 @@ class HistoryBuilder {
     if (!Object.hasOwnProperty.call(HISTORY_ACTIONS, action)) return this;
     this.action = action;
     return this;
-  }
+  };
 
   setRelatedRecordIds = () => {
     const [prodId, varValId, daId] = this.resolveRelatedRecordIds();
@@ -231,19 +235,19 @@ class HistoryBuilder {
       this.variantValueId = varValId;
     }
     return this;
-  }
+  };
 
   setChangedField = () => {
     const changedField = this.resolveChangedField();
     this.changedField = changedField;
     return this;
-  }
+  };
 
   setChangedFieldId = () => {
     const changedFieldId = this.resolveChangedFieldId();
     this.changedFieldId = changedFieldId;
     return this;
-  }
+  };
 
   setImportFileLink(importFileLink) {
     this.importFileLink = importFileLink;
@@ -252,10 +256,10 @@ class HistoryBuilder {
   }
 
   setNewValue = () => {
-    const newValue = this.resolveNewValue()
+    const newValue = this.resolveNewValue();
     this.newValue = newValue;
     return this;
-  }
+  };
 
   finalise = () => {
     this.entryKey = this.createdDateTime + this.userId;
@@ -276,7 +280,7 @@ class HistoryBuilder {
       changedField: this.changedField,
       action: this.action
     });
-  }
+  };
 }
 
 module.exports = HistoryService;
