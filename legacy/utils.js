@@ -481,7 +481,7 @@ async function callAsposeToExport({
     templateContentVersionId
   } = reqBody;
   const options = {
-    hostname: 'propel-document-java-staging.herokuapp.com',
+    hostname: 'propel-document-java-dev.herokuapp.com',
     path: '/v2/pimTemplateExport',
     method: 'POST',
     headers: {
