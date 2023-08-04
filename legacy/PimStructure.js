@@ -58,7 +58,7 @@ class PimStructure {
           const template = {
             daDownloadDetailsList: [],
             recordsAndCols: [[], []],
-            templateAdditionalHeaders: templateHeadersAndFields.templateHeaders
+            templateAdditionalHeaders: templateHeaders
           };
           return template;
         }
