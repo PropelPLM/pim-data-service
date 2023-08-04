@@ -1115,6 +1115,14 @@ class PimStructure {
       }
       templateHeadersAndFields.templateHeaders.push(row.split(','));
     }
+    if (templateHeadersAndFields.templateFields.length === 0) {
+      const template = {
+        daDownloadDetailsList: [],
+        recordsAndCols: [[], []],
+        templateAdditionalHeaders: templateHeadersAndFields.templateHeaders
+      };
+      return template;
+    }
     return templateHeadersAndFields;
   }
 }
