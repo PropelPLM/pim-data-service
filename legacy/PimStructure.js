@@ -54,7 +54,7 @@ class PimStructure {
         ({ templateFields, templateHeaders } = this.getTemplateHeadersAndFields(
           reqBody.templateVersionData
         ));
-        if (templateFields.length === 0) {
+        if (!templateFields.length) {
           const template = {
             daDownloadDetailsList: [],
             recordsAndCols: [[], []],
