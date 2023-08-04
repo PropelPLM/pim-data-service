@@ -54,6 +54,14 @@ class PimStructure {
         ({ templateFields, templateHeaders } = this.getTemplateHeadersAndFields(
           reqBody.templateVersionData
         ));
+        if (templateFields.length === 0) {
+          const template = {
+            daDownloadDetailsList: [],
+            recordsAndCols: [[], []],
+            templateAdditionalHeaders: templateHeadersAndFields.templateHeaders
+          };
+          return template;
+        }
       } else if (reqBody.templateContentVersionId) {
         useAspose = true;
       }
@@ -1114,14 +1122,6 @@ class PimStructure {
         break;
       }
       templateHeadersAndFields.templateHeaders.push(row.split(','));
-    }
-    if (templateHeadersAndFields.templateFields.length === 0) {
-      const template = {
-        daDownloadDetailsList: [],
-        recordsAndCols: [[], []],
-        templateAdditionalHeaders: templateHeadersAndFields.templateHeaders
-      };
-      return template;
     }
     return templateHeadersAndFields;
   }
