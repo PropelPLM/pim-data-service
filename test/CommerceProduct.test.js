@@ -7,14 +7,23 @@ describe('Commerce Cloud Product Tests', () => {
       {
         body: {
           data: '',
-          mappingId: 'test_id'
+          mapping: {
+            fieldMapping: {
+              name: 'SKU',
+              title: 'Product Name',
+              category: 'Category'
+            }
+          }
         }
       },
       {}
     );
 
     it('Constructor Test', () => {
-      assert.equal(importCom.mappingId, 'test_id', 'Mapping Id was not added to this.mappingId');
+      assert.notEqual(
+        importCom.fieldMapping,
+        undefined,
+        'Mapping Id was not added to this.mappingId');
     });
   });
 });
