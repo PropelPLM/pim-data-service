@@ -20,6 +20,7 @@ const ImportAttributeGroup = require('./lib/ImportAttributeGroup')
 const ImportAttributeLabel = require('./lib/ImportAttributeLabel')
 const ImportAttributeTab = require('./lib/ImportAttributeTab');
 const ImportCategory = require('./lib/ImportCategory');
+const ImportCommerceProduct = require('./lib/ImportCommerceProduct');
 const ImportProduct = require('./lib/ImportProduct');
 const ExportPim = require('./lib/ExportProduct');
 
@@ -33,6 +34,36 @@ const SUCCESS_OBJ = { message: 'Request received', success: true };
  */
 app.get('/', (req, res) => {
   res.status(200).send('Propel PIM data server is running.');
+});
+
+// Importing Routes
+
+/**
+ * route for importing commerce cloud data
+ */
+app.post('/import/commerce/product', (req, res) => {
+  try {
+    new ImportCommerceProduct(req, res);
+    res.status(200).send(SUCCESS_OBJ);
+  } catch(error) {
+    ERROR_OBJ.message = error;
+    res.status(400).send(ERROR_OBJ);
+    console.error(ERROR_OBJ)
+  }
+});
+
+/**
+ * route for importing pim Digital Asset Link to Product
+ */
+app.post('/import/pim/assetlink', (req, res) => {
+  try {
+    new ImportAssetLink(req, res);
+    res.status(200).send(SUCCESS_OBJ);
+  } catch (error) {
+    ERROR_OBJ.message = error;
+    res.status(400).send(ERROR_OBJ);
+    console.error(ERROR_OBJ)
+  }
 });
 
 /**
@@ -105,19 +136,7 @@ app.post('/import/pim/product', (req, res) => {
   }
 });
 
-/**
- * route for importing pim Digital Asset Link to Product
- */
-app.post('/import/pim/assetlink', (req, res) => {
-  try {
-    new ImportAssetLink(req, res);
-    res.status(200).send(SUCCESS_OBJ);
-  } catch (error) {
-    ERROR_OBJ.message = error;
-    res.status(400).send(ERROR_OBJ);
-    console.error(ERROR_OBJ)
-  }
-});
+// Export Routes
 
 /**
  * route for exporting pim products
