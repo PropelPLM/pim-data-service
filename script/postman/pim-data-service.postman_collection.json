@@ -1,10 +1,10 @@
 {
 	"info": {
-		"_postman_id": "1c7afb10-bbff-4038-b191-b16c7b2c934a",
+		"_postman_id": "164155e6-cd26-437b-b984-a66dc6eeb077",
 		"name": "pim-data-service",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "3344322",
-		"_collection_link": "https://red-astronaut-344609.postman.co/workspace/Team-Workspace~5aee9bab-bfa5-44d3-8e2d-4cedb371592c/collection/3344322-1c7afb10-bbff-4038-b191-b16c7b2c934a?action=share&creator=3344322&source=collection_link"
+		"_collection_link": "https://red-astronaut-344609.postman.co/workspace/Team-Workspace~5aee9bab-bfa5-44d3-8e2d-4cedb371592c/collection/3344322-164155e6-cd26-437b-b984-a66dc6eeb077?action=share&creator=3344322&source=collection_link"
 	},
 	"item": [
 		{
@@ -104,7 +104,7 @@
 					"raw": "{\n    \"batchsize\": 3,\n    \"data\": \"bmFtZSxjYXRlZ29yeV9pZCxwYXJlbnRfY2F0ZWdvcnkscGFyZW50X2NhdGVnb3J5X2lkXG5OZXcgQ2F0ZWdvcnkgSW1wb3J0IFRlc3QgLSBMZXZlbCAxLDQzOTg4LENyYXp5IENvb2wgQ2xvdGhlcyBhbmQgTW9yZSwxMDAwMFxuTmV3IENhdGVnb3J5IEltcG9ydCBUZXN0IC0gTGV2ZWwgMiw0Mzk4OSxOZXcgQ2F0ZWdvcnkgSW1wb3J0IFRlc3QgLSBMZXZlbCAxLDQzOTg4XG5OZXcgQ2F0ZWdvcnkgSW1wb3J0IFRlc3QgLSBMZXZlbCAzLDQzOTkwLE5ldyBDYXRlZ29yeSBJbXBvcnQgVGVzdCAtIExldmVsIDIsNDM5ODlcbk5ldyBDYXRlZ29yeSBJbXBvcnQgVGVzdCAtIExldmVsIDQsNDM5OTEsTmV3IENhdGVnb3J5IEltcG9ydCBUZXN0IC0gTGV2ZWwgMyw0Mzk5MA==\",\n    \"isTest\": true,\n    \"mapping\": {},\n    \"namespace\": \"\",\n    \"orgId\": \"00D7i000000UO0T\",\n    \"options\": {},\n    \"skipDB\": true,\n    \"user\": \"test-xqahb6uhwa70@example.com\"\n}",
 					"options": {
 						"raw": {
-							"language": "text"
+							"language": "json"
 						}
 					}
 				},
@@ -133,7 +133,7 @@
 					"raw": "{\n    \"batchsize\": 3,\n    \"data\": \"cHJvZHVjdF9pZCxwYXJlbnRfaWQsdl9sZXZlbCxtYW51ZmFjdHVyZXJfaWQsbGlmZWN5Y2xlX3N0YWdlLHJlbGVhc2Vfc3RhdHVzLGFjdGl2ZV9xdWFsaXR5X2lzc3VlcyxoaWdoZXN0X2xldmVsX3Byb2R1Y3RfaWQsY2F0ZWdvcnlfaWQsdmFyaWFudF8wLHZhcmlhbnRfMVxuVHJ5X3Rlc3QsLDAsTWFudWZhY3R1cmUtaWQgLVByaW50ZXIgUGFyZW50LTEsSW4gUHJvZ3Jlc3MsTm90IFJlbGVhc2VkLE5vbmUsLDExMDExLCxcblRyeV90ZXN0X2NoaWxkLFRyeV90ZXN0LDEsTWFudWZhY3R1cmUtaWQgLURSLVByaW50ZXIgY2hpbGQtMS0xLCwsLFRyeV90ZXN0LDExMDExLGJsYWNrLFxuVHJ5X3Rlc3RfZ3JhbmRjaGlsZCxUcnlfdGVzdF9jaGlsZCwyLE1hbnVmYWN0dXJlLWlkIC1EUi1QcmludGVyIGdyYW5kY2hpbGQtMS0xMS02LENvbXBsZXRlLEluIFJldmlldywsVHJ5X3Rlc3QsMTEwMTEsLHNtYWxsXG4=\",\n    \"isTest\": true,\n    \"mapping\": {},\n    \"namespace\": \"\",\n    \"orgId\": \"00D7i000000UO0T\",\n    \"options\": {},\n    \"skipDB\": true,\n    \"user\": \"test-lwa0dgwoissf@example.com\"\n}",
 					"options": {
 						"raw": {
-							"language": "text"
+							"language": "json"
 						}
 					}
 				},
@@ -146,6 +146,35 @@
 					"path": [
 						"import",
 						"pim",
+						"product"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Commerce Product Import",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"batchsize\": 3,\n    \"data\": \"bmFtZSx0aXRsZSxjYXRlZ29yeQpzdXAtZm9hbS1nZWwsU3VwZXIgRm9hbXkgR2VsLE5VTEwKbXktdGVzdC1wcm9kdWN0LE15IFRlc3QgSW5zZXJ0LFNoYXZlIEdlbA==\",\n    \"dataType\": \"csv\",\n    \"isTest\": true,\n    \"mapping\": {\n        \"fieldMapping\": {\n            \"name\": \"SKU\",\n            \"title\": \"Product Name\",\n            \"category\": \"Category\"\n        }\n    },\n    \"namespace\": \"\",\n    \"orgId\": \"00DDS000001IFBY\",\n    \"options\": {},\n    \"skipDB\": true,\n    \"user\": \"test-oqspeh1vnaph@example.com\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:7001/import/commerce/product",
+					"host": [
+						"localhost"
+					],
+					"port": "7001",
+					"path": [
+						"import",
+						"commerce",
 						"product"
 					]
 				}
