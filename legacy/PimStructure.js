@@ -54,6 +54,13 @@ class PimStructure {
         ({ templateFields, templateHeaders } = this.getTemplateHeadersAndFields(
           reqBody.templateVersionData
         ));
+        if (!templateFields.length) {
+          return {
+            daDownloadDetailsList: [],
+            recordsAndCols: [[], []],
+            templateAdditionalHeaders: templateHeaders
+          };
+        }
       } else if (reqBody.templateContentVersionId) {
         useAspose = true;
       }

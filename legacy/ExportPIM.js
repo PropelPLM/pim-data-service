@@ -105,7 +105,10 @@ function convertArrayOfObjectsToCSV(
     lineDivider,
     recordAttributes;
   // check if "objectRecords" parameter is null, then return from function
-  if (records == null || !records.length) {
+  if (
+    (records == null || !records.length) &&
+    (templateAdditionalHeaders == null || !templateAdditionalHeaders.length)
+  ) {
     return null;
   }
   // store ,[comma] in columnDivider variable for separate CSV values and
