@@ -997,6 +997,7 @@ class PimStructure {
       let field;
       // clean up data for easier parsing
       const supportedAttributes = productVariantValueMapList[0];
+      console.log('supportedAttr: ', supportedAttributes);
       supportedAttributes.delete(ID_FIELD);
 
       for (let i = 0; i < templateFields.length; i++) {
