@@ -8,7 +8,7 @@ describe('Commerce Cloud Product Tests', () => {
         body: {
           data: '',
           mapping: {
-            fieldMapping: {
+            mapping: {
               name: 'SKU',
               title: 'Product Name',
               category: 'Category'
@@ -21,7 +21,7 @@ describe('Commerce Cloud Product Tests', () => {
 
     it('Constructor Test', () => {
       assert.notEqual(
-        importCom.fieldMapping,
+        importCom.mapping,
         undefined,
         'Mapping Id was not added to this.mappingId');
     });
