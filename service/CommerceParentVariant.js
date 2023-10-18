@@ -100,6 +100,8 @@ class CommerceParentVariant {
     // first we build the first data row, the parent
 
     // items to set that are static in the file
+    tmpObj[`Product ${this.helper.namespace('Product__c')}`] = this.pimProducts[0].Id
+    tmpObj[`Product ${this.helper.namespace('SKU_Variant__c')}`] = ''
     tmpObj['Category 1'] = this.categoryName
     tmpObj['ProductCode'] = this.pimProducts[0].Name
     tmpObj['Product isActive'] = true
@@ -114,11 +116,6 @@ class CommerceParentVariant {
     tmpObj['Variation Attribute Value 2'] = ''
 
     this.attributes.forEach((attribute) => {
-      
-      // special case just to get the title
-      if (attribute['Attribute_Label__r.Label__c'] === 'Title') {
-        tmpObj['Product Name'] = attribute['Value__c']
-      }
 
       if (
         this.mapping[attribute['Attribute_Label__r.Primary_Key__c']] &&
@@ -145,6 +142,8 @@ class CommerceParentVariant {
       const tmpObj = {}
 
       // items to set that are static in the file
+      tmpObj[`Product ${this.helper.namespace('Product__c')}`] = this.pimProducts[0].Id
+      tmpObj[`Product ${this.helper.namespace('SKU_Variant__c')}`] = variantValue.Id
       tmpObj['Category 1'] = this.categoryName
       tmpObj['ProductCode'] = variantValue.Name
       tmpObj['Product isActive'] = true
@@ -164,11 +163,6 @@ class CommerceParentVariant {
 
       // blasting through the first time
       this.attributes.forEach((attribute) => {
-      
-        // special case just to get the title
-        if (attribute['Attribute_Label__r.Label__c'] === 'Title') {
-          tmpObj['Product Name'] = attribute['Value__c']
-        }
   
         if (
           this.mapping[attribute['Attribute_Label__r.Primary_Key__c']] &&
