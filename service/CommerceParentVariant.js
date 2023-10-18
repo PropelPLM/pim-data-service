@@ -100,6 +100,8 @@ class CommerceParentVariant {
     // first we build the first data row, the parent
 
     // items to set that are static in the file
+    tmpObj[`Product ${this.helper.namespace('Product__c')}`] = this.pimProducts[0].Id
+    tmpObj[`Product ${this.helper.namespace('SKU_Variant__c')}`] = ''
     tmpObj['Category 1'] = this.categoryName
     tmpObj['ProductCode'] = this.pimProducts[0].Name
     tmpObj['Product isActive'] = true
@@ -140,6 +142,8 @@ class CommerceParentVariant {
       const tmpObj = {}
 
       // items to set that are static in the file
+      tmpObj[`Product ${this.helper.namespace('Product__c')}`] = this.pimProducts[0].Id
+      tmpObj[`Product ${this.helper.namespace('SKU_Variant__c')}`] = variantValue.Id
       tmpObj['Category 1'] = this.categoryName
       tmpObj['ProductCode'] = variantValue.Name
       tmpObj['Product isActive'] = true
