@@ -114,11 +114,6 @@ class CommerceParentVariant {
     tmpObj['Variation Attribute Value 2'] = ''
 
     this.attributes.forEach((attribute) => {
-      
-      // special case just to get the title
-      if (attribute['Attribute_Label__r.Label__c'] === 'Title') {
-        tmpObj['Product Name'] = attribute['Value__c']
-      }
 
       if (
         this.mapping[attribute['Attribute_Label__r.Primary_Key__c']] &&
@@ -164,11 +159,6 @@ class CommerceParentVariant {
 
       // blasting through the first time
       this.attributes.forEach((attribute) => {
-      
-        // special case just to get the title
-        if (attribute['Attribute_Label__r.Label__c'] === 'Title') {
-          tmpObj['Product Name'] = attribute['Value__c']
-        }
   
         if (
           this.mapping[attribute['Attribute_Label__r.Primary_Key__c']] &&
