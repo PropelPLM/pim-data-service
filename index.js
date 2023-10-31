@@ -15,6 +15,7 @@ module.exports = app.listen(process.env.PORT || 5001);
 /**
  * objects used in routes
  */
+const ImportAssetMetadata = require('./lib/ImportAssetMetadata');
 const ImportAssetLink = require('./lib/ImportAssetLink')
 const ImportAttributeGroup = require('./lib/ImportAttributeGroup')
 const ImportAttributeLabel = require('./lib/ImportAttributeLabel')
