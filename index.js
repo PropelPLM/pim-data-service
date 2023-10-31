@@ -53,6 +53,20 @@ app.post('/import/commerce/product', (req, res) => {
 });
 
 /**
+ * route for importing pim digital assets
+ */
+app.post('/import/pim/asset', (req, res) => {
+  try {
+    new ImportAsset(req, res);
+    res.status(200).send(SUCCESS_OBJ);
+  } catch (error) {
+    ERROR_OBJ.message = error;
+    res.status(400).send(ERROR_OBJ);
+    console.error(ERROR_OBJ)
+  }
+});
+
+/**
  * route for importing pim Digital Asset Link to Product
  */
 app.post('/import/pim/assetlink', (req, res) => {
