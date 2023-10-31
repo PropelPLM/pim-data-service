@@ -55,9 +55,9 @@ app.post('/import/commerce/product', (req, res) => {
 /**
  * route for importing pim digital assets
  */
-app.post('/import/pim/asset', (req, res) => {
+app.post('/import/pim/assetmetadata', (req, res) => {
   try {
-    new ImportAsset(req, res);
+    new ImportAssetMetadata(req, res);
     res.status(200).send(SUCCESS_OBJ);
   } catch (error) {
     ERROR_OBJ.message = error;
