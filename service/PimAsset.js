@@ -14,6 +14,8 @@ class PimAsset {
 
   async populate() {
     try {
+      console.log('this.assetNames: ', this.assetNames)
+      console.log('this.helper.connection.QUERY_LIST: ', this.helper.connection.QUERY_LIST)
       this.assets = await this.helper.connection.queryExtend(this.helper.namespaceQuery(
         `select Id, Name from Digital_Asset__c where Name in (${this.helper.connection.QUERY_LIST})`
       ), this.assetNames)
