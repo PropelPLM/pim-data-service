@@ -77,25 +77,22 @@ class PimAttributeValue {
     }
   }
 
-  /** stores an Attribute Value as a { Id: Attribute_Value__c.Id, Value: Attribute_Value__c.Value__c } object
-   * in a Map<Digital_Asset__c.Id, Map<Attribute_Label__r.Name, attribute value>>
+  /** stores Attribute Values in a Map<Digital_Asset__c.Id, Map<Attribute_Label__r.Name, Attribute_Value__c.Id>>
    */
   sortAccordingToDigitalAssetAndLabel() {
     let assetLabelValueMap = new Map();
     let attrValueObject = new Object();
 
     this.attributes.records.forEach((attribute) => {
-      attrValueObject['Id'] = attribute.Id;
-      attrValueObject['Value'] = attribute.Value__c;
       console.log('attr: ', attrValueObject)
       if (assetLabelValueMap.has(attribute.Digital_Asset__c)) {
         assetLabelValueMap
           .get(attribute.Digital_Asset__c)
-          .set(attribute.Attribute_Label__r.Name, attrValueObject);
+          .set(attribute.Attribute_Label__r.Name, attribute.Id);
       } else {
         assetLabelValueMap.set(
           attribute.Digital_Asset__c, 
-          new Map([[attribute.Attribute_Label__r.Name, attrValueObject]]));
+          new Map([[attribute.Attribute_Label__r.Name, attribute.Id]]));
       }
     })
 
