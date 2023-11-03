@@ -87,14 +87,15 @@ class PimAttributeValue {
     this.attributes.records.forEach((attribute) => {
       attrValueObject['Id'] = attribute.Id;
       attrValueObject['Value'] = attribute.Value__c;
+      console.log('attr: ', attrValueObject)
       if (assetLabelValueMap.has(attribute.Digital_Asset__c)) {
         assetLabelValueMap
           .get(attribute.Digital_Asset__c)
-          .set(attribute.Attribute_Label__r.Name, attribute.Value__c);
+          .set(attribute.Attribute_Label__r.Name, attrValueObject);
       } else {
         assetLabelValueMap.set(
           attribute.Digital_Asset__c, 
-          new Map([[attribute.Attribute_Label__r.Name, attribute.Value__c]]));
+          new Map([[attribute.Attribute_Label__r.Name, attrValueObject]]));
       }
     })
 
