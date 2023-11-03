@@ -11,27 +11,11 @@ class PimAttributeLabel {
     this.log = log
   }
 
-  async populate() {
+  async populate(comparisonField) {
     try {
       let basedQueryStr = `select Id, Name, Primary_Key__c from Attribute_Label__c`
       if (this.attributeLabelNames?.length) {
-        basedQueryStr += ` where Primary_Key__c in (${this.attributeLabelNames.join(',')})`
-      }
-      this.attributeLabels = await this.helper.connection.queryLimit(this.helper.namespaceQuery(
-        basedQueryStr
-      ))
-    } catch(error) {
-      this.log.addToLogs([{errors: [error] }], this.helper.namespace('Attribute_Label__c'))
-
-      console.log(error)
-    }
-  }
-
-  async populateWithLabel() {
-    try {
-      let basedQueryStr = `select Id, Name, Primary_Key__c from Attribute_Label__c`
-      if (this.attributeLabelNames?.length) {
-        basedQueryStr += ` where Label__c in (${this.attributeLabelNames.join(',')})`
+        basedQueryStr += ` where ${comparisonField} in (${this.attributeLabelNames.join(',')})`
       }
       this.attributeLabels = await this.helper.connection.queryLimit(this.helper.namespaceQuery(
         basedQueryStr
