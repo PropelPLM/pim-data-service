@@ -63,6 +63,7 @@ class PimAttributeValue {
       this.attributes = await this.helper.connection.simpleQuery(this.helper.namespaceQuery(
         `select 
             Id,
+            Attribute_Label__c,
             Attribute_Label__r.Name,
             Digital_Asset__c,
             Value__c 
@@ -81,16 +82,19 @@ class PimAttributeValue {
    */
   sortAccordingToDigitalAssetAndLabel() {
     let assetLabelValueMap = new Map();
+    let attrValueObj = new Object();
 
     this.attributes.records.forEach((attribute) => {
+      attrValueObj['Id'] = attribute.Id;
+      attrValueObj['LabelId'] = attribute.Attribute_Label__c;
       if (assetLabelValueMap.has(attribute.Digital_Asset__c)) {
         assetLabelValueMap
           .get(attribute.Digital_Asset__c)
-          .set(attribute.Attribute_Label__r.Name, attribute.Id);
+          .set(attribute.Attribute_Label__r.Name, attrValueObj);
       } else {
         assetLabelValueMap.set(
           attribute.Digital_Asset__c, 
-          new Map([[attribute.Attribute_Label__r.Name, attribute.Id]]));
+          new Map([[attribute.Attribute_Label__r.Name, attrValueObj]]));
       }
     })
 
