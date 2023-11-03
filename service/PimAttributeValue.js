@@ -81,10 +81,8 @@ class PimAttributeValue {
    */
   sortAccordingToDigitalAssetAndLabel() {
     let assetLabelValueMap = new Map();
-    let attrValueObject = new Object();
 
     this.attributes.records.forEach((attribute) => {
-      console.log('attr: ', attrValueObject)
       if (assetLabelValueMap.has(attribute.Digital_Asset__c)) {
         assetLabelValueMap
           .get(attribute.Digital_Asset__c)
