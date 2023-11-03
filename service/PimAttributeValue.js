@@ -57,6 +57,30 @@ class PimAttributeValue {
     })
     return returnMap
   }
+
+  async populateWithDigitalAssetValues(digitalAssetIds, attributeLabelNames) {
+    try {
+      this.attributes = await this.helper.connection.simpleQuery(this.helper.namespaceQuery(
+        `select 
+            Id,
+            Attribute_Label__r.Primary_Key__c,
+            Overwritten_Variant_Value__r.Name,
+            Product__r.Name,
+            Value__c 
+        from Attribute_Value__c 
+        where Attribute_Label__r.Name in (${attributeLabelNames}) and
+        Digital_Asset__c in (${digitalAssetIds})`
+      ));
+    } catch(error) {
+      this.log.addToLogs([{errors: [error] }], this.helper.namespace('Attribute_Value__c'))
+
+      console.log(error)
+    }
+  }
+
+  getAttributes() {
+    return this.attributes;
+  }
 }
 
 module.exports = PimAttributeValue
