@@ -63,9 +63,8 @@ class PimAttributeValue {
       this.attributes = await this.helper.connection.simpleQuery(this.helper.namespaceQuery(
         `select 
             Id,
-            Attribute_Label__r.Primary_Key__c,
-            Overwritten_Variant_Value__r.Name,
-            Product__r.Name,
+            Attribute_Label__r.Name,
+            Digital_Asset__c,
             Value__c 
         from Attribute_Value__c 
         where Attribute_Label__r.Name in (${attributeLabelNames}) and
@@ -78,8 +77,28 @@ class PimAttributeValue {
     }
   }
 
-  getAttributes() {
-    return this.attributes;
+  /** stores an Attribute Value as a { Id: Attribute_Value__c.Id, Value: Attribute_Value__c.Value__c } object
+   * in a Map<Digital_Asset__c.Id, Map<Attribute_Label__r.Name, attribute value>>
+   */
+  sortAccordingToDigitalAssetAndLabel() {
+    let assetLabelValueMap = new Map();
+    let attrValueObject = new Object();
+
+    this.attributes.records.forEach((attribute) => {
+      attrValueObject['Id'] = attribute.Id;
+      attrValueObject['Value'] = attribute.Value__c;
+      if (assetLabelValueMap.has(attribute.Digital_Asset__c)) {
+        assetLabelValueMap
+          .get(attribute.Digital_Asset__c)
+          .set(attribute.Attribute_Label__r.Name, attribute.Value__c);
+      } else {
+        assetLabelValueMap.set(
+          attribute.Digital_Asset__c, 
+          new Map([[attribute.Attribute_Label__r.Name, attribute.Value__c]]));
+      }
+    })
+
+    return assetLabelValueMap;
   }
 }
 
