@@ -57,6 +57,45 @@ class PimAttributeValue {
     })
     return returnMap
   }
+
+  async populateWithDigitalAssetValues(digitalAssetIds, attributeLabelNames) {
+    try {
+      this.attributes = await this.helper.connection.simpleQuery(this.helper.namespaceQuery(
+        `select 
+            Id,
+            Attribute_Label__r.Name,
+            Digital_Asset__c,
+            Value__c 
+        from Attribute_Value__c 
+        where Attribute_Label__r.Name in (${attributeLabelNames}) and
+        Digital_Asset__c in (${digitalAssetIds})`
+      ));
+    } catch(error) {
+      this.log.addToLogs([{errors: [error] }], this.helper.namespace('Attribute_Value__c'))
+
+      console.log(error)
+    }
+  }
+
+  /** stores Attribute Values in a Map<Digital_Asset__c.Id, Map<Attribute_Label__r.Name, Attribute_Value__c.Id>>
+   */
+  sortAccordingToDigitalAssetAndLabel() {
+    let assetLabelValueMap = new Map();
+
+    this.attributes.records.forEach((attribute) => {
+      if (assetLabelValueMap.has(attribute.Digital_Asset__c)) {
+        assetLabelValueMap
+          .get(attribute.Digital_Asset__c)
+          .set(attribute.Attribute_Label__r.Name, attribute.Id);
+      } else {
+        assetLabelValueMap.set(
+          attribute.Digital_Asset__c, 
+          new Map([[attribute.Attribute_Label__r.Name, attribute.Id]]));
+      }
+    })
+
+    return assetLabelValueMap;
+  }
 }
 
 module.exports = PimAttributeValue

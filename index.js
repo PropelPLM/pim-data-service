@@ -15,6 +15,7 @@ module.exports = app.listen(process.env.PORT || 5001);
 /**
  * objects used in routes
  */
+const ImportAssetMetadata = require('./lib/ImportAssetMetadata');
 const ImportAssetLink = require('./lib/ImportAssetLink')
 const ImportAttributeGroup = require('./lib/ImportAttributeGroup')
 const ImportAttributeLabel = require('./lib/ImportAttributeLabel')
@@ -46,6 +47,20 @@ app.post('/import/commerce/product', (req, res) => {
     new ImportCommerceProduct(req, res);
     res.status(200).send(SUCCESS_OBJ);
   } catch(error) {
+    ERROR_OBJ.message = error;
+    res.status(400).send(ERROR_OBJ);
+    console.error(ERROR_OBJ)
+  }
+});
+
+/**
+ * route for importing pim digital assets
+ */
+app.post('/import/pim/assetmetadata', (req, res) => {
+  try {
+    new ImportAssetMetadata(req, res);
+    res.status(200).send(SUCCESS_OBJ);
+  } catch (error) {
     ERROR_OBJ.message = error;
     res.status(400).send(ERROR_OBJ);
     console.error(ERROR_OBJ)
