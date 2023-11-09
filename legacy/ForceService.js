@@ -440,7 +440,7 @@ ${JSON.stringify(data)}
       
 
     const options = {
-      hostname: this.serverUrl,
+      hostname: this.serverUrl.replace('https://', ''),
       path: '/services/apexrest/pim/product/?id=a0GHu000012ePdoMAE',
       method: 'GET',
       headers: {
@@ -448,7 +448,7 @@ ${JSON.stringify(data)}
         'Authorization': 'OAuth ' + this.sessionId
       }
     }
-    console.log('this.serverUrl: ', this.serverUrl)
+    console.log('this.serverUrl: ', this.serverUrl.replace('https://', ''))
     // var base64data = new Buffer(filedata).toString('base64');
     let req = new https.request(options, (res) => {
       console.log('res status: ', res.statusCode)
