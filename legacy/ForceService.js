@@ -448,6 +448,7 @@ ${JSON.stringify(data)}
         'Authorization': 'OAuth ' + this.sessionId
       }
     }
+    console.log('this.serverUrl: ', this.serverUrl)
     // var base64data = new Buffer(filedata).toString('base64');
     let req = new https.request(options, (res) => {
       console.log('res status: ', res.statusCode)
