@@ -424,18 +424,47 @@ ${JSON.stringify(data)}
   }
 
   callApexRest() {
-    const req = {
-       url: '/services/apexrest/pim/product/?id=a0G8Y00001Zj8TGUAZ',
-       method: 'get',
-       body: '',
-       headers : {
-               "Content-Type" : "application/json"
-           }
-     };
-     this.conn.request(req, function(err, resp) {
-      console.log('res: ', resp);
-      console.log('err: ', err);
-    });
+    // const req = {
+    //    url: '/services/apexrest/pim/product/?id=a0G8Y00001Zj8TGUAZ',
+    //    method: 'get',
+    //    body: '',
+    //    headers : {
+    //            "Content-Type" : "application/json"
+    //        }
+    //  };
+    //  this.conn.request(req, function(err, resp) {
+    //   console.log('res: ', resp);
+    //   console.log('err: ', err);
+    // });
+
+    return new Promise((resolve, reject) => {
+      
+
+      const options = {
+        hostname: this.serverUrl,
+        path: '/services/apexrest/pim/product/?id=a0G8Y00001Zj8TGUAZ',
+        method: 'GET',
+        headers: {
+          'Content-Type': `multipart/form-data; boundary="a7V4kRcFA8E79pivMuV2tukQ85cmNKeoEgJgq"`,
+          'Authorization': 'OAuth ' + this.sessionId
+        }
+      }
+      // var base64data = new Buffer(filedata).toString('base64');
+      const req = new https.request(options, (res) => {
+        let data = ''
+        res.on('data', (d) => {
+          data += d
+        })
+        console.log('data: ', data)
+        res.on('end', () => {
+          resolve(data)
+        })
+      })
+      req.on('error', (e) => {
+        reject(e.message);
+      })
+      req.end()
+    })
   }
 }
 
