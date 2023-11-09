@@ -432,7 +432,7 @@ ${JSON.stringify(data)}
                "Content-Type" : "application/json"
            }
      };
-    this.connection.request(req, function(err, resp) {
+     this.conn.request(req, function(err, resp) {
       console.log('res: ', resp);
       console.log('err: ', err);
     });
