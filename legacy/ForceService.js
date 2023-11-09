@@ -424,18 +424,18 @@ ${JSON.stringify(data)}
   }
 
   callApexRest() {
-    // const req = {
-    //    url: '/services/apexrest/pim/product/?id=a0G8Y00001Zj8TGUAZ',
-    //    method: 'get',
-    //    body: '',
-    //    headers : {
-    //            "Content-Type" : "application/json"
-    //        }
-    //  };
-    //  this.conn.request(req, function(err, resp) {
-    //   console.log('res: ', resp);
-    //   console.log('err: ', err);
-    // });
+    const req = {
+       url: '/services/apexrest/pim/product/?id=a0GHu000012ePdoMAE',
+       method: 'get',
+       body: '',
+       headers : {
+               "Content-Type" : "application/json"
+           }
+     };
+     this.conn.request(req, function(err, resp) {
+      console.log('res: ', resp);
+      console.log('err: ', err);
+    });
 
     
     // const options = {
@@ -462,11 +462,11 @@ ${JSON.stringify(data)}
     //   console.log('problem with request: ' + e.message);
     // });
 
-    this.conn.apex.get(this.serverUrl.replace('https://', '') + '/services/apexrest/pim/product/?id=a0GHu000012ePdoMAE/', function(err, res) {
-      if (err) { return console.error(err); }
-      console.log("response: ", res);
-      // the response object structure depends on the definition of apex class
-    });
+    // this.conn.apex.get('/services/apexrest/pim/product/?id=a0GHu000012ePdoMAE', function(err, res) {
+    //   if (err) { return console.error(err); }
+    //   console.log("response: ", res);
+    //   // the response object structure depends on the definition of apex class
+    // });
   }
 }
 
