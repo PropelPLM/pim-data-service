@@ -462,7 +462,7 @@ ${JSON.stringify(data)}
     //   console.log('problem with request: ' + e.message);
     // });
 
-    this.conn.apex.get("/services/apexrest/pim/product/?id=a0G8Y00001Zj8TGUAZ/", function(err, res) {
+    this.conn.apex.get("https://pim-kim-2-dev-ed.develop.my.salesforce.com/services/apexrest/pim/product/?id=a0G8Y00001Zj8TGUAZ/", function(err, res) {
       if (err) { return console.error(err); }
       console.log("response: ", res);
       // the response object structure depends on the definition of apex class
