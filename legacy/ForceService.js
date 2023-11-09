@@ -451,11 +451,11 @@ ${JSON.stringify(data)}
     // var base64data = new Buffer(filedata).toString('base64');
     let req = new https.request(options, (res) => {
       console.log('res status: ', res.statusCode)
-    });
-    console.log('HEADERS: ' + JSON.stringify(res.headers));
-    res.setEncoding('utf8');
-    res.on('data', function (chunk) {
-      console.log('BODY: ' + chunk);
+      console.log('HEADERS: ' + JSON.stringify(res.headers));
+      res.setEncoding('utf8');
+      res.on('data', function (chunk) {
+        console.log('BODY: ' + chunk);
+      });
     });
 
     req.on('error', function(e) {
