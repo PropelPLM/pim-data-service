@@ -422,21 +422,6 @@ ${JSON.stringify(data)}
     }
     return flatResults
   }
-
-  getCDNLabelMap() {
-    const req = {
-      url: '/services/apexrest/pim/product/?id=a0G8Y00001Zj8TGUAZ',
-      method: 'get',
-      body: '',
-      headers : {
-              "Content-Type" : "application/json"
-          }
-    };
-    this.conn.request(req, function(err, resp) {
-      console.log('res: ', resp);
-      console.log('err: ', err);
-  });
-  }
 }
 
 
