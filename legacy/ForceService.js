@@ -441,7 +441,7 @@ ${JSON.stringify(data)}
 
     const options = {
       hostname: this.serverUrl,
-      path: '/services/apexrest/pim/product/?id=a0G8Y00001Zj8TGUAZ',
+      path: '/services/apexrest/pim/product/?id=a0GHu000012ePdoMAE',
       method: 'GET',
       headers: {
         'Content-Type': `multipart/form-data; boundary="a7V4kRcFA8E79pivMuV2tukQ85cmNKeoEgJgq"`,
