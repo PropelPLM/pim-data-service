@@ -423,7 +423,7 @@ ${JSON.stringify(data)}
     return flatResults
   }
 
-  callApexRest() {
+  getCDNBaseUrlLabelMap() {
     const req = {
        url: '/services/apexrest/pim/product/?id=a0GHu000012ePdoMAE',
        method: 'get',
