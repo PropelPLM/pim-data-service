@@ -326,10 +326,7 @@ async function prependCDNToViewLink(viewLink, contentLocation, reqBody) {
   const service = new ForceService(reqBody.hostUrl, reqBody.sessionId);
 
   let prefix = '';
-  console.log('viewLink: ', viewLink)
-  console.log('contentLocation: ', contentLocation)
   if (viewLink && contentLocation) {
-    console.log('reached if')
     const stringifiedLabelCDNBaseUrlMap = await service.getLabelCDNBaseUrlMap();
     const cdnBaseUrlLabelMap = new Map(Object.entries(JSON.parse(stringifiedLabelCDNBaseUrlMap)));
     prefix = cdnBaseUrlLabelMap.get(contentLocation);

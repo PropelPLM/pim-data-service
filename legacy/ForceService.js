@@ -425,14 +425,15 @@ ${JSON.stringify(data)}
 
   /** calls APEX REST API to get a Map of supported <CDN Base Url, Label> */
   async getCDNBaseUrlLabelMap() {
-    return await this.getPimConstantsApiData('cdnLabelMap');
+    return await this.getPimConstantsCDNData('cdnLabelMap');
   }
 
+  /** calls APEX REST API to get a Map of supported <Label, CDN Base Url> */
   async getLabelCDNBaseUrlMap() {
-    return await this.getPimConstantsApiData('labelCDNMap');
+    return await this.getPimConstantsCDNData('labelCDNMap');
   }
 
-  getPimConstantsApiData(type) {
+  getPimConstantsCDNData(type) {
     const accessToken = this.sessionId;
     return new Promise(function (resolve, reject) {
       let request = require("request");
