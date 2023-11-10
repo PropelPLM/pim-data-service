@@ -57,7 +57,7 @@ describe('Utils tests', () => {
           reqBody
         );
         sinon.assert.calledOnce(stub);
-        sinon.assert.calledWith(stub, dummy_link, dummyLocation, reqBody);
+        sinon.assert.calledWith(stub, dummy_link, dummy_contentLocation, reqBody);
         assert.equal(daDownloadDetailsList.length, 1);
         assert.equal(parsed, dummy_link);
       });
