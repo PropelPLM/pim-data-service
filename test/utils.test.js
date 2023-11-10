@@ -5,6 +5,7 @@ const sinon = require('sinon');
 describe('Utils tests', () => {
   describe('parseDigitalAssetAttrVal', () => {
     let stub;
+    const dummy_contentLocation = 'dummyLocation';
     const dummy_link = 'dummy_link';
     const attrValValue = 'dummy_attr_val';
     const invalidAttrValValue = 'invalid_dummy_attr_val';
@@ -56,7 +57,7 @@ describe('Utils tests', () => {
           reqBody
         );
         sinon.assert.calledOnce(stub);
-        sinon.assert.calledWith(stub, dummy_link, reqBody);
+        sinon.assert.calledWith(stub, dummy_link, dummyLocation, reqBody);
         assert.equal(daDownloadDetailsList.length, 1);
         assert.equal(parsed, dummy_link);
       });
