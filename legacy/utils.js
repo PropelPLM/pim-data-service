@@ -47,7 +47,7 @@ logErrorResponse = (err, functionName) => {
 getDigitalAssetMap = async (service, helper) => {
   const digitalAssetList = await service.simpleQuery(
     helper.namespaceQuery(
-      `select Id, Name, External_File_Id__c, View_Link__c, Mime_Type__c
+      `select Id, Name, External_File_Id__c, View_Link__c, Mime_Type__c, Content_Location__c
       from Digital_Asset__c`
     )
   );
