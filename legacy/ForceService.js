@@ -424,6 +424,7 @@ ${JSON.stringify(data)}
   }
 
   getCDNBaseUrlLabelMap() {
+    console.log('this.serverUrl: ', this.serverUrl)
     const req = {
        url: '/services/apexrest/pim/product/?id=a0GHu000012ePdoMAE',
        method: 'get',
