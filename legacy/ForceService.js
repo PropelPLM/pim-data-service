@@ -423,54 +423,9 @@ ${JSON.stringify(data)}
     return flatResults
   }
 
+  /** calls APEX REST API to get a Map of supported <CDN Base Url, Label> */
   getCDNBaseUrlLabelMap() {
-    // const req = {
-    //    url: '/services/apexrest/pim/product/?id=a0GHu000012ePdoMAE',
-    //    method: 'get',
-    //    body: '',
-    //    headers : {
-    //            "Content-Type" : "application/json"
-    //        }
-    //  };
-    //  this.conn.request(req, function(err, resp) {
-    //   console.log('res: ', resp);
-    //   console.log('err: ', err);
-    // });
-
-    
-    // const options = {
-    //   hostname: this.serverUrl.replace('https://', ''),
-    //   path: '/services/apexrest/pim/product/?id=a0GHu000012ePdoMAE',
-    //   method: 'GET',
-    //   headers: {
-    //     'Content-Type': `multipart/form-data; boundary="a7V4kRcFA8E79pivMuV2tukQ85cmNKeoEgJgq"`,
-    //     'Authorization': 'OAuth ' + this.sessionId
-    //   }
-    // }
-    // console.log('this.serverUrl: ', this.serverUrl.replace('https://', ''))
-    // // var base64data = new Buffer(filedata).toString('base64');
-    // let req = https.request(options, (res) => {
-    //   console.log('res status: ', res.statusCode)
-    //   console.log('HEADERS: ' + JSON.stringify(res.headers));
-    //   res.setEncoding('utf8');
-    //   res.on('data', function (chunk) {
-    //     console.log('BODY: ' + chunk);
-    //   });
-    // });
-
-    // req.on('error', function(e) {
-    //   console.log('problem with request: ' + e.message);
-    // });
-
-
-    // this.conn.apex.get('/services/apexrest/pim/product/?id=a0GHu000012ePdoMAE', function(err, res) {
-    //   if (err) { return console.error(err); }
-    //   console.log("response: ", res);
-    //   // the response object structure depends on the definition of apex class
-    // });
-
     const accessToken = this.sessionId;
-    console.log('accessToken: ', accessToken)
     return new Promise(function (resolve, reject) {
       let request = require("request");
       request({
