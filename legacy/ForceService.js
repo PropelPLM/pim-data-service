@@ -462,12 +462,15 @@ ${JSON.stringify(data)}
     //   console.log('problem with request: ' + e.message);
     // });
 
+
     // this.conn.apex.get('/services/apexrest/pim/product/?id=a0GHu000012ePdoMAE', function(err, res) {
     //   if (err) { return console.error(err); }
     //   console.log("response: ", res);
     //   // the response object structure depends on the definition of apex class
     // });
 
+    const sessId = this.sessionId;
+    console.log('sessId: ', sessId)
     return new Promise(function (resolve, reject) {
       let request = require("request");
       request({
@@ -475,7 +478,7 @@ ${JSON.stringify(data)}
           method: "GET",
           headers: {
             'Content-Type': 'text/plain',
-            'Authorization': 'OAuth ' + this.sessionId
+            'Authorization': 'OAuth ' + sessId
           }
       }, function(err, response, body) {
           console.log('err: ', err)
