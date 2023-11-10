@@ -481,8 +481,6 @@ ${JSON.stringify(data)}
             'Authorization': 'OAuth ' + accessToken
           }
       }, function(err, response, body) {
-          console.log('err: ', err)
-          console.log('body: ', body)
           if (response.statusCode == 200) {
             resolve(body);
           } else {
