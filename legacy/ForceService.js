@@ -424,19 +424,18 @@ ${JSON.stringify(data)}
   }
 
   getCDNBaseUrlLabelMap() {
-    console.log('this.serverUrl: ', this.serverUrl)
-    const req = {
-       url: '/services/apexrest/pim/product/?id=a0GHu000012ePdoMAE',
-       method: 'get',
-       body: '',
-       headers : {
-               "Content-Type" : "application/json"
-           }
-     };
-     this.conn.request(req, function(err, resp) {
-      console.log('res: ', resp);
-      console.log('err: ', err);
-    });
+    // const req = {
+    //    url: '/services/apexrest/pim/product/?id=a0GHu000012ePdoMAE',
+    //    method: 'get',
+    //    body: '',
+    //    headers : {
+    //            "Content-Type" : "application/json"
+    //        }
+    //  };
+    //  this.conn.request(req, function(err, resp) {
+    //   console.log('res: ', resp);
+    //   console.log('err: ', err);
+    // });
 
     
     // const options = {
@@ -468,6 +467,23 @@ ${JSON.stringify(data)}
     //   console.log("response: ", res);
     //   // the response object structure depends on the definition of apex class
     // });
+
+    return new Promise(function (resolve, reject) {
+      let request = require("request");
+      request({
+          url: 'https://pim-kim-2-dev-ed.develop.my.salesforce.com/services/apexrest/pim/product/?id=a0GHu000012ePdoMAE',
+          method: "GET"
+      }, function(err, response, body) {
+          console.log('response: ', response)
+          console.log('err: ', err)
+          console.log('body: ', body)
+          if (response.headers) {
+            resolve(body);
+          } else {
+            reject(err);
+          }
+      });
+    });
   }
 }
 
