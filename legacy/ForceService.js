@@ -469,8 +469,8 @@ ${JSON.stringify(data)}
     //   // the response object structure depends on the definition of apex class
     // });
 
-    const sessId = this.sessionId;
-    console.log('sessId: ', sessId)
+    const accessToken = this.sessionId;
+    console.log('accessToken: ', accessToken)
     return new Promise(function (resolve, reject) {
       let request = require("request");
       request({
@@ -478,7 +478,7 @@ ${JSON.stringify(data)}
           method: "GET",
           headers: {
             'Content-Type': 'text/plain',
-            'Authorization': 'OAuth ' + sessId
+            'Authorization': 'OAuth ' + accessToken
           }
       }, function(err, response, body) {
           console.log('err: ', err)
