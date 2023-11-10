@@ -424,12 +424,20 @@ ${JSON.stringify(data)}
   }
 
   /** calls APEX REST API to get a Map of supported <CDN Base Url, Label> */
-  getCDNBaseUrlLabelMap() {
+  async getCDNBaseUrlLabelMap() {
+    return await getPimConstantsApiData('cdnLabelMap');
+  }
+
+  async getLabelCDNBaseUrlMap() {
+    return await getPimConstantsApiData('labelCDNMap');
+  }
+
+  getPimConstantsApiData(type) {
     const accessToken = this.sessionId;
     return new Promise(function (resolve, reject) {
       let request = require("request");
       request({
-          url: 'https://pim-kim-2-dev-ed.develop.my.salesforce.com/services/apexrest/pim/constants?type=cdnLabelMap',
+          url: 'https://pim-kim-2-dev-ed.develop.my.salesforce.com/services/apexrest/pim/constants?type=' + type,
           method: "GET",
           headers: {
             'Content-Type': 'text/plain',
