@@ -425,11 +425,11 @@ ${JSON.stringify(data)}
 
   /** calls APEX REST API to get a Map of supported <CDN Base Url, Label> */
   async getCDNBaseUrlLabelMap() {
-    return await getPimConstantsApiData('cdnLabelMap');
+    return await this.getPimConstantsApiData('cdnLabelMap');
   }
 
   async getLabelCDNBaseUrlMap() {
-    return await getPimConstantsApiData('labelCDNMap');
+    return await this.getPimConstantsApiData('labelCDNMap');
   }
 
   getPimConstantsApiData(type) {
