@@ -474,7 +474,7 @@ ${JSON.stringify(data)}
     return new Promise(function (resolve, reject) {
       let request = require("request");
       request({
-          url: 'https://pim-kim-2-dev-ed.develop.my.salesforce.com/services/apexrest/pim/product/?id=a0GHu000012ePdoMAE',
+          url: 'https://pim-kim-2-dev-ed.develop.my.salesforce.com/services/apexrest/pim/constants?type=cdnLabelMap',
           method: "GET",
           headers: {
             'Content-Type': 'text/plain',
@@ -483,7 +483,7 @@ ${JSON.stringify(data)}
       }, function(err, response, body) {
           console.log('err: ', err)
           console.log('body: ', body)
-          if (response.headers) {
+          if (response.statusCode == 200) {
             resolve(body);
           } else {
             reject(err);
