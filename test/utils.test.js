@@ -5,7 +5,7 @@ const sinon = require('sinon');
 describe('Utils tests', () => {
   describe('parseDigitalAssetAttrVal', () => {
     let stub;
-    const dummy_contentLocation = 'dummyLocation';
+    const dummy_contentLocation = 'dummy_location';
     const dummy_link = 'dummy_link';
     const attrValValue = 'dummy_attr_val';
     const invalidAttrValValue = 'invalid_dummy_attr_val';
@@ -45,8 +45,13 @@ describe('Utils tests', () => {
 
       it('not a legit link', async () => {
         const helper = {
-          getValue: () => {
-            return dummy_link;
+          getValue: (asset, field) => {
+            if (field == 'View_Link__c') {
+              return dummy_link;
+            }
+            if (field == 'Content_Location__c') {
+              return dummy_contentLocation;
+            }
           }
         };
         const parsed = await utils.parseDigitalAssetAttrVal(
