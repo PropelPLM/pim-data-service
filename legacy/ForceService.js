@@ -439,7 +439,6 @@ ${JSON.stringify(data)}
     return new Promise(function (resolve, reject) {
       let request = require("request");
       request({
-          //url: 'https://pim-kim-2-dev-ed.develop.my.salesforce.com/services/apexrest/pim/constants?type=' + type,
           url: hostUrl + '/services/apexrest/pim/constants?type=' + type,
           method: "GET",
           headers: {
