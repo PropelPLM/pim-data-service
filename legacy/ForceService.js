@@ -435,11 +435,12 @@ ${JSON.stringify(data)}
 
   getPimConstantsCDNData(type) {
     const accessToken = this.sessionId;
+    const hostUrl = this.serverUrl;
     return new Promise(function (resolve, reject) {
       let request = require("request");
       request({
           //url: 'https://pim-kim-2-dev-ed.develop.my.salesforce.com/services/apexrest/pim/constants?type=' + type,
-          url: this.serverUrl + '/services/apexrest/pim/constants?type=' + type,
+          url: hostUrl + '/services/apexrest/pim/constants?type=' + type,
           method: "GET",
           headers: {
             'Content-Type': 'text/plain',
