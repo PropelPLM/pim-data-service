@@ -55,8 +55,6 @@ async function PimRecordListHelper(
 
   let variantsPresentInLowestVariantExport,
     recordIsPresentInNonLowestVariantExport;
-  console.log('recordIds: ', recordIds)
-  console.log('variantValueIds: ', variantValueIds)
   // filter the records if rows were selected or filters applied in product list page
   let filteredRecords = exportRecords.filter(record => {
     variantsPresentInLowestVariantExport =
