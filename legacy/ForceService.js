@@ -446,7 +446,7 @@ ${JSON.stringify(data)}
             'Authorization': 'OAuth ' + accessToken
           }
       }, function(err, response, body) {
-          if (response.statusCode == 200) {
+          if (response && response.statusCode == 200) {
             resolve(body);
           } else {
             reject(err);
