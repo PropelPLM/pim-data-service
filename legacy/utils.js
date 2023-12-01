@@ -47,7 +47,7 @@ logErrorResponse = (err, functionName) => {
 getDigitalAssetMap = async (service, helper) => {
   const digitalAssetList = await service.simpleQuery(
     helper.namespaceQuery(
-      `select Id, Name, External_File_Id__c, View_Link__c, Mime_Type__c
+      `select Id, Name, External_File_Id__c, View_Link__c, Mime_Type__c, Content_Location__c
       from Digital_Asset__c`
     )
   );
@@ -322,24 +322,16 @@ function validateNamespaceForField(namespace) {
   }
 }
 
-async function prependCDNToViewLink(viewLink, reqBody) {
+async function prependCDNToViewLink(viewLink, contentLocation, reqBody) {
   const service = new ForceService(reqBody.hostUrl, reqBody.sessionId);
-  const helper = new PimExportHelper(reqBody.namespace);
-  const CDN_METADATA_NAME = 'CloudfrontDistribution';
 
-  if (viewLink !== null || !viewLink.isEmpty()) {
-    const prefix = await service.simpleQuery(
-      helper.namespaceQuery(
-        `select Id, Value__c
-        from Configuration__mdt
-        where DeveloperName = '${CDN_METADATA_NAME}'`
-      )
-    );
-    if (prefix.length > 0) {
-      return helper.getValue(prefix[0], 'Value__c') + viewLink;
-    }
+  let prefix = '';
+  if (viewLink && contentLocation) {
+    const stringifiedLabelCDNBaseUrlMap = await service.getLabelCDNBaseUrlMap();
+    const cdnBaseUrlLabelMap = new Map(Object.entries(JSON.parse(stringifiedLabelCDNBaseUrlMap)));
+    prefix = cdnBaseUrlLabelMap.get(contentLocation);
   }
-  return viewLink;
+  return prefix + viewLink;
 }
 
 async function parseDigitalAssetAttrVal(
@@ -406,10 +398,11 @@ async function getDigitalAssetViewLink(
   reqBody
 ) {
   const viewLink = helper.getValue(digitalAsset, 'View_Link__c');
+  const contentLocation = helper.getValue(digitalAsset, 'Content_Location__c');
   // if value is already complete url, add it to the map, else prepend the CDN url to the partial url then add to map
   attrValValue = viewLink.includes('https')
     ? viewLink
-    : await module.exports.prependCDNToViewLink(viewLink, reqBody);
+    : await module.exports.prependCDNToViewLink(viewLink, contentLocation, reqBody);
   return attrValValue;
 }
 
