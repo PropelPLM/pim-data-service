@@ -17,7 +17,7 @@ async function LegacyExportPIM(req) {
   const reqBody = req.body;
   const isListPageExport = reqBody.options.isListPageExport;
   // Create csv string result with records and columns in request body
-  if (reqBody.recordIds.length == 0) {
+  if (!reqBody.recordIds.length && !reqBody.variantValueIds.length) {
     return 'Error';
   }
 
