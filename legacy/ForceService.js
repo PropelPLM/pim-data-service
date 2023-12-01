@@ -438,6 +438,7 @@ ${JSON.stringify(data)}
     const hostUrl = this.serverUrl;
     return new Promise(function (resolve, reject) {
       let request = require("request");
+      console.log('URI: ' + hostUrl + '/services/apexrest/pim/constants?type=' + type);
       request({
           url: hostUrl + '/services/apexrest/pim/constants?type=' + type,
           method: "GET",
