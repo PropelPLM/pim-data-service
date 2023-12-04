@@ -548,7 +548,14 @@ async function getLowestVariantsFromProducts(productList, reqBody) {
 
   const allVariantsFromProducts = await service.queryExtend(
     helper.namespaceQuery(
-      `select Id, Name, Parent_Value_Path__c, Variant__r.Product__c
+      `select 
+          Id, 
+          Name, 
+          Label__c, 
+          Parent_Value_Path__c, 
+          Variant__r.Product__c, 
+          Variant__r.Product__r.Category__c, 
+          Variant__r.Product__r.Category__r.Name
         from Variant_Value__c
         where Variant__r.Product__c IN (${service.QUERY_LIST})
       `

@@ -96,24 +96,18 @@ async function PimRecordListHelper(
         const tempMap = new Map();
         tempMap.set('Id', lowestVariant.Id);
         tempMap.set('Record_ID', lowestVariant.Name);
-        tempMap.set('Category__r.Name', 'PLACEHOLDER PLEASE REMOVE')
-        tempMap.set('Category__c', 'PLACEHOLDER PLEASE REMOVE')
-        tempMap.set('Title', 'PLACEHOLDER PLEASE REMOVE')
-        // tempMap.set(
-        //   'Category__r.Name',
-        //   helper.getValue(topLevelRecord, 'Category__r').Name
-        // );
-        // tempMap.set('Category__c', helper.getValue(topLevelRecord, 'Category__c'));
-
-        // if (!parentProduct) return tempMap;
-
-        // tempMap.set(
-        //   'Title',
-        //   helper.getValue(record, 'Label__c')
-        //     ? helper.getValue(record, 'Label__c')
-        //     : record.Name
-        // );
-        tempMap.set('Parent_ID', topLevelRecord.Id);
+        tempMap.set('Category__c', helper.getValue(topLevelRecord, 'Category__c'));
+        tempMap.set(
+          'Category__r.Name',
+          helper.getValue(topLevelRecord, 'Category__r').Name
+        );
+        tempMap.set(
+          'Title',
+          helper.getValue(record, 'Label__c')
+            ? helper.getValue(record, 'Label__c')
+            : record.Name
+        );
+        tempMap.set('Parent_ID', topLevelRecord);
         exportRecordsAndColumns[0].push(tempMap);
       }
       console.log('exportRecordsAndCol[0]: ' + exportRecordsAndColumns[0])
