@@ -106,6 +106,7 @@ async function PimRecordListHelper(
           variantValues,
           namespace
         );
+        console.log('querylist: ' + service.QUERY_LIST)
         for (let varV of variantValues) {
           console.log('variantValues1: ' + varV)
         }
