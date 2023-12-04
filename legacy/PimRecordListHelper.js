@@ -53,20 +53,10 @@ async function PimRecordListHelper(
     ),
     isSKUExport = exportType === 'lowestVariants';
 
-  let variantsPresentInLowestVariantExport,
-    recordIsPresentInNonLowestVariantExport;
   // filter the records if rows were selected or filters applied in product list page
   console.log('exportRecords length: ' + exportRecords.length)
   let filteredRecords = exportRecords.filter(record => {
-    variantsPresentInLowestVariantExport =
-      isSKUExport && variantValueIds?.includes(record.get('Id'));
-    recordIsPresentInNonLowestVariantExport =
-      (!isSKUExport && recordIds.includes(record.get('Id'))) ||
-      variantValueIds?.includes(record.get('Id'));
-    return (
-      variantsPresentInLowestVariantExport ||
-      recordIsPresentInNonLowestVariantExport
-    );
+    return recordIds.includes(record.get('Id')) || variantValueIds?.includes(record.get('Id'));
   });
   console.log('filteredRecords length: ' + filteredRecords.length)
   let exportRecordsAndColumns = [filteredRecords]; // [[filtered]] zz
