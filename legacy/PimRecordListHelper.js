@@ -89,9 +89,12 @@ async function PimRecordListHelper(
         }
       }
       // get SKUs (lowest variants) of parent products of selected records
-      exportRecordsAndColumns[0] = await getLowestVariantsFromProducts(productsToQueryForSKU, reqBody);
-      console.log('exportRecords length: ' + exportRecordsAndColumns[0])
+      const lowestVariants = await getLowestVariantsFromProducts(productsToQueryForSKU, reqBody);
+      //exportRecordsAndColumns[0]
+      console.log('lowestVariants: ' + lowestVariants)
+      console.log('lowestVariants lem: ' + lowestVariants.length)
     }
+    //////////////// OLD CODE START
     // if (vvIds.size > 0) {
     //   const stringifiedQuotedVariantValueIds = prepareIdsForSOQL(vvIds);
     //   let variantValues = await service.queryExtend(
@@ -128,6 +131,7 @@ async function PimRecordListHelper(
     //     recordIdSet.add(helper.getValue(value, 'Variant__r.Product__c'));
     //   });
     // }
+    /////////////////// OLD CODE END
 
     const recordIdsToQuery = prepareIdsForSOQL(recordIdSet);
     let recordList = await PimRecordManager(
