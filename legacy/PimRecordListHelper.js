@@ -58,6 +58,9 @@ async function PimRecordListHelper(
   let filteredRecords = exportRecords.filter(record => {
     return recordIds?.includes(record.get('Id')) || variantValueIds?.includes(record.get('Id'));
   });
+  for (let fr of filteredRecords) {
+    console.log('record id: ' + fr.get('Id'))
+  }
   console.log('recordIds: ' + recordIds)
   console.log('variantValueIds: ' + variantValueIds)
   console.log('filteredRecords length: ' + filteredRecords.length)
