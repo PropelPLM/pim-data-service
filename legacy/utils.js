@@ -557,10 +557,9 @@ async function getLowestVariantsFromProducts(productList, reqBody) {
   );
 
   const lowestVariantValueIds = await getLowestVariantValuesList(allVariantsFromProducts, reqBody.namespace);
-  const skuVariants = allVariantsFromProducts.filter(value =>
+  return allVariantsFromProducts.filter(value =>
     lowestVariantValueIds.includes(value.Name)
   );
-  console.log('skuVar: ' + skuVariants)
 }
 
 // returns a list of the lowest level variant values' ids (i.e. SKUs) from a list of variant values
