@@ -106,10 +106,13 @@ async function PimRecordListHelper(
           variantValues,
           namespace
         );
+        console.log('variantValues1: ' + variantValues)
+        console.log('lowestVariantValueIds: ' + lowestVariantValueIds)
         // filter out all records not selected for export
         variantValues = variantValues.filter(value =>
           lowestVariantValueIds.includes(value.Name)
         );
+        console.log('variantValues2: ' + variantValues)
         exportRecordsAndColumns[0] = exportRecordsAndColumns[0].filter(record =>
           lowestVariantValueIds.includes(record.get('Record_ID'))
         );
