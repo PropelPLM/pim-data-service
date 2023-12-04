@@ -58,9 +58,6 @@ async function PimRecordListHelper(
   let filteredRecords = exportRecords.filter(record => {
     return recordIds?.includes(record.get('Id')) || variantValueIds?.includes(record.get('Id'));
   });
-  console.log('filteredRecord 0: ' + filteredRecords[0].get('Id'))
-  console.log('filteredRecord 1: ' + filteredRecords[1].get('Id'))
-  console.log('filteredRecord 2: ' + filteredRecords[2].get('Parent_ID'))
   let exportRecordsAndColumns = [filteredRecords]; // [[filtered]] zz
 
   /** PIM repo ProductService.productStructureByCategory end */
