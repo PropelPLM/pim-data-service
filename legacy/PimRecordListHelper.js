@@ -56,8 +56,10 @@ async function PimRecordListHelper(
   // filter the records if rows were selected or filters applied in product list page
   console.log('exportRecords length: ' + exportRecords.length)
   let filteredRecords = exportRecords.filter(record => {
-    return recordIds.includes(record.get('Id')) || variantValueIds?.includes(record.get('Id'));
+    return recordIds?.includes(record.get('Id')) || variantValueIds?.includes(record.get('Id'));
   });
+  console.log('recordIds: ' + recordIds)
+  console.log('variantValueIds: ' + variantValueIds)
   console.log('filteredRecords length: ' + filteredRecords.length)
   let exportRecordsAndColumns = [filteredRecords]; // [[filtered]] zz
 
