@@ -85,7 +85,7 @@ async function PimRecordListHelper(
       for (let selectedRecord of exportRecordsAndColumns[0]) {
         selectedRecordParentProductId = selectedRecord.get('Parent_ID') ?? selectedRecord.get('Id');
         if (!productsToQueryForSKU.includes(selectedRecordParentProductId)) {
-          productsToQueryForSKU.add(selectedRecordParentProductId);
+          productsToQueryForSKU.push(selectedRecordParentProductId);
         }
       }
       // get SKUs (lowest variants) of parent products of selected records
