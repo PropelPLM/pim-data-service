@@ -90,17 +90,20 @@ async function PimRecordListHelper(
       }
       // get SKUs (lowest variants) of parent products of selected records
       const lowestVariants = await getLowestVariantsFromProducts(productsToQueryForSKU, reqBody);
-      //exportRecordsAndColumns[0]
+      exportRecordsAndColumns[0] = await PimRecordService(
+        lowestVariants,
+        helper,
+        service,
+        true
+      )
+      console.log('exportRecordsAndCol[0]: ' + exportRecordsAndColumns[0])
+      console.log('exportRecordsAndCol[0][0]: ' + exportRecordsAndColumns[0][0])
+      console.log('exportRecordsAndCol[0][0].keys: ' + Array.from(exportRecordsAndColumns[0][0].keys()))
       vvIds.clear();
       for (let lowestVariant of lowestVariants) {
-        console.log('id: ' + lowestVariant.Id)
         vvIds.add(lowestVariant.Id)
         recordIdSet.add(helper.getValue(lowestVariant, 'Variant__r.Product__c'));
       }
-      console.log('vvIds: ' + vvIds)
-      console.log('vvIds.size: ' + vvIds.size)
-      console.log('recordIdSet: ' + recordIdSet)
-      console.log('recordIdSet.size: ' + recordIdSet.size)
     }
     //////////////// OLD CODE START
     // if (vvIds.size > 0) {
