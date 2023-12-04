@@ -96,10 +96,10 @@ async function PimRecordListHelper(
         const tempMap = new Map();
         tempMap.set('Id', lowestVariant.Id);
         tempMap.set('Record_ID', lowestVariant.Name);
-        tempMap.set('Category__c', helper.getValue(topLevelRecord, 'Category__c'));
+        tempMap.set('Category__c', helper.getValue(topLevelRecord, 'Variant__r.Product__r.Category__c'));
         tempMap.set(
           'Category__r.Name',
-          helper.getValue(topLevelRecord, 'Category__r').Name
+          helper.getValue(topLevelRecord, 'Variant__r.Product__r.Category__r').Name
         );
         tempMap.set(
           'Title',
