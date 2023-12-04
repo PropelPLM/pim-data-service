@@ -4,6 +4,7 @@ const {
   ATTRIBUTE_FLAG,
   DA_DOWNLOAD_DETAIL_KEY,
   DEFAULT_COLUMNS,
+  getLowestVariantsFromProducts,
   getLowestVariantValuesList,
   initAssetDownloadDetailsList,
   prepareIdsForSOQL,
@@ -80,42 +81,56 @@ async function PimRecordListHelper(
     }
 
     let attributeResults = new Map();
-    if (vvIds.size > 0) {
-      const stringifiedQuotedVariantValueIds = prepareIdsForSOQL(vvIds);
-      let variantValues = await service.queryExtend(
-        helper.namespaceQuery(
-          `select Id, Name, Parent_Value_Path__c, Variant__r.Product__c
-          from Variant_Value__c
-          where Id IN (${service.QUERY_LIST})
-        `
-        ),
-        stringifiedQuotedVariantValueIds.split(',')
-      );
-
-      let lowestVariantValueIds;
-      if (isSKUExport) {
-        // get the lowest level variant values' ids from a list of variant values
-        lowestVariantValueIds = await getLowestVariantValuesList(
-          variantValues,
-          namespace
-        );
-        // filter out all records not selected for export
-        variantValues = variantValues.filter(value =>
-          lowestVariantValueIds.includes(value.Name)
-        );
-        exportRecordsAndColumns[0] = exportRecordsAndColumns[0].filter(record =>
-          lowestVariantValueIds.includes(record.get('Record_ID'))
-        );
-        vvIds.clear();
-      }
-      variantValues.forEach(value => {
-        if (isSKUExport) {
-          // update variant value ids and record ids with only those relevant to lowest variants
-          vvIds.add(value.Id);
+    let selectedRecordParentProductId;
+    let productsToQueryForSKU = [];
+    if (isSKUExport && exportRecordsAndColumns[0].length) {
+      // get parent products of selected records
+      for (let selectedRecord of exportRecordsAndColumns[0]) {
+        selectedRecordParentProductId = selectedRecord.get('Parent_ID') ?? selectedRecord.get('Id');
+        if (!productsToQueryForSKU.includes(selectedRecordParentProductId)) {
+          productsToQueryForSKU.add(selectedRecordParentProductId);
         }
-        recordIdSet.add(helper.getValue(value, 'Variant__r.Product__c'));
-      });
+      }
+      // get SKUs (lowest variants) of parent products of selected records
+      exportRecordsAndColumns[0] = await getLowestVariantsFromProducts(productsToQueryForSKU, reqBody);
+      console.log('exportRecords length: ' + exportRecordsAndColumns[0])
     }
+    // if (vvIds.size > 0) {
+    //   const stringifiedQuotedVariantValueIds = prepareIdsForSOQL(vvIds);
+    //   let variantValues = await service.queryExtend(
+    //     helper.namespaceQuery(
+    //       `select Id, Name, Parent_Value_Path__c, Variant__r.Product__c
+    //       from Variant_Value__c
+    //       where Id IN (${service.QUERY_LIST})
+    //     `
+    //     ),
+    //     stringifiedQuotedVariantValueIds.split(',')
+    //   );
+
+    //   let lowestVariantValueIds;
+    //   if (isSKUExport) {
+    //     // get the lowest level variant values' ids from a list of variant values
+    //     lowestVariantValueIds = await getLowestVariantValuesList(
+    //       variantValues,
+    //       namespace
+    //     );
+    //     // filter out all records not selected for export
+    //     variantValues = variantValues.filter(value =>
+    //       lowestVariantValueIds.includes(value.Name)
+    //     );
+    //     exportRecordsAndColumns[0] = exportRecordsAndColumns[0].filter(record =>
+    //       lowestVariantValueIds.includes(record.get('Record_ID'))
+    //     );
+    //     vvIds.clear();
+    //   }
+    //   variantValues.forEach(value => {
+    //     if (isSKUExport) {
+    //       // update variant value ids and record ids with only those relevant to lowest variants
+    //       vvIds.add(value.Id);
+    //     }
+    //     recordIdSet.add(helper.getValue(value, 'Variant__r.Product__c'));
+    //   });
+    // }
 
     const recordIdsToQuery = prepareIdsForSOQL(recordIdSet);
     let recordList = await PimRecordManager(

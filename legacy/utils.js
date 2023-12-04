@@ -79,6 +79,7 @@ initAssetDownloadDetailsList = (
 module.exports = {
   callAsposeToExport,
   cleanString,
+  getLowestVariantsFromProducts,
   getLowestVariantValuesList,
   getDigitalAssetMap,
   getNestedField,
@@ -539,6 +540,23 @@ async function callAsposeToExport({
     });
   req.write(JSON.stringify(data));
   req.end();
+}
+
+async function getLowestVariantsFromProducts(productList, reqBody) {
+  const service = new ForceService(reqBody.hostUrl, reqBody.sessionId);
+  const helper = new PimExportHelper(reqBody.namespace);
+
+  const allVariantsFromProducts = await service.queryExtend(
+    helper.namespaceQuery(
+      `select Id, Name, Parent_Value_Path__c, Variant__r.Product__c
+        from Variant_Value__c
+        where Variant__r.Product__c IN (${service.QUERY_LIST})
+      `
+    ),
+    prepareIdsForSOQL(productList).split(',')
+  );
+
+  return getLowestVariantValuesList(allVariantsFromProducts, reqBody.namespace);
 }
 
 // returns a list of the lowest level variant values' ids (i.e. SKUs) from a list of variant values
