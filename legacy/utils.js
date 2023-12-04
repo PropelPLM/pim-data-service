@@ -556,7 +556,10 @@ async function getLowestVariantsFromProducts(productList, reqBody) {
     prepareIdsForSOQL(productList).split(',')
   );
 
-  return getLowestVariantValuesList(allVariantsFromProducts, reqBody.namespace);
+  const lowestVariantValueIds = getLowestVariantValuesList(allVariantsFromProducts, reqBody.namespace);
+  return allVariantsFromProducts.filter(value =>
+    lowestVariantValueIds.includes(value.Name)
+  );
 }
 
 // returns a list of the lowest level variant values' ids (i.e. SKUs) from a list of variant values
