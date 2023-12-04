@@ -56,6 +56,7 @@ async function PimRecordListHelper(
   let variantsPresentInLowestVariantExport,
     recordIsPresentInNonLowestVariantExport;
   // filter the records if rows were selected or filters applied in product list page
+  console.log('exportRecords length: ' + exportRecords.length)
   let filteredRecords = exportRecords.filter(record => {
     variantsPresentInLowestVariantExport =
       isSKUExport && variantValueIds?.includes(record.get('Id'));
@@ -67,6 +68,7 @@ async function PimRecordListHelper(
       recordIsPresentInNonLowestVariantExport
     );
   });
+  console.log('filteredRecords length: ' + filteredRecords.length)
   let exportRecordsAndColumns = [filteredRecords]; // [[filtered]] zz
 
   /** PIM repo ProductService.productStructureByCategory end */
@@ -106,18 +108,10 @@ async function PimRecordListHelper(
           variantValues,
           namespace
         );
-        console.log('querylist: ' + stringifiedQuotedVariantValueIds.split(','))
-        for (let varV of variantValues) {
-          console.log((util.inspect(varV, false, null, true)))
-        }
-        console.log('lowestVariantValueIds: ' + lowestVariantValueIds)
         // filter out all records not selected for export
         variantValues = variantValues.filter(value =>
           lowestVariantValueIds.includes(value.Name)
         );
-        for (let varV of variantValues) {
-          console.log('variantValues2: ' + varV)
-        }
         exportRecordsAndColumns[0] = exportRecordsAndColumns[0].filter(record =>
           lowestVariantValueIds.includes(record.get('Record_ID'))
         );
