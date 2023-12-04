@@ -108,7 +108,7 @@ async function PimRecordListHelper(
         );
         console.log('querylist: ' + stringifiedQuotedVariantValueIds.split(','))
         for (let varV of variantValues) {
-          console.log('variantValues1: ' + varV)
+          console.log((util.inspect(varV, false, null, true)))
         }
         console.log('lowestVariantValueIds: ' + lowestVariantValueIds)
         // filter out all records not selected for export
