@@ -5,7 +5,7 @@ const {
   DA_DOWNLOAD_DETAIL_KEY,
   DEFAULT_COLUMNS,
   getLowestVariantsFromProducts,
-  getLowestVariantValuesList,
+  extractLowestVariantValues,
   initAssetDownloadDetailsList,
   prepareIdsForSOQL,
   parseDigitalAssetAttrVal,
@@ -91,27 +91,8 @@ async function PimRecordListHelper(
       // get SKUs (lowest variants) of parent products of selected records
       const lowestVariants = await getLowestVariantsFromProducts(productsToQueryForSKU, reqBody);
       exportRecordsAndColumns[0] = await populateRecordDetailsForLowestVariants(lowestVariants);
-      // for (let lowestVariant of lowestVariants) {
-      //   const topLevelRecord = helper.getValue(lowestVariant, 'Variant__r.Product__c');
-      //   const tempMap = new Map();
-      //   tempMap.set('Id', lowestVariant.Id);
-      //   tempMap.set('Record_ID', lowestVariant.Name);
-      //   tempMap.set('Category__c', helper.getValue(lowestVariant, 'Variant__r.Product__r.Category__c'));
-      //   tempMap.set(
-      //     'Category__r.Name',
-      //     helper.getValue(lowestVariant, 'Variant__r.Product__r.Category__r.Name')
-      //   );
-      //   tempMap.set(
-      //     'Title',
-      //     helper.getValue(lowestVariant, 'Label__c')
-      //       ? helper.getValue(lowestVariant, 'Label__c')
-      //       : lowestVariant.Name
-      //   );
-      //   tempMap.set('Parent_ID', topLevelRecord);
-      //   exportRecordsAndColumns[0].push(tempMap);
-      // }
-      vvIds.clear();
       // update variant value ids and record ids with only those relevant to lowest variants
+      vvIds.clear();
       for (let lowestVariant of lowestVariants) {
         vvIds.add(lowestVariant.Id)
         recordIdSet.add(helper.getValue(lowestVariant, 'Variant__r.Product__c'));
@@ -764,7 +745,6 @@ async function populateRecordDetailsForLowestVariants(lowestVariants) {
   let recordMapList = [];
   let recordMap;
   for (let lowestVariant of lowestVariants) {
-    const topLevelRecord = helper.getValue(lowestVariant, 'Variant__r.Product__c');
     recordMap = new Map();
     recordMap.set('Id', lowestVariant.Id);
     recordMap.set('Record_ID', lowestVariant.Name);
@@ -779,7 +759,7 @@ async function populateRecordDetailsForLowestVariants(lowestVariants) {
         ? helper.getValue(lowestVariant, 'Label__c')
         : lowestVariant.Name
     );
-    recordMap.set('Parent_ID', topLevelRecord);
+    recordMap.set('Parent_ID', helper.getValue(lowestVariant, 'Variant__r.Product__c'));
     recordMapList.push(recordMap);
   }
 
