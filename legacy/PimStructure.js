@@ -7,7 +7,7 @@ const {
   ATTRIBUTE_FLAG,
   PRODUCT_TYPE,
   callAsposeToExport,
-  getLowestVariantValuesList,
+  extractLowestVariantValues,
   getDigitalAssetMap,
   initAssetDownloadDetailsList,
   parseDigitalAssetAttrVal,
@@ -430,7 +430,7 @@ class PimStructure {
               }
             }
             if (exportType === 'lowestVariants' && !reqBody.isInherited) {
-              const lowestLevelVariantValues = await getLowestVariantValuesList(
+              const lowestLevelVariantValues = await extractLowestVariantValues(
                 valuesList,
                 reqBody.namespace
               );
@@ -718,7 +718,7 @@ class PimStructure {
       }
       exportType = 'currentVariant';
     } else if (exportType === 'lowestVariants') {
-      lowestLevelVariantValues = await getLowestVariantValuesList(
+      lowestLevelVariantValues = await extractLowestVariantValues(
         valuesList,
         reqBody.namespace
       );

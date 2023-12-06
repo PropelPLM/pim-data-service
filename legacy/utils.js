@@ -79,7 +79,8 @@ initAssetDownloadDetailsList = (
 module.exports = {
   callAsposeToExport,
   cleanString,
-  getLowestVariantValuesList,
+  getLowestVariantsFromProducts,
+  extractLowestVariantValues,
   getDigitalAssetMap,
   getNestedField,
   initAssetDownloadDetailsList,
@@ -541,8 +542,35 @@ async function callAsposeToExport({
   req.end();
 }
 
+async function getLowestVariantsFromProducts(productList, reqBody) {
+  const service = new ForceService(reqBody.hostUrl, reqBody.sessionId);
+  const helper = new PimExportHelper(reqBody.namespace);
+
+  const allVariantsFromProducts = await service.queryExtend(
+    helper.namespaceQuery(
+      `select 
+          Id, 
+          Name, 
+          Label__c, 
+          Parent_Value_Path__c, 
+          Variant__r.Product__c, 
+          Variant__r.Product__r.Category__c, 
+          Variant__r.Product__r.Category__r.Name
+        from Variant_Value__c
+        where Variant__r.Product__c IN (${service.QUERY_LIST})
+      `
+    ),
+    prepareIdsForSOQL(productList).split(',')
+  );
+
+  const lowestVariantValueIds = await extractLowestVariantValues(allVariantsFromProducts, reqBody.namespace);
+  return allVariantsFromProducts.filter(value =>
+    lowestVariantValueIds.includes(value.Name)
+  );
+}
+
 // returns a list of the lowest level variant values' ids (i.e. SKUs) from a list of variant values
-async function getLowestVariantValuesList(valuesList, namespace) {
+async function extractLowestVariantValues(valuesList, namespace) {
   const helper = new PimExportHelper(namespace);
   let numOfParentValues,
     highestNumOfParentValues = 0,

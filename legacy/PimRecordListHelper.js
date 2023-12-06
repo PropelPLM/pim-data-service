@@ -4,7 +4,8 @@ const {
   ATTRIBUTE_FLAG,
   DA_DOWNLOAD_DETAIL_KEY,
   DEFAULT_COLUMNS,
-  getLowestVariantValuesList,
+  getLowestVariantsFromProducts,
+  extractLowestVariantValues,
   initAssetDownloadDetailsList,
   prepareIdsForSOQL,
   parseDigitalAssetAttrVal,
@@ -53,19 +54,9 @@ async function PimRecordListHelper(
     ),
     isSKUExport = exportType === 'lowestVariants';
 
-  let variantsPresentInLowestVariantExport,
-    recordIsPresentInNonLowestVariantExport;
   // filter the records if rows were selected or filters applied in product list page
   let filteredRecords = exportRecords.filter(record => {
-    variantsPresentInLowestVariantExport =
-      isSKUExport && variantValueIds?.includes(record.get('Id'));
-    recordIsPresentInNonLowestVariantExport =
-      (!isSKUExport && recordIds.includes(record.get('Id'))) ||
-      variantValueIds?.includes(record.get('Id'));
-    return (
-      variantsPresentInLowestVariantExport ||
-      recordIsPresentInNonLowestVariantExport
-    );
+    return recordIds?.includes(record.get('Id')) || variantValueIds?.includes(record.get('Id'));
   });
   let exportRecordsAndColumns = [filteredRecords]; // [[filtered]] zz
 
@@ -87,41 +78,25 @@ async function PimRecordListHelper(
     }
 
     let attributeResults = new Map();
-    if (vvIds.size > 0) {
-      const stringifiedQuotedVariantValueIds = prepareIdsForSOQL(vvIds);
-      let variantValues = await service.queryExtend(
-        helper.namespaceQuery(
-          `select Id, Name, Parent_Value_Path__c, Variant__r.Product__c
-          from Variant_Value__c
-          where Id IN (${service.QUERY_LIST})
-        `
-        ),
-        stringifiedQuotedVariantValueIds.split(',')
-      );
-
-      let lowestVariantValueIds;
-      if (isSKUExport) {
-        // get the lowest level variant values' ids
-        lowestVariantValueIds = await getLowestVariantValuesList(
-          variantValues,
-          namespace
-        );
-        // filter out all records not selected for export
-        variantValues = variantValues.filter(value =>
-          lowestVariantValueIds.includes(value.Name)
-        );
-        exportRecordsAndColumns[0] = exportRecordsAndColumns[0].filter(record =>
-          lowestVariantValueIds.includes(record.get('Record_ID'))
-        );
-        vvIds.clear();
-      }
-      variantValues.forEach(value => {
-        if (isSKUExport) {
-          // update variant value ids and record ids with only those relevant to lowest variants
-          vvIds.add(value.Id);
+    let selectedRecordParentProductId;
+    let productsToQueryForSKU = [];
+    if (isSKUExport && exportRecordsAndColumns[0].length) {
+      // get parent products of selected records
+      for (let selectedRecord of exportRecordsAndColumns[0]) {
+        selectedRecordParentProductId = selectedRecord.get('Parent_ID') ?? selectedRecord.get('Id');
+        if (!productsToQueryForSKU.includes(selectedRecordParentProductId)) {
+          productsToQueryForSKU.push(selectedRecordParentProductId);
         }
-        recordIdSet.add(helper.getValue(value, 'Variant__r.Product__c'));
-      });
+      }
+      // get SKUs (lowest variants) of parent products of selected records
+      const lowestVariants = await getLowestVariantsFromProducts(productsToQueryForSKU, reqBody);
+      exportRecordsAndColumns[0] = await populateRecordDetailsForLowestVariants(lowestVariants);
+      // update variant value ids and record ids with only those relevant to lowest variants
+      vvIds.clear();
+      for (let lowestVariant of lowestVariants) {
+        vvIds.add(lowestVariant.Id)
+        recordIdSet.add(helper.getValue(lowestVariant, 'Variant__r.Product__c'));
+      }
     }
 
     const recordIdsToQuery = prepareIdsForSOQL(recordIdSet);
@@ -764,6 +739,31 @@ async function addExportColumns(
     });
   });
   return [...exportRecordsAndColumns, exportColumns];
+}
+
+async function populateRecordDetailsForLowestVariants(lowestVariants) {
+  let recordMapList = [];
+  let recordMap;
+  for (let lowestVariant of lowestVariants) {
+    recordMap = new Map();
+    recordMap.set('Id', lowestVariant.Id);
+    recordMap.set('Record_ID', lowestVariant.Name);
+    recordMap.set('Category__c', helper.getValue(lowestVariant, 'Variant__r.Product__r.Category__c'));
+    recordMap.set(
+      'Category__r.Name',
+      helper.getValue(lowestVariant, 'Variant__r.Product__r.Category__r.Name')
+    );
+    recordMap.set(
+      'Title',
+      helper.getValue(lowestVariant, 'Label__c')
+        ? helper.getValue(lowestVariant, 'Label__c')
+        : lowestVariant.Name
+    );
+    recordMap.set('Parent_ID', helper.getValue(lowestVariant, 'Variant__r.Product__c'));
+    recordMapList.push(recordMap);
+  }
+
+  return recordMapList;
 }
 
 module.exports = PimRecordListHelper;
