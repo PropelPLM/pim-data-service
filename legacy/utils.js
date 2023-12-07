@@ -47,7 +47,7 @@ logErrorResponse = (err, functionName) => {
 getDigitalAssetMap = async (service, helper) => {
   const digitalAssetList = await service.simpleQuery(
     helper.namespaceQuery(
-      `select Id, Name, External_File_Id__c, View_Link__c, Mime_Type__c, Content_Location__c
+      `select Id, Name, External_File_Id__c, View_Link__c, Mime_Type__c
       from Digital_Asset__c`
     )
   );
@@ -89,7 +89,6 @@ module.exports = {
   parseDigitalAssetAttrVal,
   parseDaAttrValWithVarMap,
   postToChatter,
-  prependCDNToViewLink,
   prepareIdsForSOQL,
   removeFileFromDisk,
   sendConfirmationEmail,
@@ -323,18 +322,6 @@ function validateNamespaceForField(namespace) {
   }
 }
 
-async function prependCDNToViewLink(viewLink, contentLocation, reqBody) {
-  const service = new ForceService(reqBody.hostUrl, reqBody.sessionId);
-
-  let prefix = '';
-  if (viewLink && contentLocation) {
-    const stringifiedLabelCDNBaseUrlMap = await service.getLabelCDNBaseUrlMap();
-    const cdnBaseUrlLabelMap = new Map(Object.entries(JSON.parse(stringifiedLabelCDNBaseUrlMap)));
-    prefix = cdnBaseUrlLabelMap.get(contentLocation);
-  }
-  return prefix + viewLink;
-}
-
 async function parseDigitalAssetAttrVal(
   digitalAssetMap,
   attrValValue,
@@ -348,12 +335,7 @@ async function parseDigitalAssetAttrVal(
   daDownloadDetailsList.push(
     new DADownloadDetails(digitalAsset, reqBody.namespace)
   );
-  return await getDigitalAssetViewLink(
-    digitalAsset,
-    attrValValue,
-    helper,
-    reqBody
-  );
+  return await getDigitalAssetViewLink(digitalAsset, helper);
 }
 
 // stores digital asset in Map<productId or vvId, Map<Attribute Label Id, DADownloadDetails object>>
@@ -384,27 +366,16 @@ async function parseDaAttrValWithVarMap(
       .get(recordId)
       .set(attrLabel, new DADownloadDetails(digitalAsset, reqBody.namespace));
   }
-  return await getDigitalAssetViewLink(
-    digitalAsset,
-    attrValValue,
-    helper,
-    reqBody
-  );
+  return await getDigitalAssetViewLink(digitalAsset, helper);
 }
 
-async function getDigitalAssetViewLink(
-  digitalAsset,
-  attrValValue,
-  helper,
-  reqBody
-) {
+async function getDigitalAssetViewLink(digitalAsset, helper) {
   const viewLink = helper.getValue(digitalAsset, 'View_Link__c');
-  const contentLocation = helper.getValue(digitalAsset, 'Content_Location__c');
-  // if value is already complete url, add it to the map, else prepend the CDN url to the partial url then add to map
-  attrValValue = viewLink.includes('https')
-    ? viewLink
-    : await module.exports.prependCDNToViewLink(viewLink, contentLocation, reqBody);
-  return attrValValue;
+  // if value is a complete url, add it to the map, else throw error
+  if (!viewLink.includes('https')) {
+    throw new Error('Invalid digital asset view link');
+  }
+  return viewLink;
 }
 
 function prepareIdsForSOQL(idList) {

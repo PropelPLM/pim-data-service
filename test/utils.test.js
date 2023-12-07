@@ -5,7 +5,6 @@ const sinon = require('sinon');
 describe('Utils tests', () => {
   describe('parseDigitalAssetAttrVal', () => {
     let stub;
-    const dummy_contentLocation = 'dummy_location';
     const dummy_link = 'dummy_link';
     const attrValValue = 'dummy_attr_val';
     const invalidAttrValValue = 'invalid_dummy_attr_val';
@@ -13,12 +12,11 @@ describe('Utils tests', () => {
     const daDownloadDetailsList = [];
 
     beforeEach(() => {
-      stub = sinon.stub(utils, 'prependCDNToViewLink').returns(dummy_link);
+      stub = sinon.stub();
       sinon.spy(stub);
     });
 
     afterEach(() => {
-      stub.restore();
       daDownloadDetailsList.length = 0;
       digitalAssetMap.clear();
     });
@@ -45,13 +43,8 @@ describe('Utils tests', () => {
 
       it('not a legit link', async () => {
         const helper = {
-          getValue: (asset, field) => {
-            if (field == 'View_Link__c') {
-              return dummy_link;
-            }
-            if (field == 'Content_Location__c') {
-              return dummy_contentLocation;
-            }
+          getValue: () => {
+            return dummy_link;
           }
         };
         const parsed = await utils.parseDigitalAssetAttrVal(
@@ -62,7 +55,7 @@ describe('Utils tests', () => {
           reqBody
         );
         sinon.assert.calledOnce(stub);
-        sinon.assert.calledWith(stub, dummy_link, dummy_contentLocation, reqBody);
+        sinon.assert.calledWith(stub, dummy_link, reqBody);
         assert.equal(daDownloadDetailsList.length, 1);
         assert.equal(parsed, dummy_link);
       });
