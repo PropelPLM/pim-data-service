@@ -251,7 +251,7 @@ function postAssetZipFileToChatter(
       shouldPostToUser,
       communityId
     } = reqBody;
-    let subjectId = shouldPostToUser ? 'me' : recordId;
+    let subjectId = 'me';
   
     // Boundary
     var boundary = 'a7V4kRcFA8E79pivMuV2tukQ85cmNKeoEgJgq';
@@ -267,13 +267,11 @@ function postAssetZipFileToChatter(
       path,
       method: 'POST',
       headers: {
-        'Content-Type': errorMessage
-          ? 'application/json; charset=UTF-8'
-          : 'image/png',
+        'Content-Type': 'image/png',
         Authorization: 'OAuth ' + sessionId
       }
     };
-    console.log('options: ' + options)
+    console.log('options.headers[Content-Type]: ' + options.headers['Content-Type'])
   
     var CRLF = '\r\n';
     var errorPostData = [
@@ -324,7 +322,7 @@ function postAssetZipFileToChatter(
   
     // Execute request
     var req = new https.request(options, res => {
-      console.log('response: ', res.statusCode, res.statusMessage);
+      console.log('DA chatter response: ', res.statusCode, res.statusMessage);
       if (callback) {
         callback();
       }
