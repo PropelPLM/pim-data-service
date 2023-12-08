@@ -184,7 +184,7 @@ async function sendDADownloadRequests(
   reqBody
 ) {
   if (!daDownloadDetailsList || !daDownloadDetailsList.length) return;
-  zipFileName = `Digital_Asset-Export_${zipFileName}.zip`;
+  // zipFileName = `Digital_Asset-Export_${zipFileName}.zip`;
 
   // const payload = JSON.stringify({
   //   platform: 'aws',
@@ -220,12 +220,20 @@ async function sendDADownloadRequests(
 
 
   const filename = 'testImage.png';
+  const nameOnDisk = crypto.randomBytes(20).toString('hex') + filename;
+  file.write(csvString, () => {
+    try {
+      postToChatter(filename, nameOnDisk, '', reqBody);
+    } catch (err) {
+      console.log('error: ', err);
+    }
+  });
   await downloadAssets('https://d3uk1mqqf9h27x.cloudfront.net/00DHu000001IObVMAW/2a8177c6-4ea5-4dbc-b81b-474fe3aa6fcd', filename);
-  try {
-    postAssetZipFileToChatter(filename, filename, '', reqBody);
-  } catch (err) {
-    console.log('error: ', err);
-  }
+  // try {
+  //   postAssetZipFileToChatter(filename, filename, '', reqBody);
+  // } catch (err) {
+  //   console.log('error: ', err);
+  // }
 }
 
 async function downloadAssets(url, destination) {
