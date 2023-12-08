@@ -267,7 +267,7 @@ function postAssetZipFileToChatter(
       path,
       method: 'POST',
       headers: {
-        'Content-Type': 'multipart/form-data; boundary=' + boundary,
+        'Content-Type': 'image/png',
         Authorization: 'OAuth ' + sessionId
       }
     };
