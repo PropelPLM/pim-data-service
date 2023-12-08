@@ -1,6 +1,7 @@
 var fs = require('fs');
 var crypto = require('crypto');
 const https = require('https');
+const archiver = require('archiver');
 
 // adding the propel-sfdc-connect package
 const propelConnect = require('@propelsoftwaresolutions/propel-sfdc-connect');
@@ -47,8 +48,9 @@ async function LegacyExportPIM(req) {
   sendDADownloadRequests(
     baseFileName,
     daDownloadDetailsList,
-    reqBody.sessionId,
-    reqBody.hostUrl
+    // reqBody.sessionId,
+    // reqBody.hostUrl
+    reqBody
   );
 
   if (!reqBody.includeAttributes) return;
@@ -176,41 +178,65 @@ function createBaseFileName() {
 async function sendDADownloadRequests(
   zipFileName,
   daDownloadDetailsList,
-  sessionId,
-  hostName
+  // sessionId,
+  // hostName
+  reqBody
 ) {
   if (!daDownloadDetailsList || !daDownloadDetailsList.length) return;
   zipFileName = `Digital_Asset-Export_${zipFileName}.zip`;
 
-  const payload = JSON.stringify({
-    platform: 'aws',
-    zipFileName,
-    daDownloadDetailsList,
-    hostName,
-    sessionId,
-    salesforceUrl: hostName
-  });
-  const options = {
-    hostname: 'cloud-doc-stateless.herokuapp.com',
-    path: '/platform/files/download/',
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Content-Length': Buffer.byteLength(payload)
-    }
-  };
-  const request = https.request(options, res => {
-    let data = '';
-    res.on('data', chunk => {
-      data = data + chunk.toString();
+  // const payload = JSON.stringify({
+  //   platform: 'aws',
+  //   zipFileName,
+  //   daDownloadDetailsList,
+  //   hostName,
+  //   sessionId,
+  //   salesforceUrl: hostName
+  // });
+  // const options = {
+  //   hostname: 'cloud-doc-stateless.herokuapp.com',
+  //   path: '/platform/files/download/',
+  //   method: 'POST',
+  //   headers: {
+  //     'Content-Type': 'application/json',
+  //     'Content-Length': Buffer.byteLength(payload)
+  //   }
+  // };
+  // const request = https.request(options, res => {
+  //   let data = '';
+  //   res.on('data', chunk => {
+  //     data = data + chunk.toString();
+  //   });
+  //   res.on('end', () => {
+  //     console.log(data);
+  //   });
+  // });
+  
+  // request.write(payload);
+  // request.end();
+  // console.log('Payload sent: ', payload);
+
+
+
+  const filename = 'testImage.png';
+  const nameOnDisk = crypto.randomBytes(20).toString('hex') + filename;
+  downloadAssets('https://d3uk1mqqf9h27x.cloudfront.net/00DHu000001IObVMAW/2a8177c6-4ea5-4dbc-b81b-474fe3aa6fcd', filename);
+  try {
+    postToChatter(filename, nameOnDisk, '', reqBody);
+  } catch (err) {
+    console.log('error: ', err);
+  }
+}
+
+function downloadAssets(url, destination) {
+  request(url)
+    .pipe(fs.createWriteStream(destination))
+    .on('close', () => {
+      console.log('Asset downloaded successfully!');
+    })
+    .on('error', (err) => {
+      console.error('Error downloading the asset:', err);
     });
-    res.on('end', () => {
-      console.log(data);
-    });
-  });
-  request.write(payload);
-  request.end();
-  console.log('Payload sent: ', payload);
 }
 
 module.exports = LegacyExportPIM;
