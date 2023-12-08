@@ -222,7 +222,7 @@ async function sendDADownloadRequests(
   const filename = 'testImage.png';
   await downloadAssets('https://d3uk1mqqf9h27x.cloudfront.net/00DHu000001IObVMAW/2a8177c6-4ea5-4dbc-b81b-474fe3aa6fcd', filename);
   try {
-    postAssetZipFileToChatter(filename, reqBody);
+    postToChatter(filename, filename, '', reqBody);
   } catch (err) {
     console.log('error: ', err);
   }
