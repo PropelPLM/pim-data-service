@@ -1,7 +1,7 @@
 var fs = require('fs');
 var crypto = require('crypto');
 const https = require('https');
-const archiver = require('archiver');
+// const archiver = require('archiver');
 
 // adding the propel-sfdc-connect package
 const propelConnect = require('@propelsoftwaresolutions/propel-sfdc-connect');
