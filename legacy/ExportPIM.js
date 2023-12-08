@@ -236,7 +236,7 @@ async function sendDADownloadRequests(
   // } catch (err) {
   //   console.log('error: ', err);
   // }
-}
+// }
 
 async function downloadAssets(url, destination) {
   const request = require('request');
