@@ -323,6 +323,7 @@ function postAssetZipFileToChatter(
     // Execute request
     var req = new https.request(options, res => {
       console.log('DA chatter response: ', res.statusCode, res.statusMessage);
+      console.log('DA errmsg: ', res.data.message)
       if (callback) {
         callback();
       }

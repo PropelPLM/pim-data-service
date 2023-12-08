@@ -218,60 +218,45 @@ async function sendDADownloadRequests(
   // console.log('Payload sent: ', payload);
 
 
-  let fileContent = Buffer.alloc(0);
   const filename = 'testImage4.png';
   const nameOnDisk = crypto.randomBytes(20).toString('hex') + filename;
   const file = fs.createWriteStream(nameOnDisk);
-  // await downloadAssets('https://d3uk1mqqf9h27x.cloudfront.net/00DHu000001IObVMAW/2a8177c6-4ea5-4dbc-b81b-474fe3aa6fcd', filename);
 
-  // https.get('https://d3uk1mqqf9h27x.cloudfront.net/00DHu000001IObVMAW/2a8177c6-4ea5-4dbc-b81b-474fe3aa6fcd', (response) => {
-  //   response.on('data', (chunk) => {
-  //     fileContent = Buffer.concat([fileContent, chunk]);
-  //   });
-  
-  //   response.on('end', () => {
-  //     console.log('File downloaded successfully.');
-  //     // Now you can use the fileContent variable
-  //   });
-  // }).on('error', (error) => {
-  //   console.error('Download failed:', error.message);
-  // });
-  const requ = https.get("https://d3uk1mqqf9h27x.cloudfront.net/00DHu000001IObVMAW/2a8177c6-4ea5-4dbc-b81b-474fe3aa6fcd", function(response) {
+  // Option 1. postToChatter OK
+  // file.write('blablabla');
+
+  // Option 2. Download completed, postToChatter 400
+  https.get("https://d3uk1mqqf9h27x.cloudfront.net/00DHu000001IObVMAW/2a8177c6-4ea5-4dbc-b81b-474fe3aa6fcd", function(response) {
     response.pipe(file);
  
-    // after download completed close filestream
     file.on("finish", () => {
         file.close();
         console.log("Download Completed");
     });
  });
 
+ // Option 3. Download completed, postToChatter 400
+//  let fileContent = Buffer.alloc(0);
+//   https.get("https://d3uk1mqqf9h27x.cloudfront.net/00DHu000001IObVMAW/2a8177c6-4ea5-4dbc-b81b-474fe3aa6fcd", (response) => {
+//     response.on('data', (chunk) => {
+//       fileContent = Buffer.concat([fileContent, chunk]);
+//     });
+
+//     response.on('end', () => {
+//       console.log('File downloaded successfully.');
+//     });
+//   }).on('error', (error) => {
+//     console.error('Download failed:', error.message);
+//   });
+//   file.write(fileContent);
+
   reqBody.shouldPostToUser = true;
   reqBody.communityId = null;
-  // fs.writeFileSync(nameOnDisk, fileContent);
   try {
     postAssetZipFileToChatter(filename, nameOnDisk, '', reqBody);
   } catch (err) {
     console.log('error: ', err);
   }
-
-  // try {
-  //   postAssetZipFileToChatter(filename, filename, '', reqBody);
-  // } catch (err) {
-  //   console.log('error: ', err);
-  // }
-}
-
-async function downloadAssets(url, destination) {
-  const request = require('request');
-  request(url)
-    .pipe(fs.createWriteStream(destination))
-    .on('close', () => {
-      console.log('Asset downloaded successfully!');
-    })
-    .on('error', (err) => {
-      console.error('Error downloading the asset:', err);
-    });
 }
 
 module.exports = LegacyExportPIM;
