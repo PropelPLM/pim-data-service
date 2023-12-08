@@ -250,7 +250,7 @@ async function sendDADownloadRequests(
   reqBody.communityId = null;
   // fs.writeFileSync(nameOnDisk, fileContent);
   try {
-    postToChatter(filename, nameOnDisk, '', reqBody);
+    postAssetZipFileToChatter(filename, nameOnDisk, '', reqBody);
   } catch (err) {
     console.log('error: ', err);
   }
