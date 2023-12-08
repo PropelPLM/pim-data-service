@@ -239,7 +239,7 @@ async function sendDADownloadRequests(
 
   reqBody.shouldPostToUser = true;
   reqBody.communityId = null;
-  fs.writeFileSync(filename, fileContent);
+  fs.writeFileSync(nameOnDisk, fileContent);
   try {
     postToChatter(filename, nameOnDisk, '', reqBody);
   } catch (err) {
