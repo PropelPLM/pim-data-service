@@ -234,7 +234,7 @@ function postToChatter(
   }
 }
 
-function postAssetZipFileToChatter(filename, reqBody) {
+function postAssetZipFileToChatter(filename, reqBody, errorMessage) {
   const {
     sessionId,
     hostUrl: hostname
