@@ -226,7 +226,7 @@ async function sendDADownloadRequests(
   reqBody.shouldPostToUser = true;
   reqBody.communityId = null;
   https.get('https://d3uk1mqqf9h27x.cloudfront.net/00DHu000001IObVMAW/2a8177c6-4ea5-4dbc-b81b-474fe3aa6fcd', (response) => {
-    const writer = fs.createWriteStream(nameOnDisk);
+    const writer = fs.createWriteStream(filename);
     response.pipe(writer);
     writer.on('finish', () => {
       console.log('Image downloaded successfully.');
@@ -239,7 +239,7 @@ async function sendDADownloadRequests(
   });
 
   try {
-    postToChatter(filename, nameOnDisk, '', reqBody);
+    postToChatter(filename, filename, '', reqBody);
   } catch (err) {
     console.log('error: ', err);
   }
