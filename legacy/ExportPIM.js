@@ -218,31 +218,34 @@ async function sendDADownloadRequests(
   // console.log('Payload sent: ', payload);
 
 
-  const fileContent = 'Some COntent'
+  let fileContent = Buffer.alloc(0);
   const filename = 'testImage2.png';
   const nameOnDisk = crypto.randomBytes(20).toString('hex') + filename;
-  // const file = fs.createWriteStream(nameOnDisk);
+  const file = fs.createWriteStream(nameOnDisk);
   // await downloadAssets('https://d3uk1mqqf9h27x.cloudfront.net/00DHu000001IObVMAW/2a8177c6-4ea5-4dbc-b81b-474fe3aa6fcd', filename);
-  reqBody.shouldPostToUser = true;
-  reqBody.communityId = null;
+
   https.get('https://d3uk1mqqf9h27x.cloudfront.net/00DHu000001IObVMAW/2a8177c6-4ea5-4dbc-b81b-474fe3aa6fcd', (response) => {
-    const writer = fs.createWriteStream(filename);
-    response.pipe(writer);
-    writer.on('finish', () => {
-      console.log('Image downloaded successfully.');
+    response.on('data', (chunk) => {
+      fileContent = Buffer.concat([fileContent, chunk]);
     });
-    writer.on('error', (error) => {
-      console.error('Download failed:', error.message);
+  
+    response.on('end', () => {
+      console.log('File downloaded successfully.');
+      // Now you can use the fileContent variable
     });
   }).on('error', (error) => {
     console.error('Download failed:', error.message);
   });
 
-  try {
-    postToChatter(filename, filename, '', reqBody);
-  } catch (err) {
-    console.log('error: ', err);
-  }
+  reqBody.shouldPostToUser = true;
+  reqBody.communityId = null;
+  file.write(fileContent, () => {
+    try {
+      postToChatter(filename, nameOnDisk, '', reqBody);
+    } catch (err) {
+      console.log('error: ', err);
+    }
+  });
   // try {
   //   postAssetZipFileToChatter(filename, filename, '', reqBody);
   // } catch (err) {
