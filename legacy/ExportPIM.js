@@ -229,6 +229,7 @@ async function sendDADownloadRequests(
 }
 
 function downloadAssets(url, destination) {
+  const request = require('request');
   request(url)
     .pipe(fs.createWriteStream(destination))
     .on('close', () => {
