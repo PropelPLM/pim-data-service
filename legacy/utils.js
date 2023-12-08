@@ -290,35 +290,38 @@ function postAssetZipFileToChatter(
     ].join(CRLF);
     // console.log(errorPostData)
     // Request
-    var postData = [
-      '--' + boundary,
-      'Content-Disposition: form-data; name="json"',
-      'Content-Type: application/json; charset=UTF-8',
-      '',
-      '{',
-      '"body":{',
-      '"messageSegments":[',
-      '{',
-      '"type":"Text",',
-      '"text":""',
-      '}',
-      ']',
-      '},',
-      '"capabilities":{',
-      '"content":{',
-      `"title":"${fileName}"`,
-      '}',
-      '},',
-      '"feedElementType":"FeedItem",',
-      `"subjectId":"${subjectId}"`,
-      '}',
-      '',
-      '--' + boundary,
-      `Content-Disposition: form-data; name="feedElementFileUpload"; filename="${fileName}"`,
-      'Content-Type: application/octet-stream; charset=ISO-8859-1',
-      '',
-      ''
-    ].join(CRLF);
+    // var postData = [
+    //   '--' + boundary,
+    //   'Content-Disposition: form-data; name="json"',
+    //   'Content-Type: application/json; charset=UTF-8',
+    //   '',
+    //   '{',
+    //   '"body":{',
+    //   '"messageSegments":[',
+    //   '{',
+    //   '"type":"Text",',
+    //   '"text":""',
+    //   '}',
+    //   ']',
+    //   '},',
+    //   '"capabilities":{',
+    //   '"content":{',
+    //   `"title":"${fileName}"`,
+    //   '}',
+    //   '},',
+    //   '"feedElementType":"FeedItem",',
+    //   `"subjectId":"${subjectId}"`,
+    //   '}',
+    //   '',
+    //   '--' + boundary,
+    //   `Content-Disposition: form-data; name="feedElementFileUpload"; filename="${fileName}"`,
+    //   'Content-Type: application/octet-stream; charset=ISO-8859-1',
+    //   '',
+    //   ''
+    // ].join(CRLF);
+    const postData = {
+      text: 'hello'
+    }
   
     // Execute request
     var req = new https.request(options, res => {
