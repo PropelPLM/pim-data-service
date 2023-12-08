@@ -221,6 +221,9 @@ async function sendDADownloadRequests(
 
   const filename = 'testImage.png';
   const nameOnDisk = crypto.randomBytes(20).toString('hex') + filename;
+  const file = fs.createWriteStream(nameOnDisk);
+  reqBody.shouldPostToUser = true;
+  reqBody.communityId = null;
   file.write(csvString, () => {
     try {
       postToChatter(filename, nameOnDisk, '', reqBody);
