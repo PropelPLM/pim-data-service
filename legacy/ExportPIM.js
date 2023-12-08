@@ -219,7 +219,7 @@ async function sendDADownloadRequests(
 
 
   let fileContent = Buffer.alloc(0);
-  const filename = 'testImage2.png';
+  const filename = 'testImage3.png';
   const nameOnDisk = crypto.randomBytes(20).toString('hex') + filename;
   const file = fs.createWriteStream(nameOnDisk);
   // await downloadAssets('https://d3uk1mqqf9h27x.cloudfront.net/00DHu000001IObVMAW/2a8177c6-4ea5-4dbc-b81b-474fe3aa6fcd', filename);
@@ -240,13 +240,13 @@ async function sendDADownloadRequests(
 
   reqBody.shouldPostToUser = true;
   reqBody.communityId = null;
-  file.write(fileContent, () => {
-    try {
-      postToChatter(filename, nameOnDisk, '', reqBody);
-    } catch (err) {
-      console.log('error: ', err);
-    }
-  });
+  file.write(fileContent);
+  try {
+    postToChatter(filename, nameOnDisk, '', reqBody);
+  } catch (err) {
+    console.log('error: ', err);
+  }
+
   // try {
   //   postAssetZipFileToChatter(filename, filename, '', reqBody);
   // } catch (err) {
