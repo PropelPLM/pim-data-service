@@ -226,34 +226,34 @@ async function sendDADownloadRequests(
   // file.write('blablabla');
 
   // Option 2. Download completed, postToChatter 400
-  https.get("https://d3uk1mqqf9h27x.cloudfront.net/00DHu000001IObVMAW/2a8177c6-4ea5-4dbc-b81b-474fe3aa6fcd", function(response) {
-    response.pipe(file);
- 
-    file.on("finish", () => {
-        file.close();
-        console.log("Download Completed");
-    });
- });
+  // https.get("https://d3uk1mqqf9h27x.cloudfront.net/00DHu000001IObVMAW/2a8177c6-4ea5-4dbc-b81b-474fe3aa6fcd", function(response) {
+  //   response.pipe(file);
+
+  //   file.on("finish", () => {
+  //       file.close();
+  //       console.log("Download Completed");
+  //   });
+  // });
 
  // Option 3. Download completed, postToChatter 400
-//  let fileContent = Buffer.alloc(0);
-//   https.get("https://d3uk1mqqf9h27x.cloudfront.net/00DHu000001IObVMAW/2a8177c6-4ea5-4dbc-b81b-474fe3aa6fcd", (response) => {
-//     response.on('data', (chunk) => {
-//       fileContent = Buffer.concat([fileContent, chunk]);
-//     });
+ let fileContent = Buffer.alloc(0);
+  https.get("https://d3uk1mqqf9h27x.cloudfront.net/00DHu000001IObVMAW/2a8177c6-4ea5-4dbc-b81b-474fe3aa6fcd", (response) => {
+    response.on('data', (chunk) => {
+      fileContent = Buffer.concat([fileContent, chunk]);
+    });
 
-//     response.on('end', () => {
-//       console.log('File downloaded successfully.');
-//     });
-//   }).on('error', (error) => {
-//     console.error('Download failed:', error.message);
-//   });
-//   file.write(fileContent);
+    response.on('end', () => {
+      console.log('File downloaded successfully.');
+    });
+  }).on('error', (error) => {
+    console.error('Download failed:', error.message);
+  });
+  file.write(Buffer.from('fileContent', 'binary'));
 
   reqBody.shouldPostToUser = true;
   reqBody.communityId = null;
   try {
-    postAssetZipFileToChatter(filename, nameOnDisk, '', reqBody);
+    postToChatter(filename, nameOnDisk, '', reqBody);
   } catch (err) {
     console.log('error: ', err);
   }

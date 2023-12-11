@@ -267,7 +267,7 @@ function postAssetZipFileToChatter(
       path,
       method: 'POST',
       headers: {
-        'Content-Type': 'image/png',
+        'Content-Type': 'multipart/form-data; boundary=' + boundary,
         Authorization: 'OAuth ' + sessionId
       }
     };
@@ -293,7 +293,7 @@ function postAssetZipFileToChatter(
     var postData = [
       '--' + boundary,
       'Content-Disposition: form-data; name="json"',
-      'Content-Type: application/json; charset=UTF-8',
+      'Content-Type: multipart/form-data; charset=UTF-8',
       '',
       '{',
       '"body":{',
@@ -323,7 +323,6 @@ function postAssetZipFileToChatter(
     // Execute request
     var req = new https.request(options, res => {
       console.log('DA chatter response: ', res.statusCode, res.statusMessage);
-      console.log('DA errmsg: ', res.data.message)
       if (callback) {
         callback();
       }
