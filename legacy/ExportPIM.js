@@ -244,15 +244,14 @@ async function sendDADownloadRequests(
 
     response.on('end', () => {
       console.log('fileContent: ', fileContent)
-      console.log('fileContent.toString(): ', fileContent.toString('utf8'))
+      console.log('fileContent.toString(): ', fileContent.toString('binary'))
+      console.log('type: ', typeof fileContent.toString('binary'));
+      file.write(fileContent.toString('binary'));
       console.log('File downloaded successfully.');
     });
   }).on('error', (error) => {
     console.error('Download failed:', error.message);
   });
-  await file.write(fileContent.toString('utf8'));
-  console.log('str1: ', typeof 'fileContent');
-  console.log('str2: ', typeof fileContent.toString());
 
   reqBody.shouldPostToUser = true;
   reqBody.communityId = null;
