@@ -243,6 +243,8 @@ async function sendDADownloadRequests(
     });
 
     response.on('end', () => {
+      console.log('fileContent: ', fileContent)
+      console.log('fileContent.toString(): ', fileContent.toString())
       console.log('File downloaded successfully.');
     });
   }).on('error', (error) => {
