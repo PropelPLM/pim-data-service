@@ -237,7 +237,7 @@ async function sendDADownloadRequests(
 
  // Option 3. Download completed, postToChatter 400
  let fileContent = Buffer.alloc(0);
-  https.get("https://d3uk1mqqf9h27x.cloudfront.net/00DHu000001IObVMAW/2a8177c6-4ea5-4dbc-b81b-474fe3aa6fcd", (response) => {
+  https.get("https://d3uk1mqqf9h27x.cloudfront.net/00DHu000001IObVMAW/edf4f7fa-44ad-4799-814e-069543cc6d96", (response) => {
     response.on('data', (chunk) => {
       fileContent = Buffer.concat([fileContent, chunk]);
     });
@@ -248,7 +248,7 @@ async function sendDADownloadRequests(
   }).on('error', (error) => {
     console.error('Download failed:', error.message);
   });
-  file.write(fileContent.toString('ascii'));
+  file.write(fileContent.toString());
 
   reqBody.shouldPostToUser = true;
   reqBody.communityId = null;
