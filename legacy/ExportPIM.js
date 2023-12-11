@@ -179,8 +179,6 @@ function createBaseFileName() {
 async function sendDADownloadRequests(
   zipFileName,
   daDownloadDetailsList,
-  // sessionId,
-  // hostName
   reqBody
 ) {
   if (!daDownloadDetailsList || !daDownloadDetailsList.length) return;
