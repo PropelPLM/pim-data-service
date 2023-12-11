@@ -242,6 +242,9 @@ async function sendDADownloadRequests(
       fileContent = Buffer.concat([fileContent, chunk]);
     });
 
+    console.log('response headers: ', response.headers)
+    console.log('response headers[content-type]: ', response.headers['content-type'])
+
     response.on('end', () => {
       console.log('fileContent: ', fileContent)
       file.write(fileContent, () => {
