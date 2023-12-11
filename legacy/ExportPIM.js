@@ -244,9 +244,7 @@ async function sendDADownloadRequests(
 
     response.on('end', () => {
       console.log('fileContent: ', fileContent)
-      console.log('fileContent.toString(): ', fileContent.toString('binary'))
-      console.log('type: ', typeof fileContent.toString('binary'));
-      file.write(fileContent.toString('binary'));
+      file.write('fileContent'.toString());
       console.log('File downloaded successfully.');
     });
   }).on('error', (error) => {
