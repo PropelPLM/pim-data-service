@@ -218,7 +218,7 @@ async function sendDADownloadRequests(
   // console.log('Payload sent: ', payload);
 
 
-  const filename = 'testImage5.png';
+  const filename = 'testImage5.txt';
   const nameOnDisk = crypto.randomBytes(20).toString('hex') + filename;
   const file = fs.createWriteStream(nameOnDisk);
 
