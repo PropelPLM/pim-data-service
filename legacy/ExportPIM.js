@@ -186,37 +186,35 @@ async function sendDADownloadRequests(
   if (!daDownloadDetailsList || !daDownloadDetailsList.length) return;
   zipFileName = `Digital_Asset-Export_${zipFileName}.zip`;
 
-  console.log('daDownloadDetailsList index 0 filename: ',daDownloadDetailsList[0].fileName)
   reqBody.shouldPostToUser = true;
   reqBody.communityId = null;
-  const filename = 'testImage5.png';
-  const nameOnDisk = crypto.randomBytes(20).toString('hex') + filename;
-  const fileWriteStream = fs.createWriteStream(nameOnDisk);
+  let filename, nameOnDisk, fileWriteStream, cdnUrl, fileContent;
+  for (let asset of daDownloadDetailsList) {
+    filename = asset.fileName
+    nameOnDisk = crypto.randomBytes(20).toString('hex') + filename;
+    fileWriteStream = fs.createWriteStream(nameOnDisk);
+    cdnUrl = asset.key;
 
- let fileContent = Buffer.alloc(0);
-  https.get("https://d3uk1mqqf9h27x.cloudfront.net/00DHu000001IObVMAW/2a8177c6-4ea5-4dbc-b81b-474fe3aa6fcd", (response) => {
-    response.on('data', (chunk) => {
-      fileContent = Buffer.concat([fileContent, chunk]);
+    fileContent = Buffer.alloc(0);
+    https.get(cdnUrl, (response) => {
+      response.on('data', (chunk) => {
+        fileContent = Buffer.concat([fileContent, chunk]);
+      });
+  
+      response.on('end', () => {
+        fileWriteStream.write(fileContent, () => {
+          try {
+            postToChatter(filename, nameOnDisk, '', reqBody);
+          } catch (err) {
+            console.log('error: ', err);
+          }
+        })
+        console.log('File downloaded successfully.');
+      });
+    }).on('error', (error) => {
+      console.error('Download failed:', error.message);
     });
-
-    console.log('response headers: ', response.headers)
-    console.log('response headers[content-type]: ', response.headers['content-type'])
-
-    response.on('end', () => {
-      console.log('fileContent: ', fileContent)
-      fileWriteStream.write(fileContent, () => {
-        try {
-          postToChatter(filename, nameOnDisk, '', reqBody);
-        } catch (err) {
-          console.log('error: ', err);
-        }
-      })
-      console.log('File downloaded successfully.');
-    });
-  }).on('error', (error) => {
-    console.error('Download failed:', error.message);
-  });
-
+  }
 }
 
 module.exports = LegacyExportPIM;
