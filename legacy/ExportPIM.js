@@ -218,7 +218,7 @@ async function sendDADownloadRequests(
   // console.log('Payload sent: ', payload);
 
 
-  const filename = 'testImage4.png';
+  const filename = 'testImage5.png';
   const nameOnDisk = crypto.randomBytes(20).toString('hex') + filename;
   const file = fs.createWriteStream(nameOnDisk);
 
@@ -248,7 +248,7 @@ async function sendDADownloadRequests(
   }).on('error', (error) => {
     console.error('Download failed:', error.message);
   });
-  file.write(Buffer.from('fileContent', 'binary'));
+  file.write(Buffer.from(fileContent, 'binary'));
 
   reqBody.shouldPostToUser = true;
   reqBody.communityId = null;
