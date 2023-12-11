@@ -186,7 +186,7 @@ async function sendDADownloadRequests(
   if (!daDownloadDetailsList || !daDownloadDetailsList.length) return;
   zipFileName = `Digital_Asset-Export_${zipFileName}.zip`;
 
-  console.log('daDownloadDetailsList: ',daDownloadDetailsList)
+  console.log('daDownloadDetailsList index 0 filename: ',daDownloadDetailsList[0].fileName)
   reqBody.shouldPostToUser = true;
   reqBody.communityId = null;
   const filename = 'testImage5.png';
