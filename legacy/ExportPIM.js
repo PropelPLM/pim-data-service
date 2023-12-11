@@ -236,22 +236,19 @@ async function sendDADownloadRequests(
   // });
 
  // Option 3. Download completed, postToChatter 400
- let responseData = [];
- let fileContent;
+ let fileContent = Buffer.alloc(0);
   https.get("https://d3uk1mqqf9h27x.cloudfront.net/00DHu000001IObVMAW/2a8177c6-4ea5-4dbc-b81b-474fe3aa6fcd", (response) => {
-    response.setEncoding('binary');
     response.on('data', (chunk) => {
-      responseData.push(Buffer.from(chunk, 'binary'));
-    })
-    
+      fileContent = Buffer.concat([fileContent, chunk]);
+    });
+
     response.on('end', () => {
-      fileContent = Buffer.concat(responseData);
       console.log('File downloaded successfully.');
     });
   }).on('error', (error) => {
     console.error('Download failed:', error.message);
   });
-  fs.writeFile(nameOnDisk, fileContent, 'binary', function(err) {})
+  file.write(fileContent);
 
   reqBody.shouldPostToUser = true;
   reqBody.communityId = null;
