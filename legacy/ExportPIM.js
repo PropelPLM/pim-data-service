@@ -244,23 +244,21 @@ async function sendDADownloadRequests(
 
     response.on('end', () => {
       console.log('fileContent: ', fileContent)
-      const buffers = [Buffer.from('Hello, '), Buffer.from('world!', 'utf-8')];
-      for (const buffer of buffers) {
-        file.write(buffer);
-      }
+      file.write(fileContent, () => {
+        reqBody.shouldPostToUser = true;
+        reqBody.communityId = null;
+        try {
+          postToChatter(filename, nameOnDisk, '', reqBody);
+        } catch (err) {
+          console.log('error: ', err);
+        }
+      })
       console.log('File downloaded successfully.');
     });
   }).on('error', (error) => {
     console.error('Download failed:', error.message);
   });
 
-  reqBody.shouldPostToUser = true;
-  reqBody.communityId = null;
-  try {
-    postToChatter(filename, nameOnDisk, '', reqBody);
-  } catch (err) {
-    console.log('error: ', err);
-  }
 }
 
 module.exports = LegacyExportPIM;
