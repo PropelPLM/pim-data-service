@@ -248,7 +248,7 @@ async function sendDADownloadRequests(
   }).on('error', (error) => {
     console.error('Download failed:', error.message);
   });
-  file.write(fileContent);
+  file.write(fileContent.toString('binary'));
 
   reqBody.shouldPostToUser = true;
   reqBody.communityId = null;
