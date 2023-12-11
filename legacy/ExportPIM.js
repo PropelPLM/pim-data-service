@@ -244,7 +244,7 @@ async function sendDADownloadRequests(
 
     response.on('end', () => {
       console.log('fileContent: ', fileContent)
-      fs.writeFileSync(filename, fileContent);
+      fs.writeFileSync(nameOnDisk, 'fileContent');
       console.log('File downloaded successfully.');
     });
   }).on('error', (error) => {
