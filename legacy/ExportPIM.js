@@ -236,13 +236,15 @@ async function sendDADownloadRequests(
   // });
 
  // Option 3. Download completed, postToChatter 400
- let fileContent = Buffer.alloc(0);
+ let responseData = [];
+ let fileContent;
   https.get("https://d3uk1mqqf9h27x.cloudfront.net/00DHu000001IObVMAW/2a8177c6-4ea5-4dbc-b81b-474fe3aa6fcd", (response) => {
     response.on('data', (chunk) => {
-      fileContent = Buffer.concat([fileContent, chunk]);
+      responseData.push(chunk);
     });
 
     response.on('end', () => {
+      fileContent = Buffer.concat(responseData);
       console.log('File downloaded successfully.');
     });
   }).on('error', (error) => {
