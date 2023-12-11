@@ -244,7 +244,10 @@ async function sendDADownloadRequests(
 
     response.on('end', () => {
       console.log('fileContent: ', fileContent)
-      fs.writeFileSync(filename, 'fileContent');
+      const buffers = [Buffer.from('Hello, '), Buffer.from('world!', 'utf-8')];
+      for (const buffer of buffers) {
+        file.write(buffer);
+      }
       console.log('File downloaded successfully.');
     });
   }).on('error', (error) => {
