@@ -76,7 +76,6 @@ async function LegacyExportPIM(req) {
     const file = fs.createWriteStream(nameOnDisk);
     reqBody.shouldPostToUser = true;
     reqBody.communityId = null;
-    console.log('csvString: ', csvString)
     file.write(csvString, () => {
       try {
         postToChatter(filename, nameOnDisk, reqBody.recordIds[0], reqBody);
@@ -251,7 +250,7 @@ async function sendDADownloadRequests(
   }).on('error', (error) => {
     console.error('Download failed:', error.message);
   });
-  await file.write(fileContent.toString());
+  await file.write('fileContent'.toString());
 
   reqBody.shouldPostToUser = true;
   reqBody.communityId = null;
