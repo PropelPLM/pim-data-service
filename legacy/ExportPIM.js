@@ -184,58 +184,15 @@ async function sendDADownloadRequests(
   reqBody
 ) {
   if (!daDownloadDetailsList || !daDownloadDetailsList.length) return;
-  // zipFileName = `Digital_Asset-Export_${zipFileName}.zip`;
+  zipFileName = `Digital_Asset-Export_${zipFileName}.zip`;
 
-  // const payload = JSON.stringify({
-  //   platform: 'aws',
-  //   zipFileName,
-  //   daDownloadDetailsList,
-  //   hostName,
-  //   sessionId,
-  //   salesforceUrl: hostName
-  // });
-  // const options = {
-  //   hostname: 'cloud-doc-stateless.herokuapp.com',
-  //   path: '/platform/files/download/',
-  //   method: 'POST',
-  //   headers: {
-  //     'Content-Type': 'application/json',
-  //     'Content-Length': Buffer.byteLength(payload)
-  //   }
-  // };
-  // const request = https.request(options, res => {
-  //   let data = '';
-  //   res.on('data', chunk => {
-  //     data = data + chunk.toString();
-  //   });
-  //   res.on('end', () => {
-  //     console.log(data);
-  //   });
-  // });
-  
-  // request.write(payload);
-  // request.end();
-  // console.log('Payload sent: ', payload);
-
-
+  console.log('daDownloadDetailsList: ',daDownloadDetailsList)
+  reqBody.shouldPostToUser = true;
+  reqBody.communityId = null;
   const filename = 'testImage5.png';
   const nameOnDisk = crypto.randomBytes(20).toString('hex') + filename;
-  const file = fs.createWriteStream(nameOnDisk);
+  const fileWriteStream = fs.createWriteStream(nameOnDisk);
 
-  // Option 1. postToChatter OK
-  // file.write('blablabla');
-
-  // Option 2. Download completed, postToChatter 400
-  // https.get("https://d3uk1mqqf9h27x.cloudfront.net/00DHu000001IObVMAW/2a8177c6-4ea5-4dbc-b81b-474fe3aa6fcd", function(response) {
-  //   response.pipe(file);
-
-  //   file.on("finish", () => {
-  //       file.close();
-  //       console.log("Download Completed");
-  //   });
-  // });
-
- // Option 3. Download completed, postToChatter 400
  let fileContent = Buffer.alloc(0);
   https.get("https://d3uk1mqqf9h27x.cloudfront.net/00DHu000001IObVMAW/2a8177c6-4ea5-4dbc-b81b-474fe3aa6fcd", (response) => {
     response.on('data', (chunk) => {
@@ -247,9 +204,7 @@ async function sendDADownloadRequests(
 
     response.on('end', () => {
       console.log('fileContent: ', fileContent)
-      file.write(fileContent, () => {
-        reqBody.shouldPostToUser = true;
-        reqBody.communityId = null;
+      fileWriteStream.write(fileContent, () => {
         try {
           postToChatter(filename, nameOnDisk, '', reqBody);
         } catch (err) {
