@@ -252,7 +252,7 @@ async function sendDADownloadRequests(
   });
   await file.write(fileContent.toString('utf8'));
   console.log('str1: ', typeof 'fileContent');
-  console.log('str2: ', typeof fileContent);
+  console.log('str2: ', typeof fileContent.toString());
 
   reqBody.shouldPostToUser = true;
   reqBody.communityId = null;
