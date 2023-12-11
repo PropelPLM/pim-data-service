@@ -76,6 +76,7 @@ async function LegacyExportPIM(req) {
     const file = fs.createWriteStream(nameOnDisk);
     reqBody.shouldPostToUser = true;
     reqBody.communityId = null;
+    console.log('csvString: ', csvString)
     file.write(csvString, () => {
       try {
         postToChatter(filename, nameOnDisk, reqBody.recordIds[0], reqBody);
