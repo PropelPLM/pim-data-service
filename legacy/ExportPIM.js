@@ -1,7 +1,7 @@
 var fs = require('fs');
 var crypto = require('crypto');
 const https = require('https');
-// const archiver = require('archiver');
+const archiver = require('archiver');
 
 // adding the propel-sfdc-connect package
 const propelConnect = require('@propelsoftwaresolutions/propel-sfdc-connect');
@@ -183,6 +183,18 @@ async function sendDADownloadRequests(
 ) {
   if (!daDownloadDetailsList || !daDownloadDetailsList.length) return;
   zipFileName = `Digital_Asset-Export_${zipFileName}.zip`;
+  const zipFileNameOnDisk = crypto.randomBytes(20).toString('hex') + zipFileName;
+  const output = fs.createWriteStream(zipFileNameOnDisk);
+  const archive = archiver('zip', {
+    zlib: { level: 9 }
+  });
+
+  // listen for all archive data to be written
+  // 'close' event is fired only when a file descriptor is involved
+  output.on('close', function() {
+    console.log(archive.pointer() + ' total bytes');
+    console.log('archiver has been finalized and the output file descriptor has closed.');
+  });
 
   reqBody.shouldPostToUser = true;
   reqBody.communityId = null;
@@ -199,19 +211,32 @@ async function sendDADownloadRequests(
         fileContent = Buffer.concat([fileContent, chunk]);
       });
   
+      // response.on('end', () => {
+      //   fileWriteStream.write(fileContent, () => {
+      //     try {
+      //       postToChatter(filename, nameOnDisk, '', reqBody);
+      //     } catch (err) {
+      //       console.log('error: ', err);
+      //     }
+      //   })
+      //   console.log('File downloaded successfully.');
+      // });
       response.on('end', () => {
-        fileWriteStream.write(fileContent, () => {
-          try {
-            postToChatter(filename, nameOnDisk, '', reqBody);
-          } catch (err) {
-            console.log('error: ', err);
-          }
-        })
-        console.log('File downloaded successfully.');
+        const zipInputStream = new ReadableStream();
+        zipInputStream.push(fileContent);
+        zipInputStream.push(null);
+        console.log('File zipped successfully.');
       });
     }).on('error', (error) => {
       console.error('Download failed:', error.message);
     });
+  }
+
+  try {
+    archive.append(zipInputStream, { name: zipFileName });
+    postToChatter(zipFileName, zipFileNameOnDisk, '', reqBody)
+  } catch (err) {
+    console.log('error: ', err);
   }
 }
 
