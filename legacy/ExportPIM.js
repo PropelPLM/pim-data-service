@@ -200,9 +200,9 @@ async function sendDADownloadRequests(
 
   reqBody.shouldPostToUser = true;
   reqBody.communityId = null;
-  let filename, nameOnDisk, fileWriteStream, cdnUrl, fileContent;
-  let zipInputStream = new ReadableStream();
+  let filename, nameOnDisk, fileWriteStream, cdnUrl, fileContent, zipInputStream;
   for (let asset of daDownloadDetailsList) {
+    zipInputStream = new ReadableStream();
     filename = asset.fileName
     nameOnDisk = crypto.randomBytes(20).toString('hex') + filename;
     fileWriteStream = fs.createWriteStream(nameOnDisk);
@@ -227,7 +227,6 @@ async function sendDADownloadRequests(
       response.on('end', () => {
         try {
           zipInputStream.push(fileContent);
-          zipInputStream.push(null);
           archive.append(zipInputStream, { name: filename });
           archive.on('finish', () => {
             postToChatter(zipFileName, zipFileNameOnDisk, '', reqBody);
