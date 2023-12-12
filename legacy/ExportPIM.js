@@ -204,8 +204,8 @@ async function sendDADownloadRequests(
   let zipInputStream = new ReadableStream();
   for (let asset of daDownloadDetailsList) {
     filename = asset.fileName
-    nameOnDisk = crypto.randomBytes(20).toString('hex') + filename;
-    fileWriteStream = fs.createWriteStream(nameOnDisk);
+    // nameOnDisk = crypto.randomBytes(20).toString('hex') + filename;
+    // fileWriteStream = fs.createWriteStream(nameOnDisk);
     cdnUrl = asset.key;
 
     fileContent = Buffer.alloc(0);
@@ -227,7 +227,7 @@ async function sendDADownloadRequests(
       response.on('end', () => {
         try {
           zipInputStream.push(fileContent);
-          archive.append(zipInputStream, { name: filename });
+          archive.append(zipInputStream, { name: zipFileName });
         } catch (err) {
           console.log('error: ', err);
         }
