@@ -234,7 +234,7 @@ async function sendDADownloadRequests(
 
   try {
     archive.append(zipInputStream, { name: zipFileName });
-    postToChatter(zipFileName, zipFileNameOnDisk, '', reqBody)
+    postToChatter(zipFileName, zipFileNameOnDisk, '', reqBody);
   } catch (err) {
     console.log('error: ', err);
   }
