@@ -198,7 +198,7 @@ async function sendDADownloadRequests(
 
   reqBody.shouldPostToUser = true;
   reqBody.communityId = null;
-  let filename, nameOnDisk, fileWriteStream, cdnUrl, fileContent;
+  let filename, nameOnDisk, fileWriteStream, cdnUrl, fileContent, zipInputStream;
   for (let asset of daDownloadDetailsList) {
     filename = asset.fileName
     nameOnDisk = crypto.randomBytes(20).toString('hex') + filename;
@@ -222,7 +222,7 @@ async function sendDADownloadRequests(
       //   console.log('File downloaded successfully.');
       // });
       response.on('end', () => {
-        const zipInputStream = new ReadableStream();
+        zipInputStream = new ReadableStream();
         zipInputStream.push(fileContent);
         zipInputStream.push(null);
         console.log('File zipped successfully.');
