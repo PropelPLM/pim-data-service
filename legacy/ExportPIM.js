@@ -202,46 +202,51 @@ async function sendDADownloadRequests(
   reqBody.communityId = null;
   let filename, nameOnDisk, fileWriteStream, cdnUrl, fileContent, zipInputStream;
   for (let asset of daDownloadDetailsList) {
-    zipInputStream = new ReadableStream();
-    filename = asset.fileName
-    nameOnDisk = crypto.randomBytes(20).toString('hex') + filename;
-    fileWriteStream = fs.createWriteStream(nameOnDisk);
-    cdnUrl = asset.key;
+    archive.append(request(asset.key), { name: asset.fileName })
+    // zipInputStream = new ReadableStream();
+    // filename = asset.fileName
+    // nameOnDisk = crypto.randomBytes(20).toString('hex') + filename;
+    // fileWriteStream = fs.createWriteStream(nameOnDisk);
+    // cdnUrl = asset.key;
 
-    fileContent = Buffer.alloc(0);
-    https.get(cdnUrl, (response) => {
-      response.on('data', (chunk) => {
-        fileContent = Buffer.concat([fileContent, chunk]);
-      });
+    // fileContent = Buffer.alloc(0);
+    // https.get(cdnUrl, (response) => {
+    //   response.on('data', (chunk) => {
+    //     fileContent = Buffer.concat([fileContent, chunk]);
+    //   });
   
-      // response.on('end', () => {
-      //   fileWriteStream.write(fileContent, () => {
-      //     try {
-      //       postToChatter(filename, nameOnDisk, '', reqBody);
-      //     } catch (err) {
-      //       console.log('error: ', err);
-      //     }
-      //   })
-      //   console.log('File downloaded successfully.');
-      // });
-      response.on('end', () => {
-        try {
-          zipInputStream.push(fileContent);
-          archive.append(zipInputStream, { name: filename });
-          zipInputStream.pipe(process.stdout)
-          archive.on('finish', () => {
-            postToChatter(zipFileName, zipFileNameOnDisk, '', reqBody);
-          });
-          archive.finalize();
-          console.log('File zipped successfully.');
-        } catch (err) {
-          console.log('error: ', err);
-        }
-      });
-    }).on('error', (error) => {
-      console.error('Download failed:', error.message);
-    });
+    //   // response.on('end', () => {
+    //   //   fileWriteStream.write(fileContent, () => {
+    //   //     try {
+    //   //       postToChatter(filename, nameOnDisk, '', reqBody);
+    //   //     } catch (err) {
+    //   //       console.log('error: ', err);
+    //   //     }
+    //   //   })
+    //   //   console.log('File downloaded successfully.');
+    //   // });
+    //   response.on('end', () => {
+    //     try {
+    //       zipInputStream.push(fileContent);
+    //       archive.append(zipInputStream, { name: filename });
+    //       zipInputStream.pipe(process.stdout)
+    //       archive.on('finish', () => {
+    //         postToChatter(zipFileName, zipFileNameOnDisk, '', reqBody);
+    //       });
+    //       archive.finalize();
+    //       console.log('File zipped successfully.');
+    //     } catch (err) {
+    //       console.log('error: ', err);
+    //     }
+    //   });
+    // }).on('error', (error) => {
+    //   console.error('Download failed:', error.message);
+    // });
   }
+  archive.on('finish', () => {
+    postToChatter(zipFileName, zipFileNameOnDisk, '', reqBody);
+  });
+  archive.finalize();
 }
 
 module.exports = LegacyExportPIM;
