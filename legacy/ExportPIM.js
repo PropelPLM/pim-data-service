@@ -1,6 +1,7 @@
 var fs = require('fs');
 var crypto = require('crypto');
 const https = require('https');
+const request = require('https').request;
 const archiver = require('archiver');
 const ReadableStream = require('stream').Readable;
 
