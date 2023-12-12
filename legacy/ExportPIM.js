@@ -231,7 +231,7 @@ async function sendDADownloadRequests(
           console.log('2============')
           zipInputStream.push(null);
           console.log('3============')
-          archive.append(zipInputStream, { name: zipFileName });
+          archive.append(zipInputStream, { name: zipFileNameOnDisk });
           console.log('4============')
           archive.on('finish', () => {
             console.log('5============')
