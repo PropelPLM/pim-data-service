@@ -210,8 +210,7 @@ async function sendDADownloadRequests(
     fileContent = Buffer.alloc(0);
     https.get(cdnUrl, (response) => {
       response.on('data', (chunk) => {
-        // fileContent = Buffer.concat([fileContent, chunk]);
-        zipInputStream.push(chunk);
+        fileContent = Buffer.concat([fileContent, chunk]);
       });
   
       // response.on('end', () => {
@@ -226,9 +225,12 @@ async function sendDADownloadRequests(
       // });
       response.on('end', () => {
         try {
+          zipInputStream.push(fileContent);
           zipInputStream.push(null);
           archive.append(zipInputStream, { name: zipFileName });
-          postToChatter(zipFileName, zipFileNameOnDisk, '', reqBody);
+          archive.on('finish', () => {
+            postToChatter(zipFileName, zipFileNameOnDisk, '', reqBody);
+          });
         } catch (err) {
           console.log('error: ', err);
         }
