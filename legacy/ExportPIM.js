@@ -225,20 +225,18 @@ async function sendDADownloadRequests(
       //   console.log('File downloaded successfully.');
       // });
       response.on('end', () => {
-        
+        try {
+          zipInputStream.push(null);
+          archive.append(zipInputStream, { name: zipFileName });
+          postToChatter(zipFileName, zipFileNameOnDisk, '', reqBody);
+        } catch (err) {
+          console.log('error: ', err);
+        }
         console.log('File zipped successfully.');
       });
     }).on('error', (error) => {
       console.error('Download failed:', error.message);
     });
-  }
-
-  try {
-    zipInputStream.push(null);
-    archive.append(zipInputStream, { name: zipFileName });
-    postToChatter(zipFileName, zipFileNameOnDisk, '', reqBody);
-  } catch (err) {
-    console.log('error: ', err);
   }
 }
 
