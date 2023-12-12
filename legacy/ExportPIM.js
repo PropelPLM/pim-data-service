@@ -227,7 +227,8 @@ async function sendDADownloadRequests(
       response.on('end', () => {
         try {
           zipInputStream.push(fileContent);
-          archive.append(zipInputStream, { name: filename });
+          zipInputStream.push(null);
+          archive.append(zipInputStream, { name: zipFileName });
           archive.on('finish', () => {
             postToChatter(zipFileName, zipFileNameOnDisk, '', reqBody);
           });
