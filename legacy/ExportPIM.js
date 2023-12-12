@@ -2,9 +2,7 @@ var fs = require('fs');
 var crypto = require('crypto');
 const https = require('https');
 const archiver = require('archiver');
-const {
-  ReadableStream
-} = require('node:stream/web');
+const ReadableStream = require('stream').Readable;
 
 // adding the propel-sfdc-connect package
 const propelConnect = require('@propelsoftwaresolutions/propel-sfdc-connect');
