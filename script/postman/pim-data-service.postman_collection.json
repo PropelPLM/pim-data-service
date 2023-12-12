@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "fa403148-40d9-4599-bcb0-d698b58fae1c",
+		"_postman_id": "085319f4-a023-4f4a-a89e-1ba44d500406",
 		"name": "pim-data-service",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "3344322"
@@ -71,7 +71,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"batchsize\": 3,\n    \"data\": \"bmFtZSxhdHRyaWJ1dGVfZ3JvdXAsbG9jYWxpemFibGUsc2VhcmNoYWJsZSxjbGFzc2lmaWNhdGlvbix0eXBlLHBpY2tsaXN0X3ZhbHVlcyxyYW5rLGNhdGVnb3J5X2Fzc29jaWF0aW9ucw0KTGFiZWwgQSxHcm91cCBBLEZBTFNFLFRSVUUsUHJvZHVjdCxkYXRldGltZSwsMSwzMDAzMDA7NTAwMDAwDQpMYWJlbCBCLEdyb3VwIEIsVFJVRSxGQUxTRSxQcm9kdWN0LHBpY2tsaXN0LHllcztubywxLDM1MDM1MDszNTEzNTA=\",\n    \"isTest\": true,\n    \"mapping\": {},\n    \"namespace\": \"\",\n    \"orgId\": \"00D7i000000UO0T\",\n    \"options\": {},\n    \"skipDB\": true,\n    \"user\": \"test-cvfknvlc59xo@example.com\"\n}",
+					"raw": "{\n    \"batchsize\": 3,\n    \"data\": \"bmFtZSxhdHRyaWJ1dGVfZ3JvdXAsbG9jYWxpemFibGUsc2VhcmNoYWJsZSxjbGFzc2lmaWNhdGlvbix0eXBlLHBpY2tsaXN0X3ZhbHVlcyxyYW5rLGNhdGVnb3J5X2Fzc29jaWF0aW9ucwpMYWJlbCBBLEdyb3VwIEEsRkFMU0UsVFJVRSxQcm9kdWN0LG11bHRpUGlja2xpc3Qsd2VzdDtlYXN0O3NvdXRoO25vcnRoLDEsMTIwMTQ7MTEwMzIKTGFiZWwgQixHcm91cCBBLEZBTFNFLEZBTFNFLFByb2R1Y3QscGlja2xpc3QseWVzO25vO21heWJlO3NvLDIsMTEwMjA7MTExMjA=\",\n    \"isTest\": true,\n    \"mapping\": {},\n    \"namespace\": \"\",\n    \"orgId\": \"00D7i000000UO0T\",\n    \"options\": {},\n    \"skipDB\": true,\n    \"user\": \"test-wpcg9zqbpyyr@example.com\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -100,7 +100,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"batchsize\": 3,\n    \"data\": \"bmFtZSxjYXRlZ29yeV9pZCxwYXJlbnRfY2F0ZWdvcnkscGFyZW50X2NhdGVnb3J5X2lkCk5ldyBDYXRlZ29yeSBJbXBvcnQgVGVzdCAtIExldmVsIDEsNDM5ODgsQ3JhenkgQ29vbCBDbG90aGVzIGFuZCBNb3JlLDEwMDAwCk5ldyBDYXRlZ29yeSBJbXBvcnQgVGVzdCAtIExldmVsIDIsNDM5ODksTmV3IENhdGVnb3J5IEltcG9ydCBUZXN0IC0gTGV2ZWwgMSw0Mzk4OApOZXcgQ2F0ZWdvcnkgSW1wb3J0IFRlc3QgLSBMZXZlbCAzLDQzOTkwLE5ldyBDYXRlZ29yeSBJbXBvcnQgVGVzdCAtIExldmVsIDIsNDM5ODkKTmV3IENhdGVnb3J5IEltcG9ydCBUZXN0IC0gTGV2ZWwgNCw0Mzk5MSxOZXcgQ2F0ZWdvcnkgSW1wb3J0IFRlc3QgLSBMZXZlbCAzLDQzOTkw\",\n    \"isTest\": true,\n    \"mapping\": {},\n    \"namespace\": \"\",\n    \"orgId\": \"00D7i000000UO0T\",\n    \"options\": {},\n    \"skipDB\": true,\n    \"user\": \"test-xqahb6uhwa70@example.com\"\n}",
+					"raw": "{\n    \"batchsize\": 3,\n    \"data\": \"bmFtZSxjYXRlZ29yeV9pZCxwYXJlbnRfY2F0ZWdvcnkscGFyZW50X2NhdGVnb3J5X2lkLGNsYXNzaWZpY2F0aW9uLGlzX3ByaW1hcnkKTmV3IENhdGVnb3J5IEltcG9ydCBUZXN0IC0gTGV2ZWwgMSw0Mzk4OCxDcmF6eSBDb29sIENsb3RoZXMgYW5kIE1vcmUsMTAwMDAsUHJvZHVjdCx0cnVlCk5ldyBDYXRlZ29yeSBJbXBvcnQgVGVzdCAtIExldmVsIDIsNDM5ODksTmV3IENhdGVnb3J5IEltcG9ydCBUZXN0IC0gTGV2ZWwgMSw0Mzk4OCxQcm9kdWN0LHRydWUKTmV3IENhdGVnb3J5IEltcG9ydCBUZXN0IC0gTGV2ZWwgMyw0Mzk5MCxOZXcgQ2F0ZWdvcnkgSW1wb3J0IFRlc3QgLSBMZXZlbCAyLDQzOTg5LFByb2R1Y3QsdHJ1ZQpOZXcgQ2F0ZWdvcnkgSW1wb3J0IFRlc3QgLSBMZXZlbCA0LDQzOTkxLE5ldyBDYXRlZ29yeSBJbXBvcnQgVGVzdCAtIExldmVsIDMsNDM5OTAsUHJvZHVjdCx0cnVl\",\n    \"isTest\": true,\n    \"mapping\": {},\n    \"namespace\": \"\",\n    \"orgId\": \"00D7i000000UO0T\",\n    \"options\": {},\n    \"skipDB\": true,\n    \"user\": \"test-wpcg9zqbpyyr@example.com\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -154,11 +154,14 @@
 		{
 			"name": "Commerce Product Import",
 			"request": {
+				"auth": {
+					"type": "noauth"
+				},
 				"method": "POST",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"batchsize\": 3,\n    \"data\": \"bmFtZSx0aXRsZSxjYXRlZ29yeQpzdXAtZm9hbS1nZWwsU3VwZXIgRm9hbXkgR2VsLE5VTEwKbXktdGVzdC1wcm9kdWN0LE15IFRlc3QgSW5zZXJ0LFNoYXZlIEdlbA==\",\n    \"dataType\": \"csv\",\n    \"isTest\": true,\n    \"mapping\": {\n        \"fieldMapping\": {\n            \"name\": \"SKU\",\n            \"title\": \"Product Name\",\n            \"category\": \"Category\"\n        }\n    },\n    \"namespace\": \"\",\n    \"orgId\": \"00DDS000001IFBY\",\n    \"options\": {},\n    \"skipDB\": true,\n    \"user\": \"test-oqspeh1vnaph@example.com\"\n}",
+					"raw": "{\n    \"alternateCategoryId\": \"a09010000056YMjAAM\",\n    \"cmsWorkspaceId\": \"0Zu01000000L9OfCAK\",\n    \"data\": \"\",\n    \"defaultEntitlementPolicyId\": \"1Ce01000000LGUACA4\",\n    \"isTest\": true,\n    \"mapping\": {\n        \"long_description\":\"Product Description\",\n        \"media_listing_alttext\":\"Media Listing AltText\",\n        \"media_listing_url\":\"Media Listing URL\",\n        \"media_listing_thumbnail\":\"Media Listing Thumbnail\",\n        \"media_listing_title\":\"Media Listing Title\",\n        \"media_standard_alttext_1\":\"Media Standard AltText 1\",\n        \"media_standard_url_1\":\"Media Standard URL 1\",\n        \"media_standard_thumbnail_1\":\"Media Standard Thumbnail 1\",\n        \"media_standard_title_1\":\"Media Standard Title 1\",\n        \"msrp\": \"Price\",\n        \"test_only_do_not_use\":\"Description\",\n        \"test_only_product2_id\":\"Id\",\n        \"title\": \"Product Name\"\n    },\n    \"namespace\": \"\",\n    \"orgId\": \"00D01000000igE2\",\n    \"pimProductId\": \"a0F01000000NPUGEA4\",\n    \"productCatalogId\": \"0ZS01000000GrbZGAS\",\n    \"pricebookIds\": {\n        \"Life Style Price Book\": \"01s01000001HIlYAAW\"\n    },\n    \"skipDB\": true,\n    \"user\": \"test-0x4o6fdxsgfj@example.com\",\n    \"webstoreId\": \"0ZE01000000GwlTGAS\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -175,6 +178,60 @@
 						"import",
 						"commerce",
 						"product"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "CC Product Import Direct",
+			"request": {
+				"auth": {
+					"type": "oauth2",
+					"oauth2": [
+						{
+							"key": "addTokenTo",
+							"value": "header",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"importConfiguration\": {\n        \"importSource\": {\n            \"contentVersionId\": \"0688H000001zI95QAE\"\n        },\n        \"importSettings\": {\n            \"category\": {\n                \"productCatalogId\": \"0ZS8H000000CeJtWAK\"\n            },\n            \"media\": {\n                \"cmsWorkspaceId\": \"0Zu8H000000Gz33SAC\"\n            },\n            \"price\": {\n                \"pricebookAliasToIdMapping\": {\n                    \"standard\": \"01s8H000002e7GwQAI\"\n                }\n            },\n            \"entitlement\": {\n                \"defaultEntitlementPolicyId\": \"1Ce8H0000004IQDSA2\"\n            }\n        }\n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://innovation-ruby-3845-dev-ed.scratch.my.salesforce.com/services/data/v58.0/commerce/management/webstores/0ZE8H000000CiYdWAK/product-import?Content-Type=application/json; charset=UTF-8",
+					"protocol": "https",
+					"host": [
+						"innovation-ruby-3845-dev-ed",
+						"scratch",
+						"my",
+						"salesforce",
+						"com"
+					],
+					"path": [
+						"services",
+						"data",
+						"v58.0",
+						"commerce",
+						"management",
+						"webstores",
+						"0ZE8H000000CiYdWAK",
+						"product-import"
+					],
+					"query": [
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=UTF-8"
+						}
 					]
 				}
 			},
