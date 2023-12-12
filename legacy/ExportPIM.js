@@ -226,17 +226,6 @@ async function sendDADownloadRequests(
       // });
       response.on('end', () => {
         try {
-          console.log('1============')
-          zipInputStream.push(fileContent);
-          console.log('2============')
-          zipInputStream.push(null);
-          console.log('3============')
-          archive.append(zipInputStream, { name: zipFileName });
-          console.log('4============')
-          archive.on('finish', () => {
-            console.log('5============')
-            postToChatter(zipFileName, zipFileNameOnDisk, '', reqBody);
-          });
           console.log('File zipped successfully.');
         } catch (err) {
           console.log('error: ', err);
@@ -245,7 +234,19 @@ async function sendDADownloadRequests(
     }).on('error', (error) => {
       console.error('Download failed:', error.message);
     });
-  }
+    await pushFileContentToZipInputStream(zipInputStream, fileContent, zipFileName)
+      console.log('5============')
+    }
+    console.log('6============')
+    postToChatter(zipFileName, zipFileNameOnDisk, '', reqBody);
+}
+
+async function pushFileContentToZipInputStream(zipInputStream, fileContent, zipFileName) {
+  console.log('1============')
+  zipInputStream.push(fileContent);
+  console.log('2============')
+  archive.append(zipInputStream, { name: zipFileName });
+  console.log('3============')
 }
 
 module.exports = LegacyExportPIM;
