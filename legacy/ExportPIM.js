@@ -198,7 +198,8 @@ async function sendDADownloadRequests(
 
   reqBody.shouldPostToUser = true;
   reqBody.communityId = null;
-  let filename, nameOnDisk, fileWriteStream, cdnUrl, fileContent, zipInputStream;
+  let filename, nameOnDisk, fileWriteStream, cdnUrl, fileContent;
+  let zipInputStream = new ReadableStream();
   for (let asset of daDownloadDetailsList) {
     filename = asset.fileName
     nameOnDisk = crypto.randomBytes(20).toString('hex') + filename;
@@ -208,7 +209,8 @@ async function sendDADownloadRequests(
     fileContent = Buffer.alloc(0);
     https.get(cdnUrl, (response) => {
       response.on('data', (chunk) => {
-        fileContent = Buffer.concat([fileContent, chunk]);
+        // fileContent = Buffer.concat([fileContent, chunk]);
+        zipInputStream.push(chunk);
       });
   
       // response.on('end', () => {
@@ -222,9 +224,7 @@ async function sendDADownloadRequests(
       //   console.log('File downloaded successfully.');
       // });
       response.on('end', () => {
-        zipInputStream = new ReadableStream();
-        zipInputStream.push(fileContent);
-        zipInputStream.push(null);
+        
         console.log('File zipped successfully.');
       });
     }).on('error', (error) => {
@@ -233,6 +233,7 @@ async function sendDADownloadRequests(
   }
 
   try {
+    zipInputStream.push(null);
     archive.append(zipInputStream, { name: zipFileName });
     postToChatter(zipFileName, zipFileNameOnDisk, '', reqBody);
   } catch (err) {
