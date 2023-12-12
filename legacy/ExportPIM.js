@@ -189,6 +189,7 @@ async function sendDADownloadRequests(
   const archive = archiver('zip', {
     zlib: { level: 9 }
   });
+  archive.pipe(output)
 
   // listen for all archive data to be written
   // 'close' event is fired only when a file descriptor is involved
