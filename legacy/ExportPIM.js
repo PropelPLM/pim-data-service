@@ -227,6 +227,7 @@ async function sendDADownloadRequests(
       response.on('end', () => {
         try {
           zipInputStream.push(fileContent);
+          console.log('append call')
           archive.append(zipInputStream, { name: filename });
           zipInputStream.push(null)
         } catch (err) {
@@ -240,6 +241,7 @@ async function sendDADownloadRequests(
   archive.on('finish', () => {
     postToChatter(zipFileName, zipFileNameOnDisk, '', reqBody);
   });
+  console.log('finalize call')
   archive.finalize();
   console.log('File zipped successfully.');
 }
