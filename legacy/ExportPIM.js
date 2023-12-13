@@ -183,6 +183,8 @@ async function sendDADownloadRequests(
   reqBody
 ) {
   if (!daDownloadDetailsList || !daDownloadDetailsList.length) return;
+  reqBody.shouldPostToUser = true;
+  reqBody.communityId = null;
   zipFileName = `Digital_Asset-Export_${zipFileName}.zip`;
   const zipFileNameOnDisk = crypto.randomBytes(20).toString('hex') + zipFileName;
   const output = fs.createWriteStream(zipFileNameOnDisk);
@@ -191,40 +193,33 @@ async function sendDADownloadRequests(
   });
   archive.pipe(output)
 
-  // listen for all archive data to be written
-  // 'close' event is fired only when a file descriptor is involved
+  // listen for all archive data to be written, 'close' event is fired only when a file descriptor is involved
   output.on('close', function() {
     console.log(archive.pointer() + ' total bytes');
     console.log('archiver has been finalized and the output file descriptor has closed.');
   });
 
-  reqBody.shouldPostToUser = true;
-  reqBody.communityId = null;
-  let filename, nameOnDisk, fileWriteStream, cdnUrl, fileContent, zipInputStream;
+  let filename, cdnUrl, fileContent, zipInputStream;
   let promises = [];
   for (let asset of daDownloadDetailsList) {
-    console.log('--------------', asset.fileName)
-    zipInputStream = new ReadableStream();
-    filename = asset.fileName
-    nameOnDisk = crypto.randomBytes(20).toString('hex') + filename;
-    fileWriteStream = fs.createWriteStream(nameOnDisk);
     cdnUrl = asset.key;
     fileContent = Buffer.alloc(0);
+    zipInputStream = new ReadableStream();
+    filename = asset.fileName
 
-    promises.push(makeHTTPRequest(cdnUrl, fileContent, zipInputStream, filename, archive))
-    console.log('END-----------------', asset.fileName)
+    promises.push(requestAndAppendDA(cdnUrl, fileContent, zipInputStream, filename, archive))
   }
   Promise.all(promises).then(() => {
     archive.on('finish', () => {
       postToChatter(zipFileName, zipFileNameOnDisk, '', reqBody);
     });
-    console.log('finalize call')
     archive.finalize();
     console.log('File zipped successfully.');
   })
 }
 
-const makeHTTPRequest = (cdnUrl, fileContent, zipInputStream, filename, archive) => {
+// GET digital asset, convert the fileContent buffer into a stream to be appended to the zip archiver
+const requestAndAppendDA = (cdnUrl, fileContent, zipInputStream, filename, archive) => {
   return new Promise((resolve, reject) => {
     https.get(cdnUrl, (response) => {
       response.on('data', (chunk) => {
@@ -236,7 +231,6 @@ const makeHTTPRequest = (cdnUrl, fileContent, zipInputStream, filename, archive)
           zipInputStream.push(fileContent);
           archive.append(zipInputStream, { name: filename });
           zipInputStream.push(null)
-          console.log('appended file: ', filename)
           resolve();
         } catch (err) {
           console.log('error: ', err);
