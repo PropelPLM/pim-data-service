@@ -211,7 +211,8 @@ async function sendDADownloadRequests(
     cdnUrl = asset.key;
     fileContent = Buffer.alloc(0);
 
-    promises.push(makeHTTPRequest(cdnUrl, fileContent, zipInputStream, archive))
+    promises.push(makeHTTPRequest(cdnUrl, fileContent, zipInputStream, filename, archive))
+    console.log('END-----------------', asset.fileName)
   }
   Promise.all(promises).then(() => {
     archive.on('finish', () => {
@@ -223,7 +224,7 @@ async function sendDADownloadRequests(
   })
 }
 
-const makeHTTPRequest = (cdnUrl, fileContent, zipInputStream, archive) => {
+const makeHTTPRequest = (cdnUrl, fileContent, zipInputStream, filename, archive) => {
   return new Promise((resolve, reject) => {
     https.get(cdnUrl, (response) => {
       response.on('data', (chunk) => {
