@@ -227,7 +227,7 @@ async function sendDADownloadRequests(
       response.on('end', () => {
         try {
           zipInputStream.push(fileContent);
-          console.log('append call')
+          console.log('append call for file: ', filename)
           archive.append(zipInputStream, { name: filename });
           zipInputStream.push(null)
         } catch (err) {
