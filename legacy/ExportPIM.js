@@ -49,8 +49,6 @@ async function LegacyExportPIM(req) {
   sendDADownloadRequests(
     baseFileName,
     daDownloadDetailsList,
-    // reqBody.sessionId,
-    // reqBody.hostUrl
     reqBody
   );
 
