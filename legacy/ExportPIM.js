@@ -238,12 +238,14 @@ async function sendDADownloadRequests(
       console.error('Download failed:', error.message);
     });
   }
-  archive.on('finish', () => {
-    postToChatter(zipFileName, zipFileNameOnDisk, '', reqBody);
-  });
-  console.log('finalize call')
-  archive.finalize();
-  console.log('File zipped successfully.');
+  setTimeout(() => {
+    archive.on('finish', () => {
+      postToChatter(zipFileName, zipFileNameOnDisk, '', reqBody);
+    });
+    console.log('finalize call')
+    archive.finalize();
+    console.log('File zipped successfully.');
+    },3000);
 }
 
 module.exports = LegacyExportPIM;
