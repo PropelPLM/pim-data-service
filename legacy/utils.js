@@ -89,7 +89,6 @@ module.exports = {
   parseDigitalAssetAttrVal,
   parseDaAttrValWithVarMap,
   postToChatter,
-  postAssetZipFileToChatter,
   prepareIdsForSOQL,
   removeFileFromDisk,
   sendConfirmationEmail,
@@ -233,131 +232,6 @@ function postToChatter(
     req.end();
   }
 }
-
-function postAssetZipFileToChatter(
-    fileName,
-    nameOnDisk,
-    recordId,
-    reqBody,
-    errorMessage,
-    sendEmail = true,
-    callback
-  ) {
-    this.reqBody = reqBody;
-  
-    const {
-      sessionId,
-      hostUrl: hostname,
-      shouldPostToUser,
-      communityId
-    } = reqBody;
-    let subjectId = 'me';
-  
-    // Boundary
-    var boundary = 'a7V4kRcFA8E79pivMuV2tukQ85cmNKeoEgJgq';
-  
-    var path = '/services/data/v34.0/chatter/feed-elements';
-    if (communityId) {
-      path = `/services/data/v34.0/connect/communities/${communityId}/chatter/feed-elements`;
-    }
-  
-    // Options to create the request
-    var options = {
-      hostname,
-      path,
-      method: 'POST',
-      headers: {
-        'Content-Type': 'multipart/form-data; boundary=' + boundary,
-        Authorization: 'OAuth ' + sessionId
-      }
-    };
-    console.log('options.headers[Content-Type]: ' + options.headers['Content-Type'])
-  
-    var CRLF = '\r\n';
-    var errorPostData = [
-      '{',
-      '"body":{',
-      '"messageSegments":[',
-      '{',
-      '"type":"Text",',
-      `"text":${JSON.stringify(errorMessage)}`,
-      '}',
-      ']',
-      '},',
-      '"feedElementType":"FeedItem",',
-      `"subjectId":"${subjectId}"`,
-      '}'
-    ].join(CRLF);
-    // console.log(errorPostData)
-    // Request
-    var postData = [
-      '--' + boundary,
-      'Content-Disposition: form-data; name="json"',
-      'Content-Type: multipart/form-data; charset=UTF-8',
-      '',
-      '{',
-      '"body":{',
-      '"messageSegments":[',
-      '{',
-      '"type":"Text",',
-      '"text":""',
-      '}',
-      ']',
-      '},',
-      '"capabilities":{',
-      '"content":{',
-      `"title":"${fileName}"`,
-      '}',
-      '},',
-      '"feedElementType":"FeedItem",',
-      `"subjectId":"${subjectId}"`,
-      '}',
-      '',
-      '--' + boundary,
-      `Content-Disposition: form-data; name="feedElementFileUpload"; filename="${fileName}"`,
-      'Content-Type: application/octet-stream; charset=ISO-8859-1',
-      '',
-      ''
-    ].join(CRLF);
-  
-    // Execute request
-    var req = new https.request(options, res => {
-      console.log('DA chatter response: ', res.statusCode, res.statusMessage);
-      if (callback) {
-        callback();
-      }
-      if (!errorMessage) {
-        // Send confirmation email
-        if (sendEmail) {
-          sendConfirmationEmail.call(this, res);
-        }
-      }
-      //TODO: send error email?
-    });
-  
-    // If error show message and finish response
-    req.on('error', function (e) {
-      console.log(
-        'Error in request, please retry or contact your Administrator',
-        e
-      );
-    });
-  
-    // write data to request body
-    req.write(errorMessage ? errorPostData : postData);
-    if (!errorMessage) {
-      // Add final boundary and bind request to zip
-      fs.createReadStream(nameOnDisk)
-        .on('end', function () {
-          removeFileFromDisk(nameOnDisk);
-          req.end(CRLF + '--' + boundary + '--' + CRLF);
-        })
-        .pipe(req, { end: false });
-    } else {
-      req.end();
-    }
-  }
-
 
 function sendConfirmationEmail(response) {
   const { namespace: ns, hostUrl: hostname, sessionId } = this.reqBody;

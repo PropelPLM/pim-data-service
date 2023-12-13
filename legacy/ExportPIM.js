@@ -11,7 +11,6 @@ const PimStructure = require('./PimStructure');
 const {
   cleanString,
   postToChatter,
-  postAssetZipFileToChatter,
   logErrorResponse,
   sendCsvToAsposeCells
 } = require('./utils');
