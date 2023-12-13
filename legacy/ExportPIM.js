@@ -201,6 +201,7 @@ async function sendDADownloadRequests(
   reqBody.shouldPostToUser = true;
   reqBody.communityId = null;
   let filename, nameOnDisk, fileWriteStream, cdnUrl, fileContent, zipInputStream;
+  let promises = [];
   for (let asset of daDownloadDetailsList) {
     console.log('--------------', asset.fileName)
     zipInputStream = new ReadableStream();
@@ -208,29 +209,34 @@ async function sendDADownloadRequests(
     nameOnDisk = crypto.randomBytes(20).toString('hex') + filename;
     fileWriteStream = fs.createWriteStream(nameOnDisk);
     cdnUrl = asset.key;
-
     fileContent = Buffer.alloc(0);
+
+    promises.push(makeHTTPRequest(cdnUrl, fileContent, zipInputStream, archive))
+  }
+  Promise.all(promises).then(() => {
+    archive.on('finish', () => {
+      postToChatter(zipFileName, zipFileNameOnDisk, '', reqBody);
+    });
+    console.log('finalize call')
+    archive.finalize();
+    console.log('File zipped successfully.');
+  })
+}
+
+const makeHTTPRequest = (cdnUrl, fileContent, zipInputStream, archive) => {
+  return new Promise((resolve, reject) => {
     https.get(cdnUrl, (response) => {
       response.on('data', (chunk) => {
         fileContent = Buffer.concat([fileContent, chunk]);
       });
   
-      // response.on('end', () => {
-      //   fileWriteStream.write(fileContent, () => {
-      //     try {
-      //       postToChatter(filename, nameOnDisk, '', reqBody);
-      //     } catch (err) {
-      //       console.log('error: ', err);
-      //     }
-      //   })
-      //   console.log('File downloaded successfully.');
-      // });
       response.on('end', () => {
         try {
           zipInputStream.push(fileContent);
           archive.append(zipInputStream, { name: filename });
           zipInputStream.push(null)
           console.log('appended file: ', filename)
+          resolve();
         } catch (err) {
           console.log('error: ', err);
         }
@@ -238,15 +244,7 @@ async function sendDADownloadRequests(
     }).on('error', (error) => {
       console.error('Download failed:', error.message);
     });
-  }
-  setTimeout(() => {
-    archive.on('finish', () => {
-      postToChatter(zipFileName, zipFileNameOnDisk, '', reqBody);
-    });
-    console.log('finalize call')
-    archive.finalize();
-    console.log('File zipped successfully.');
-    },3000);
+  })
 }
 
 module.exports = LegacyExportPIM;
