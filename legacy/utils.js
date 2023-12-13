@@ -455,13 +455,17 @@ async function parseDigitalAssetAttrVal(
   helper,
   reqBody
 ) {
-  const digitalAsset = digitalAssetMap?.get(attrValValue);
-  if (!digitalAsset) return attrValValue;
-
-  daDownloadDetailsList.push(
-    new DADownloadDetails(digitalAsset, reqBody.namespace)
-  );
-  return await getDigitalAssetViewLink(digitalAsset, helper);
+  try {
+    const digitalAsset = digitalAssetMap?.get(attrValValue);
+    if (!digitalAsset) return attrValValue;
+  
+    daDownloadDetailsList.push(
+      new DADownloadDetails(digitalAsset, reqBody.namespace)
+    );
+    return await getDigitalAssetViewLink(digitalAsset, helper);
+  } catch (err) {
+    console.log('Digital asset parsing failed: ' + err);
+  }
 }
 
 // stores digital asset in Map<productId or vvId, Map<Attribute Label Id, DADownloadDetails object>>
@@ -475,24 +479,28 @@ async function parseDaAttrValWithVarMap(
   helper,
   reqBody
 ) {
-  const digitalAsset = digitalAssetMap?.get(attrValValue);
-  if (!digitalAsset) return attrValValue;
-
-  if (productVariantsDaDetailsMap.get(recordId) == null) {
-    // with the product id/variant value id as key, instantiate Map<attrLabel Id, DA download details obj>
-    productVariantsDaDetailsMap.set(
-      recordId,
-      new Map([
-        [attrLabel, new DADownloadDetails(digitalAsset, reqBody.namespace)]
-      ])
-    );
-  } else {
-    // with the product id/variant value id as key, add a new key value pair to the value - Map<attrLabel Id, DA download details obj>
-    productVariantsDaDetailsMap
-      .get(recordId)
-      .set(attrLabel, new DADownloadDetails(digitalAsset, reqBody.namespace));
+  try {
+    const digitalAsset = digitalAssetMap?.get(attrValValue);
+    if (!digitalAsset) return attrValValue;
+  
+    if (productVariantsDaDetailsMap.get(recordId) == null) {
+      // with the product id/variant value id as key, instantiate Map<attrLabel Id, DA download details obj>
+      productVariantsDaDetailsMap.set(
+        recordId,
+        new Map([
+          [attrLabel, new DADownloadDetails(digitalAsset, reqBody.namespace)]
+        ])
+      );
+    } else {
+      // with the product id/variant value id as key, add a new key value pair to the value - Map<attrLabel Id, DA download details obj>
+      productVariantsDaDetailsMap
+        .get(recordId)
+        .set(attrLabel, new DADownloadDetails(digitalAsset, reqBody.namespace));
+    }
+    return await getDigitalAssetViewLink(digitalAsset, helper);
+  } catch (err) {
+    console.log('Parsing digital asset in Map or parsing of digital asset view link failed: ' + err);
   }
-  return await getDigitalAssetViewLink(digitalAsset, helper);
 }
 
 async function getDigitalAssetViewLink(digitalAsset, helper) {
