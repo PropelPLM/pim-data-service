@@ -232,7 +232,6 @@ async function sendDADownloadRequests(
           archive.on('finish', () => {
             postToChatter(zipFileName, zipFileNameOnDisk, '', reqBody);
           });
-          archive.finalize();
           console.log('File zipped successfully.');
         } catch (err) {
           console.log('error: ', err);
@@ -242,6 +241,7 @@ async function sendDADownloadRequests(
       console.error('Download failed:', error.message);
     });
   }
+  archive.finalize();
 }
 
 module.exports = LegacyExportPIM;
