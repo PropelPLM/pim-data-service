@@ -47,7 +47,7 @@ logErrorResponse = (err, functionName) => {
 getDigitalAssetMap = async (service, helper) => {
   const digitalAssetList = await service.simpleQuery(
     helper.namespaceQuery(
-      `select Id, Name, External_File_Id__c, View_Link__c, Mime_Type__c, Content_Location__c
+      `select Id, Name, External_File_Id__c, View_Link__c, Mime_Type__c
       from Digital_Asset__c`
     )
   );
@@ -89,7 +89,6 @@ module.exports = {
   parseDigitalAssetAttrVal,
   parseDaAttrValWithVarMap,
   postToChatter,
-  prependCDNToViewLink,
   prepareIdsForSOQL,
   removeFileFromDisk,
   sendConfirmationEmail,
@@ -323,18 +322,6 @@ function validateNamespaceForField(namespace) {
   }
 }
 
-async function prependCDNToViewLink(viewLink, contentLocation, reqBody) {
-  const service = new ForceService(reqBody.hostUrl, reqBody.sessionId);
-
-  let prefix = '';
-  if (viewLink && contentLocation) {
-    const stringifiedLabelCDNBaseUrlMap = await service.getLabelCDNBaseUrlMap();
-    const cdnBaseUrlLabelMap = new Map(Object.entries(JSON.parse(stringifiedLabelCDNBaseUrlMap)));
-    prefix = cdnBaseUrlLabelMap.get(contentLocation);
-  }
-  return prefix + viewLink;
-}
-
 async function parseDigitalAssetAttrVal(
   digitalAssetMap,
   attrValValue,
@@ -342,18 +329,17 @@ async function parseDigitalAssetAttrVal(
   helper,
   reqBody
 ) {
-  const digitalAsset = digitalAssetMap?.get(attrValValue);
-  if (!digitalAsset) return attrValValue;
-
-  daDownloadDetailsList.push(
-    new DADownloadDetails(digitalAsset, reqBody.namespace)
-  );
-  return await getDigitalAssetViewLink(
-    digitalAsset,
-    attrValValue,
-    helper,
-    reqBody
-  );
+  try {
+    const digitalAsset = digitalAssetMap?.get(attrValValue);
+    if (!digitalAsset) return attrValValue;
+  
+    daDownloadDetailsList.push(
+      new DADownloadDetails(digitalAsset, reqBody.namespace)
+    );
+    return await getDigitalAssetViewLink(digitalAsset, helper);
+  } catch (err) {
+    console.log('Digital asset parsing failed: ' + err);
+  }
 }
 
 // stores digital asset in Map<productId or vvId, Map<Attribute Label Id, DADownloadDetails object>>
@@ -367,44 +353,37 @@ async function parseDaAttrValWithVarMap(
   helper,
   reqBody
 ) {
-  const digitalAsset = digitalAssetMap?.get(attrValValue);
-  if (!digitalAsset) return attrValValue;
-
-  if (productVariantsDaDetailsMap.get(recordId) == null) {
-    // with the product id/variant value id as key, instantiate Map<attrLabel Id, DA download details obj>
-    productVariantsDaDetailsMap.set(
-      recordId,
-      new Map([
-        [attrLabel, new DADownloadDetails(digitalAsset, reqBody.namespace)]
-      ])
-    );
-  } else {
-    // with the product id/variant value id as key, add a new key value pair to the value - Map<attrLabel Id, DA download details obj>
-    productVariantsDaDetailsMap
-      .get(recordId)
-      .set(attrLabel, new DADownloadDetails(digitalAsset, reqBody.namespace));
+  try {
+    const digitalAsset = digitalAssetMap?.get(attrValValue);
+    if (!digitalAsset) return attrValValue;
+  
+    if (productVariantsDaDetailsMap.get(recordId) == null) {
+      // with the product id/variant value id as key, instantiate Map<attrLabel Id, DA download details obj>
+      productVariantsDaDetailsMap.set(
+        recordId,
+        new Map([
+          [attrLabel, new DADownloadDetails(digitalAsset, reqBody.namespace)]
+        ])
+      );
+    } else {
+      // with the product id/variant value id as key, add a new key value pair to the value - Map<attrLabel Id, DA download details obj>
+      productVariantsDaDetailsMap
+        .get(recordId)
+        .set(attrLabel, new DADownloadDetails(digitalAsset, reqBody.namespace));
+    }
+    return await getDigitalAssetViewLink(digitalAsset, helper);
+  } catch (err) {
+    console.log('Parsing digital asset in Map or parsing of digital asset view link failed: ' + err);
   }
-  return await getDigitalAssetViewLink(
-    digitalAsset,
-    attrValValue,
-    helper,
-    reqBody
-  );
 }
 
-async function getDigitalAssetViewLink(
-  digitalAsset,
-  attrValValue,
-  helper,
-  reqBody
-) {
+async function getDigitalAssetViewLink(digitalAsset, helper) {
   const viewLink = helper.getValue(digitalAsset, 'View_Link__c');
-  const contentLocation = helper.getValue(digitalAsset, 'Content_Location__c');
-  // if value is already complete url, add it to the map, else prepend the CDN url to the partial url then add to map
-  attrValValue = viewLink.includes('https')
-    ? viewLink
-    : await module.exports.prependCDNToViewLink(viewLink, contentLocation, reqBody);
-  return attrValValue;
+  // if value is a complete url, add it to the map, else throw error
+  if (!viewLink.includes('https')) {
+    throw new Error('Invalid digital asset view link');
+  }
+  return viewLink;
 }
 
 function prepareIdsForSOQL(idList) {
