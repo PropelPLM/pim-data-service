@@ -422,38 +422,6 @@ ${JSON.stringify(data)}
     }
     return flatResults
   }
-
-  /** calls APEX REST API to get a Map of supported <CDN Base Url, Label> */
-  async getCDNBaseUrlLabelMap() {
-    return await this.getPimConstantsCDNData('cdnLabelMap');
-  }
-
-  /** calls APEX REST API to get a Map of supported <Label, CDN Base Url> */
-  async getLabelCDNBaseUrlMap() {
-    return await this.getPimConstantsCDNData('labelCDNMap');
-  }
-
-  getPimConstantsCDNData(type) {
-    const accessToken = this.sessionId;
-    const hostUrl = this.serverUrl.includes('https://') ? this.serverUrl : 'https://' + this.serverUrl;
-    return new Promise(function (resolve, reject) {
-      let request = require("request");
-      request({
-          url: hostUrl + '/services/apexrest/pim/constants?type=' + type,
-          method: "GET",
-          headers: {
-            'Content-Type': 'text/plain',
-            'Authorization': 'OAuth ' + accessToken
-          }
-      }, function(err, response, body) {
-          if (response && response.statusCode == 200) {
-            resolve(body);
-          } else {
-            reject(err);
-          }
-      });
-    });
-  }
 }
 
 
