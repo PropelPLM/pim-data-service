@@ -77,6 +77,7 @@ class PimStructure {
         digitalAssetMap,
         isProduct
       );
+      daDownloadDetailsList = exportRecordsColsAndAssets?.daDownloadDetailsList;
       Object.assign(asposeInput, {
         listPageData: exportRecordsColsAndAssets?.recordsAndCols[0]
       });
@@ -890,7 +891,6 @@ class PimStructure {
         variantValueHierarchyMap
       );
     } else {
-      console.log('getFinalizedDaList else')
       daDownloadDetailsList = await this.processDaList(
         exportRecords,
         productVariantsDaDetailsMap
