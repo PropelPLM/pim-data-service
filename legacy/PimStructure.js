@@ -890,6 +890,7 @@ class PimStructure {
         variantValueHierarchyMap
       );
     } else {
+      console.log('getFinalizedDaList else')
       daDownloadDetailsList = await this.processDaList(
         exportRecords,
         productVariantsDaDetailsMap
