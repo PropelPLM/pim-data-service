@@ -123,8 +123,8 @@ async function PimRecordListHelper(
     );
 
     if (attributeResults.has(DA_DOWNLOAD_DETAIL_KEY)) {
-      console.log('da deets from attr res: ', attributeResults.get(DA_DOWNLOAD_DETAIL_KEY))
       daDownloadDetailsList = attributeResults.get(DA_DOWNLOAD_DETAIL_KEY);
+      console.log('daDownloadDetailsList 127: ', daDownloadDetailsList)
       attributeResults.delete(DA_DOWNLOAD_DETAIL_KEY);
     }
 
@@ -157,6 +157,7 @@ async function PimRecordListHelper(
     }
   }
 
+  console.log('daDownloadDetailsList 160: ', daDownloadDetailsList)
   return {
     daDownloadDetailsList,
     recordsAndCols: await addExportColumns(
