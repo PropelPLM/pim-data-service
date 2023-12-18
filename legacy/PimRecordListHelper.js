@@ -419,6 +419,7 @@ async function getAttributesForRecordMap(
       if (
         helper.getValue(attribute, 'Attribute_Label__r.Type__c') === DA_TYPE
       ) {
+        console.log('1')
         attrValValue = await parseDigitalAssetAttrVal(
           digitalAssetMap,
           attrValValue,
@@ -468,6 +469,7 @@ async function getAttributesForRecordMap(
           if (
             helper.getValue(attribute, 'Attribute_Label__r.Type__c') === DA_TYPE
           ) {
+            console.log('2')
             attrValValue = await parseDigitalAssetAttrVal(
               digitalAssetMap,
               attrValValue,
@@ -503,6 +505,7 @@ async function getAttributesForRecordMap(
         if (
           helper.getValue(attribute, 'Attribute_Label__r.Type__c') === DA_TYPE
         ) {
+          console.log('3')
           attrValValue = await parseDigitalAssetAttrVal(
             digitalAssetMap,
             attrValValue,
