@@ -77,7 +77,7 @@ class PimStructure {
         digitalAssetMap,
         isProduct
       );
-      // daDownloadDetailsList = exportRecordsColsAndAssets?.daDownloadDetailsList;
+      daDownloadDetailsList = exportRecordsColsAndAssets?.daDownloadDetailsList;
       Object.assign(asposeInput, {
         listPageData: exportRecordsColsAndAssets?.recordsAndCols[0]
       });
