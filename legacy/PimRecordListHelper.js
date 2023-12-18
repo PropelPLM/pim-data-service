@@ -123,6 +123,7 @@ async function PimRecordListHelper(
     );
 
     if (attributeResults.has(DA_DOWNLOAD_DETAIL_KEY)) {
+      console.log('has da download detail key')
       daDownloadDetailsList = attributeResults.get(DA_DOWNLOAD_DETAIL_KEY);
       attributeResults.delete(DA_DOWNLOAD_DETAIL_KEY);
     }
