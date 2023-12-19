@@ -99,6 +99,20 @@ async function PimRecordListHelper(
         vvIds.add(lowestVariant.Id)
         recordIdSet.add(helper.getValue(lowestVariant, 'Variant__r.Product__c'));
       }
+    } else if (!isSKUExport && exportRecordsAndColumns[0].length) {
+      const stringifiedQuotedVariantValueIds = prepareIdsForSOQL(vvIds);
+      let variantValues = await service.queryExtend(
+        helper.namespaceQuery(
+          `select Id, Name, Parent_Value_Path__c, Variant__r.Product__c
+          from Variant_Value__c
+          where Id IN (${service.QUERY_LIST})
+        `
+        ),
+        stringifiedQuotedVariantValueIds.split(',')
+      );
+      variantValues.forEach(value => {
+        recordIdSet.add(helper.getValue(value, 'Variant__r.Product__c'));
+      });
     }
 
     const recordIdsToQuery = prepareIdsForSOQL(recordIdSet);
