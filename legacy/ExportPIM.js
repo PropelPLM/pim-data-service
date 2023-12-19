@@ -45,8 +45,6 @@ async function LegacyExportPIM(req) {
 
   const baseFileName = createBaseFileName();
   const filename = `${reqBody.recordType}-Export_${baseFileName}.csv`;
-  console.log('daList: ', daDownloadDetailsList);
-  console.log('daList len: ', daDownloadDetailsList?.length);
 
   sendDADownloadRequests(
     baseFileName,

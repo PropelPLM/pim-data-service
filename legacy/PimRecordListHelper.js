@@ -76,8 +76,6 @@ async function PimRecordListHelper(
     for (let i = 0; i < variantValueIds?.length; i++) {
       vvIds.add(variantValueIds[i]);
     }
-    console.log('variantValueIds: ', variantValueIds)
-    console.log('vvIds: ', vvIds)
 
     let attributeResults = new Map();
     let selectedRecordParentProductId;
@@ -140,7 +138,6 @@ async function PimRecordListHelper(
 
     if (attributeResults.has(DA_DOWNLOAD_DETAIL_KEY)) {
       daDownloadDetailsList = attributeResults.get(DA_DOWNLOAD_DETAIL_KEY);
-      console.log('daDownloadDetailsList 127: ', daDownloadDetailsList)
       attributeResults.delete(DA_DOWNLOAD_DETAIL_KEY);
     }
 
@@ -173,7 +170,6 @@ async function PimRecordListHelper(
     }
   }
 
-  console.log('daDownloadDetailsList 160: ', daDownloadDetailsList)
   return {
     daDownloadDetailsList,
     recordsAndCols: await addExportColumns(
@@ -435,7 +431,6 @@ async function getAttributesForRecordMap(
       if (
         helper.getValue(attribute, 'Attribute_Label__r.Type__c') === DA_TYPE
       ) {
-        console.log('1')
         attrValValue = await parseDigitalAssetAttrVal(
           digitalAssetMap,
           attrValValue,
@@ -485,7 +480,6 @@ async function getAttributesForRecordMap(
           if (
             helper.getValue(attribute, 'Attribute_Label__r.Type__c') === DA_TYPE
           ) {
-            console.log('2')
             attrValValue = await parseDigitalAssetAttrVal(
               digitalAssetMap,
               attrValValue,
@@ -521,7 +515,6 @@ async function getAttributesForRecordMap(
         if (
           helper.getValue(attribute, 'Attribute_Label__r.Type__c') === DA_TYPE
         ) {
-          console.log('3')
           attrValValue = await parseDigitalAssetAttrVal(
             digitalAssetMap,
             attrValValue,

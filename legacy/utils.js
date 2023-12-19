@@ -329,7 +329,6 @@ async function parseDigitalAssetAttrVal(
   helper,
   reqBody
 ) {
-  console.log('utils method called')
   try {
     const digitalAsset = digitalAssetMap?.get(attrValValue);
     if (!digitalAsset) return attrValValue;
