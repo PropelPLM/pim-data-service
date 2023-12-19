@@ -76,6 +76,8 @@ async function PimRecordListHelper(
     for (let i = 0; i < variantValueIds?.length; i++) {
       vvIds.add(variantValueIds[i]);
     }
+    console.log('variantValueIds: ', variantValueIds)
+    console.log('vvIds: ', vvIds)
 
     let attributeResults = new Map();
     let selectedRecordParentProductId;
