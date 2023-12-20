@@ -153,6 +153,7 @@ class PimStructure {
           // add null value to the base product map
           exportRecords[0].set(appearingLabels[i].Name, null);
         }
+        console.log('1.5 productVariantValueMapList[0].size: ', productVariantValueMapList[0].size)
       }
       /** get product's appearing attribute labels end */
       if (isProduct) {
@@ -279,7 +280,6 @@ class PimStructure {
             currentVariantName = currentVariant.get('Record_ID');
             // overwrite base product with current variant
             exportRecords = [currentVariant];
-            console.log('3 productVariantValueMapList[0].size: ', productVariantValueMapList[0].size)
           }
         } else if (
           exportType === 'allVariants' ||
@@ -475,7 +475,6 @@ class PimStructure {
           exportRecordsAndColumns = [exportRecords];
         }
       }
-      console.log('4 productVariantValueMapList[0].size: ', productVariantValueMapList[0].size)
       exportRecordsColsAndAssets = {
         daDownloadDetailsList: await this.getFinalizedDaList(
           reqBody.isInherited,
