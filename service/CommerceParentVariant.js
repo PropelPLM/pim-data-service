@@ -12,21 +12,31 @@ class CommerceParentVariant {
    * @param {String} mapping
    * @param {PropelLog} log
    */
-   constructor(helper, pimProductId, alternateCategoryId, mapping, log, response) {
-    this.pimProducts = []
-    this.helper = helper
-    this.mapping = mapping
-    this.contentVersionId
-    this.pimProductId = pimProductId
-    this.log = log
+   constructor(helper, pimProductId, alternateCategoryId, mapping, log, options) {
     this.alternateCategoryId = alternateCategoryId
-    this.categoryName = ''
-    this.response = response
     this.attributes = []
+    this.attributeSet
+    this.categoryName = ''
+    this.contentVersionId
+    this.helper = helper
+    this.importObjs = []
+    this.log = log
+    this.mapping = mapping
+    this.options = options
+    this.pimProductId = pimProductId
+    this.pimProducts = []
     this.variants = []
     this.variantValues = []
-    this.importObjs = []
-    this.variantValueParents = []
+    this.allVariantValues = []
+    this.variantValueMap
+
+    this.init()
+  }
+
+  init() {
+    this.attributeSet = this.options.attribute_set
+  
+    if (!this.attributeSet) { console.log('attribute_set was blank') }
   }
 
   async fetchData() {
@@ -63,21 +73,11 @@ class CommerceParentVariant {
           Id,
           Name,
           Label__c,
+          Parent_Value_Path__c,
           Parent_Variant_Value__c,
           Variant__r.Name
         from Variant_Value__c
         where Variant__c = '${this.variants[0].Id}'`
-      ))
-
-      this.variantValueParents = await this.helper.connection.queryLimit(this.helper.namespaceQuery(
-        `select
-          Id,
-          Name,
-          Label__c,
-          Parent_Variant_Value__c,
-          Variant__r.Name
-        from Variant_Value__c
-        where Variant__c = '${this.variants[1].Id}'` // this is totally stupid
       ))
 
       const categories = await this.helper.connection.queryLimit(this.helper.namespaceQuery(
@@ -85,9 +85,27 @@ class CommerceParentVariant {
       ))
       this.categoryName = categories[0].Name
 
+      this.allVariantValues = await this.helper.connection.queryLimit(this.helper.namespaceQuery(
+        `select
+          Id,
+          Name,
+          Label__c,
+          Parent_Variant_Value__c
+        from Variant_Value__c
+        where Variant__r.Product__c = '${this.pimProductId}'`
+      ))
+
     } catch(error) {
       this.log.addToLogs([{errors: [error] }], this.helper.namespace('Category__c'))
     }
+  }
+
+  async buildMaps() {
+    this.variantValueMap = new Map(
+      this.allVariantValues.map((vv) => {
+        return [vv.Id, vv]
+      })
+    )
   }
 
   /**
@@ -106,14 +124,16 @@ class CommerceParentVariant {
     tmpObj['ProductCode'] = this.pimProducts[0].Name
     tmpObj['Product isActive'] = true
     tmpObj['SKU'] = this.pimProducts[0].Name
-    tmpObj['Variation AttributeSet'] = 'General_Set' // need to set this dynamically but for now...
+    tmpObj['Variation AttributeSet'] = this.attributeSet
     tmpObj['Variation Parent (StockKeepingUnit)'] = ''
 
-    // these need to be set dynamically but for now...
-    tmpObj['Variation Attribute Name 1'] = ''
-    tmpObj['Variation Attribute Name 2'] = ''
-    tmpObj['Variation Attribute Value 1'] = ''
-    tmpObj['Variation Attribute Value 2'] = ''
+    for (let i = 1; i <= this.variants.length; i++) {
+      tmpObj[`Variation Attribute Name ${i}`] = ''
+    }
+
+    for (let i = 1; i <= this.variants.length; i++) {
+      tmpObj[`Variation Attribute Value ${i}`] = ''
+    }
 
     this.attributes.forEach((attribute) => {
 
@@ -135,7 +155,7 @@ class CommerceParentVariant {
    * function to go through all the variants
    */
   async populateVariantsObj() {
-    const vvParentMap = this.getparentVvMap()
+    const properOrderVariants = this.variants.reverse()
     
     this.variantValues.forEach((variantValue) => {
       //console.log('what are we doing...' + JSON.stringify(variantValue))
@@ -151,15 +171,18 @@ class CommerceParentVariant {
       tmpObj['Variation AttributeSet'] = ''
       tmpObj['Variation Parent (StockKeepingUnit)'] = this.pimProducts[0].Name
 
-      // these need to be set dynamically but for now...
-      tmpObj['Variation Attribute Name 1'] = 'Color__c'
-      tmpObj['Variation Attribute Name 2'] = 'Size__c'
+      for (let i = 0; i < properOrderVariants.length; i++) {
+        tmpObj[`Variation Attribute Name ${i + 1}`] = properOrderVariants[i].Name
+      }
 
-      tmpObj['Variation Attribute Value 1'] =
-        vvParentMap.has(variantValue['Parent_Variant_Value__c'])
-          ? vvParentMap.get(variantValue['Parent_Variant_Value__c'])['Label__c']
-          : ''
-      tmpObj['Variation Attribute Value 2'] = variantValue['Label__c']
+      const parentVvs = variantValue[`${this.helper.namespace('Parent_Value_Path__c')}`].split(',')
+      for (let i = properOrderVariants.length - 1; i > 0; i--) {
+        tmpObj[`Variation Attribute Value ${i}`] =
+          this.variantValueMap.get(parentVvs[i - 1])[`${this.helper.namespace('Label__c')}`]
+      }
+
+      // setting the last variant and it's value
+      tmpObj[`Variation Attribute Value ${properOrderVariants.length}`] = variantValue['Label__c']
 
       // blasting through the first time
       this.attributes.forEach((attribute) => {
@@ -200,14 +223,6 @@ class CommerceParentVariant {
       ContentLocation: 'S',
       VersionData: btoa(convertToCsv(data))
     }
-  }
-  
-  getparentVvMap() {
-    return new Map(
-      this.variantValueParents.map((vv) => {
-        return [vv.Id, vv]
-      })
-    )
   }
 }
 
