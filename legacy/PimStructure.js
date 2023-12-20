@@ -1026,6 +1026,8 @@ class PimStructure {
               }
             ];
           } else if (field !== RECORD_ID_LABEL && supportedAttrPriKeyLabelMap.has(field)) {
+            console.log('else if reached')
+            console.log('supportedAttrPriKeyLabelMap.get(field): ', supportedAttrPriKeyLabelMap.get(field))
             // convert primary key fields to labels and push columns specified in template
             exportColumns = [
               ...exportColumns,
