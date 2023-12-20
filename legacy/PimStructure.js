@@ -102,7 +102,6 @@ class PimStructure {
         exportRecordsAndColumns = [exportRecords],
         attrValValue;
 
-      console.log('1 productVariantValueMapList[0].size: ', productVariantValueMapList[0].size)
       // Map<productId or vvId, Map<Attribute Label Id, DADownloadDetails object>>
       productVariantsDaDetailsMap = new Map();
       appearingLabelIds = prepareIdsForSOQL(appearingLabelIds);
@@ -146,6 +145,7 @@ class PimStructure {
               reqBody
             );
           }
+          console.log('appearingLabel[i]: ', appearingLabels[i])
           exportRecords[0].set(appearingLabels[i].Name, attrValValue);
         }
 
@@ -153,14 +153,12 @@ class PimStructure {
           // add null value to the base product map
           exportRecords[0].set(appearingLabels[i].Name, null);
         }
-        console.log('1.5 productVariantValueMapList[0].size: ', productVariantValueMapList[0].size)
       }
       /** get product's appearing attribute labels end */
       if (isProduct) {
         let valuesList = [];
 
         if (exportType === 'currentVariant') {
-          console.log('2 productVariantValueMapList[0].size: ', productVariantValueMapList[0].size)
           if (reqBody.variantValuePath.length > 0) {
             // exporting current variant value (base product not included in export)
             const currentVariantId =
