@@ -1017,6 +1017,7 @@ class PimStructure {
               supportedAttrLabels.has(RECORD_ID_FIELD))
           ) {
             // push columns specified in template
+            console.log('if field: ', field)
             exportColumns = [
               ...exportColumns,
               {
