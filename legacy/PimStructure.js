@@ -100,6 +100,7 @@ class PimStructure {
         baseRecord = productVariantValueMapList[0],
         exportRecords = [baseRecord],
         exportRecordsAndColumns = [exportRecords],
+        supportedAttrPriKeyLabelMap = new Map(),
         attrValValue;
 
       // Map<productId or vvId, Map<Attribute Label Id, DADownloadDetails object>>
@@ -145,8 +146,9 @@ class PimStructure {
               reqBody
             );
           }
-          console.log('appearingLabel[i]: ', appearingLabels[i])
           exportRecords[0].set(appearingLabels[i].Name, attrValValue);
+          // populate a Map of <Attribute_Label__r.Primary_Key__c, Attribute_Label__r.Name>
+          supportedAttrPriKeyLabelMap.set(helper.getValue(appearingValues[i], 'Primary_Key__c'), appearingLabels[i].Name);
         }
 
         if (!exportRecords[0].has(appearingLabels[i].Name)) {
@@ -484,6 +486,7 @@ class PimStructure {
         ),
         recordsAndCols: await this.addExportColumns(
           productVariantValueMapList,
+          supportedAttrPriKeyLabelMap,
           templateFields,
           templateHeaders,
           exportRecordsAndColumns
@@ -976,6 +979,7 @@ class PimStructure {
 
   async addExportColumns(
     productVariantValueMapList,
+    supportedAttrPriKeyLabelMap,
     templateFields,
     templateHeaders,
     exportRecordsAndColumns
@@ -1021,7 +1025,17 @@ class PimStructure {
                 type: 'text'
               }
             ];
-          } else {
+          } else if (field !== RECORD_ID_LABEL && supportedAttrPriKeyLabelMap.has(field)) {
+            // convert primary key fields to labels and push columns specified in template
+            exportColumns = [
+              ...exportColumns,
+              {
+                fieldName: supportedAttrPriKeyLabelMap.get(field),
+                label: templateHeaders[lastHeaderRowIndex][i],
+                type: 'text'
+              }
+            ];
+          }else {
             // invalid attribute name provided
             templateHeaderValueMap.set(
               templateHeaders[lastHeaderRowIndex][i],
