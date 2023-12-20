@@ -159,6 +159,7 @@ class PimStructure {
         let valuesList = [];
 
         if (exportType === 'currentVariant') {
+          console.log('2 productVariantValueMapList[0].size: ', productVariantValueMapList[0].size)
           if (reqBody.variantValuePath.length > 0) {
             // exporting current variant value (base product not included in export)
             const currentVariantId =
@@ -278,6 +279,7 @@ class PimStructure {
             currentVariantName = currentVariant.get('Record_ID');
             // overwrite base product with current variant
             exportRecords = [currentVariant];
+            console.log('3 productVariantValueMapList[0].size: ', productVariantValueMapList[0].size)
           }
         } else if (
           exportType === 'allVariants' ||
