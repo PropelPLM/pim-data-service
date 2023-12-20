@@ -97,6 +97,7 @@ class PimStructure {
           service,
           isProduct
         ),
+        console.log('recordList: ', recordList);
         baseRecord = productVariantValueMapList[0],
         exportRecords = [baseRecord],
         exportRecordsAndColumns = [exportRecords],
@@ -996,9 +997,9 @@ class PimStructure {
       const lastHeaderRowIndex = templateHeaders.length - 1;
       let field;
       // clean up data for easier parsing
-      const supportedAttributes = productVariantValueMapList[0];
-      supportedAttributes.delete(ID_FIELD);
-      console.log('supportedAttributes: ', supportedAttributes)
+      const supportedAttrLabels = productVariantValueMapList[0];
+      supportedAttrLabels.delete(ID_FIELD);
+      console.log('supportedAttrLabels: ', supportedAttrLabels)
 
       for (let i = 0; i < templateFields.length; i++) {
         field = templateFields[i];
@@ -1007,9 +1008,9 @@ class PimStructure {
           // template specifies that the column's rows should contain a field's value
           field = field.slice(11, -1);
           if (
-            (field !== RECORD_ID_LABEL && supportedAttributes.has(field)) ||
+            (field !== RECORD_ID_LABEL && supportedAttrLabels.has(field)) ||
             (field === RECORD_ID_LABEL &&
-              supportedAttributes.has(RECORD_ID_FIELD))
+              supportedAttrLabels.has(RECORD_ID_FIELD))
           ) {
             // push columns specified in template
             exportColumns = [

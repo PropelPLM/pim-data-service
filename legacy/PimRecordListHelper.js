@@ -678,7 +678,6 @@ async function addExportColumns(
       const lastHeaderRowIndex = templateHeaders.length - 1;
       const numOfColumnAttributes = columnAttributes.length;
       let missedCount;
-      console.log('defaultCols: ', defaultColumnNames)
       for (let i = 0; i < templateFields.length; i++) {
         field = templateFields[i];
         isAttributeField = field.includes(ATTRIBUTE_FLAG);
