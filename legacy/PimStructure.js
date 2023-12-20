@@ -148,7 +148,7 @@ class PimStructure {
           }
           exportRecords[0].set(appearingLabels[i].Name, attrValValue);
           // populate a Map of <Attribute_Label__r.Primary_Key__c, Attribute_Label__r.Name>
-          supportedAttrPriKeyLabelMap.set(helper.getValue(appearingValues[i], 'Primary_Key__c'), appearingLabels[i].Name);
+          supportedAttrPriKeyLabelMap.set(helper.getValue(appearingLabels[i], 'Primary_Key__c'), appearingLabels[i].Name);
         }
 
         if (!exportRecords[0].has(appearingLabels[i].Name)) {
