@@ -1065,7 +1065,7 @@ class PimStructure {
   async parseAppearringAttrLabelsAndValues(appearingLabelIds, service) {
     // add appearing attribute labels and their values to base product
     const appearingLabels = await service.simpleQuery(
-      helper.namespaceQuery(`select Id, Name
+      helper.namespaceQuery(`select Id, Name, Primary_Key__c
       from Attribute_Label__c
       where Id IN (${appearingLabelIds})`)
     );
