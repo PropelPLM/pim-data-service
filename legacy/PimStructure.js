@@ -1003,8 +1003,6 @@ class PimStructure {
       // clean up data for easier parsing
       const supportedAttrLabels = productVariantValueMapList[0];
       supportedAttrLabels.delete(ID_FIELD);
-      console.log('supportedAttrLabels.size: ', supportedAttrLabels.size)
-      console.log('supportedAttrPriKeyLabelMap: ', supportedAttrPriKeyLabelMap)
 
       for (let i = 0; i < templateFields.length; i++) {
         field = templateFields[i];
@@ -1018,7 +1016,6 @@ class PimStructure {
               supportedAttrLabels.has(RECORD_ID_FIELD))
           ) {
             // push columns specified in template
-            console.log('if field: ', field)
             exportColumns = [
               ...exportColumns,
               {
@@ -1028,8 +1025,6 @@ class PimStructure {
               }
             ];
           } else if (field !== RECORD_ID_LABEL && supportedAttrPriKeyLabelMap.has(field)) {
-            console.log('else if reached')
-            console.log('supportedAttrPriKeyLabelMap.get(field): ', supportedAttrPriKeyLabelMap.get(field))
             // convert primary key fields to labels and push columns specified in template
             exportColumns = [
               ...exportColumns,
