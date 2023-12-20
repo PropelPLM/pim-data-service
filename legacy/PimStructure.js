@@ -101,7 +101,7 @@ class PimStructure {
         exportRecords = [baseRecord],
         exportRecordsAndColumns = [exportRecords],
         attrValValue;
-      console.log('recordList: ', recordList);
+      console.log('baseRecord: ', baseRecord);
 
       // Map<productId or vvId, Map<Attribute Label Id, DADownloadDetails object>>
       productVariantsDaDetailsMap = new Map();
