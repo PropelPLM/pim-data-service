@@ -155,7 +155,6 @@ class CommerceParentVariant {
    * function to go through all the variants
    */
   async populateVariantsObj() {
-    //const vvParentMap = this.getparentVvMap()
     const properOrderVariants = this.variants.reverse()
     
     this.variantValues.forEach((variantValue) => {
