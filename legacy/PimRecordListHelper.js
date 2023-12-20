@@ -695,7 +695,7 @@ async function addExportColumns(
           field = field.slice(11, -1);
           missedCount = 0;
           for (let colAttr of columnAttributes) {
-            if (helper.getValue(colAttr, 'Label__c') === field) {
+            if (field === helper.getValue(colAttr, 'Label__c') || field === helper.getValue(colAttr, 'Primary_Key__c')) {
               exportColumns.push({
                 fieldName: helper.getValue(colAttr, 'Primary_Key__c'),
                 label: templateHeaders[lastHeaderRowIndex][i],
