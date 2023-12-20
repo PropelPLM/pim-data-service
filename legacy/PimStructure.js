@@ -101,8 +101,8 @@ class PimStructure {
         exportRecords = [baseRecord],
         exportRecordsAndColumns = [exportRecords],
         attrValValue;
-      console.log('baseRecord: ', baseRecord);
 
+      console.log('1 productVariantValueMapList[0].size: ', productVariantValueMapList[0].size)
       // Map<productId or vvId, Map<Attribute Label Id, DADownloadDetails object>>
       productVariantsDaDetailsMap = new Map();
       appearingLabelIds = prepareIdsForSOQL(appearingLabelIds);
@@ -473,6 +473,7 @@ class PimStructure {
           exportRecordsAndColumns = [exportRecords];
         }
       }
+      console.log('4 productVariantValueMapList[0].size: ', productVariantValueMapList[0].size)
       exportRecordsColsAndAssets = {
         daDownloadDetailsList: await this.getFinalizedDaList(
           reqBody.isInherited,
@@ -999,7 +1000,7 @@ class PimStructure {
       // clean up data for easier parsing
       const supportedAttrLabels = productVariantValueMapList[0];
       supportedAttrLabels.delete(ID_FIELD);
-      console.log('supportedAttrLabels: ', supportedAttrLabels)
+      console.log('supportedAttrLabels.size: ', supportedAttrLabels.size)
 
       for (let i = 0; i < templateFields.length; i++) {
         field = templateFields[i];
