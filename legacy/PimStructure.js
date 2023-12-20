@@ -97,11 +97,11 @@ class PimStructure {
           service,
           isProduct
         ),
-        console.log('recordList: ', recordList);
         baseRecord = productVariantValueMapList[0],
         exportRecords = [baseRecord],
         exportRecordsAndColumns = [exportRecords],
         attrValValue;
+      console.log('recordList: ', recordList);
 
       // Map<productId or vvId, Map<Attribute Label Id, DADownloadDetails object>>
       productVariantsDaDetailsMap = new Map();
