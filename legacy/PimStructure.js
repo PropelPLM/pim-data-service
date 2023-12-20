@@ -1004,6 +1004,7 @@ class PimStructure {
       const supportedAttrLabels = productVariantValueMapList[0];
       supportedAttrLabels.delete(ID_FIELD);
       console.log('supportedAttrLabels.size: ', supportedAttrLabels.size)
+      console.log('supportedAttrPriKeyLabelMap: ', supportedAttrPriKeyLabelMap)
 
       for (let i = 0; i < templateFields.length; i++) {
         field = templateFields[i];
