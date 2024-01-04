@@ -101,6 +101,7 @@ class PimStructure {
         baseRecord = productVariantValueMapList[0],
         exportRecords = [baseRecord],
         exportRecordsAndColumns = [exportRecords],
+        supportedAttrPriKeyLabelMap = new Map(),
         attrValValue;
 
       // Map<productId or vvId, Map<Attribute Label Id, DADownloadDetails object>>
@@ -147,6 +148,8 @@ class PimStructure {
             );
           }
           exportRecords[0].set(appearingLabels[i].Name, attrValValue);
+          // populate a Map of <Attribute_Label__r.Primary_Key__c, Attribute_Label__r.Name>
+          supportedAttrPriKeyLabelMap.set(helper.getValue(appearingLabels[i], 'Primary_Key__c'), appearingLabels[i].Name);
         }
 
         if (!exportRecords[0].has(appearingLabels[i].Name)) {
@@ -484,6 +487,7 @@ class PimStructure {
         ),
         recordsAndCols: await this.addExportColumns(
           productVariantValueMapList,
+          supportedAttrPriKeyLabelMap,
           templateFields,
           templateHeaders,
           exportRecordsAndColumns
@@ -976,6 +980,7 @@ class PimStructure {
 
   async addExportColumns(
     productVariantValueMapList,
+    supportedAttrPriKeyLabelMap,
     templateFields,
     templateHeaders,
     exportRecordsAndColumns
@@ -997,8 +1002,8 @@ class PimStructure {
       const lastHeaderRowIndex = templateHeaders.length - 1;
       let field;
       // clean up data for easier parsing
-      const supportedAttributes = productVariantValueMapList[0];
-      supportedAttributes.delete(ID_FIELD);
+      const supportedAttrLabels = productVariantValueMapList[0];
+      supportedAttrLabels.delete(ID_FIELD);
 
       for (let i = 0; i < templateFields.length; i++) {
         field = templateFields[i];
@@ -1007,9 +1012,9 @@ class PimStructure {
           // template specifies that the column's rows should contain a field's value
           field = field.slice(11, -1);
           if (
-            (field !== RECORD_ID_LABEL && supportedAttributes.has(field)) ||
+            (field !== RECORD_ID_LABEL && supportedAttrLabels.has(field)) ||
             (field === RECORD_ID_LABEL &&
-              supportedAttributes.has(RECORD_ID_FIELD))
+              supportedAttrLabels.has(RECORD_ID_FIELD))
           ) {
             // push columns specified in template
             exportColumns = [
@@ -1020,7 +1025,17 @@ class PimStructure {
                 type: 'text'
               }
             ];
-          } else {
+          } else if (field !== RECORD_ID_LABEL && supportedAttrPriKeyLabelMap.has(field)) {
+            // convert primary key fields to labels and push columns specified in template
+            exportColumns = [
+              ...exportColumns,
+              {
+                fieldName: supportedAttrPriKeyLabelMap.get(field),
+                label: templateHeaders[lastHeaderRowIndex][i],
+                type: 'text'
+              }
+            ];
+          }else {
             // invalid attribute name provided
             templateHeaderValueMap.set(
               templateHeaders[lastHeaderRowIndex][i],
@@ -1064,7 +1079,7 @@ class PimStructure {
   async parseAppearringAttrLabelsAndValues(appearingLabelIds, service) {
     // add appearing attribute labels and their values to base product
     const appearingLabels = await service.simpleQuery(
-      helper.namespaceQuery(`select Id, Name
+      helper.namespaceQuery(`select Id, Name, Primary_Key__c
       from Attribute_Label__c
       where Id IN (${appearingLabelIds})`)
     );
