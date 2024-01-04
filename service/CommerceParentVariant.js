@@ -172,7 +172,7 @@ class CommerceParentVariant {
       tmpObj['Variation Parent (StockKeepingUnit)'] = this.pimProducts[0].Name
 
       for (let i = 0; i < properOrderVariants.length; i++) {
-        tmpObj[`Variation Attribute Name ${i + 1}`] = properOrderVariants[i].Name
+        tmpObj[`Variation Attribute Name ${i + 1}`] = `${properOrderVariants[i].Name}__c`
       }
 
       const parentVvs = variantValue[`${this.helper.namespace('Parent_Value_Path__c')}`].split(',')
