@@ -3,7 +3,8 @@ const PimRecordService = require('./PimRecordService');
 const {
   ATTRIBUTE_FLAG,
   DA_DOWNLOAD_DETAIL_KEY,
-  DEFAULT_COLUMNS,
+  DEFAULT_PRODUCT_COLUMNS,
+  DEFAULT_ASSET_COLUMNS,
   getLowestVariantsFromProducts,
   extractLowestVariantValues,
   initAssetDownloadDetailsList,
@@ -177,7 +178,8 @@ async function PimRecordListHelper(
       templateFields,
       templateHeaders,
       exportRecordsAndColumns,
-      DEFAULT_COLUMNS,
+      DEFAULT_PRODUCT_COLUMNS,
+      DEFAULT_ASSET_COLUMNS,
       isProduct
     ),
     templateAdditionalHeaders: []
@@ -284,7 +286,7 @@ async function buildStructureWithCategoryIds(
   return await service.simpleQuery(
     helper.namespaceQuery(
       `select Id, Name, Category__c, Category__r.Name, ${
-        isProduct ? '' : 'Asset_Status__c, Mime_Type__c, Size__c, View_Link__c,'
+        isProduct ? '' : 'CreatedDate, Asset_Status__c, External_File_Id__c, Mime_Type__c, Size__c, View_Link__c,'
       }
       (
         select
@@ -598,7 +600,8 @@ async function addExportColumns(
   templateFields,
   templateHeaders,
   exportRecordsAndColumns,
-  defaultColumns,
+  defaultProductColumns,
+  defaultAssetColumns,
   isProduct = true
 ) {
   let exportColumns = [];
@@ -606,10 +609,10 @@ async function addExportColumns(
 
   // populate default columns first if not templated export
   if (!templateFields || templateFields.length === 0) {
-    Array.from(defaultColumns.keys()).forEach(defaultCol => {
+    Array.from(defaultProductColumns.keys()).forEach(defaultCol => {
       if (!isProduct && defaultCol === 'Title') return;
       exportColumns.push({
-        fieldName: defaultColumns.get(defaultCol),
+        fieldName: defaultProductColumns.get(defaultCol),
         label: defaultCol,
         type: 'text'
       });
@@ -687,24 +690,34 @@ async function addExportColumns(
       // add columns specified in template
       let field;
       let isAttributeField;
-      let isDefaultColumn;
-      const defaultColumnNames = Array.from(defaultColumns.keys());
+      let isDefaultProductColumn;
+      const defaultProductColumnNames = Array.from(defaultProductColumns.keys());
+      const defaultAssetColumnNames = Array.from(defaultAssetColumns.keys());
       const lastHeaderRowIndex = templateHeaders.length - 1;
       const numOfColumnAttributes = columnAttributes.length;
       let missedCount;
       for (let i = 0; i < templateFields.length; i++) {
         field = templateFields[i];
         isAttributeField = field.includes(ATTRIBUTE_FLAG);
-        isDefaultColumn = defaultColumnNames.includes(field.slice(11, -1));
-        if (isAttributeField && isDefaultColumn) {
-          // value specified in template is a field's value, and col in template is a default column
+        isDefaultProductColumn = defaultProductColumnNames.includes(field.slice(11, -1));
+        isDefaultAssetColumn = defaultAssetColumnNames.includes(field.slice(11, -1));
+        if (isAttributeField && isProduct && isDefaultProductColumn) {
+          // value specified in template is a field's value, and col in template is a default product column
           field = field.slice(11, -1);
           exportColumns.push({
-            fieldName: defaultColumns.get(field),
+            fieldName: defaultProductColumns.get(field),
             label: templateHeaders[lastHeaderRowIndex][i],
             type: 'text'
           });
-        } else if (isAttributeField && !isDefaultColumn) {
+        } else if (isAttributeField && !isProduct && isDefaultAssetColumn) {
+          // value specified in template is a field's value, and col in template is a default asset column (system attributes)
+          field = field.slice(11, -1);
+          exportColumns.push({
+            fieldName: defaultAssetColumns.get(field),
+            label: templateHeaders[lastHeaderRowIndex][i],
+            type: 'text'
+          });
+        } else if (isAttributeField && !isDefaultProductColumn && !isDefaultAssetColumn) {
           // value specified in template is a field's value, and col in template is an attribute column
           field = field.slice(11, -1);
           missedCount = 0;

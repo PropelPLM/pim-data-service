@@ -3,10 +3,17 @@ var fs = require('fs');
 const PimExportHelper = require('./PimExportHelper');
 const ForceService = require('./ForceService');
 const DA_DOWNLOAD_DETAIL_KEY = 'DA_DOWNLOAD_DETAIL_KEY';
-const DEFAULT_COLUMNS = new Map([
+const DEFAULT_PRODUCT_COLUMNS = new Map([
   ['Record ID', 'Record_ID'], // JUST NAMED THIS COS OF HARDCODE IN PROPEL-DOC-JAVA
   ['Title', 'Title'],
   ['Category Name', 'Category__r.Name']
+]);
+const DEFAULT_ASSET_COLUMNS = new Map([
+  ['Created Date', 'CreatedDate'], 
+  ['External Asset ID', 'External_File_Id__c'],
+  ['File Type', 'Mime_Type__c'],
+  ['File Size', 'Size__c'],
+  ['CDN URL', 'View_Link__c']
 ]);
 const PRODUCT_TYPE = 'Product';
 
@@ -99,7 +106,8 @@ module.exports = {
   parseProductReferenceAttrVal,
   ATTRIBUTE_FLAG,
   DA_DOWNLOAD_DETAIL_KEY,
-  DEFAULT_COLUMNS,
+  DEFAULT_PRODUCT_COLUMNS,
+  DEFAULT_ASSET_COLUMNS,
   PRODUCT_TYPE
 };
 /**
@@ -489,7 +497,8 @@ async function callAsposeToExport({
       })
     );
     exportTypeSpecificInformation = {
-      defaultColumns: Object.fromEntries(DEFAULT_COLUMNS),
+      defaultProductColumns: Object.fromEntries(DEFAULT_PRODUCT_COLUMNS),
+      defaultAssetColumns: Object.fromEntries(DEFAULT_ASSET_COLUMNS),
       labelToPrimaryKeyMap: Object.fromEntries(labelToPrimaryKeyMap),
       listPageData: listPageData.map(recordMap => Object.fromEntries(recordMap))
     };
