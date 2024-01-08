@@ -659,7 +659,6 @@ async function addExportColumns(
   }
   if (columnAttributeIds.size > 0) {
     columnAttributeIds = Array.from(columnAttributeIds);
-    console.log('columnAttributeIds: ', columnAttributeIds)
     columnAttributeIds = prepareIdsForSOQL(columnAttributeIds);
 
     // get SOQL query for Label__c of all attribute labels
@@ -694,14 +693,17 @@ async function addExportColumns(
     );
 
     if (!templateFields || templateFields.length === 0) {
+      // if not template export, push all attribute columns and default asset columns (if is asset)
       columnAttributes.forEach(attr => {
-        // if not template export, push all attribute columns
         exportColumns.push({
           fieldName: helper.getValue(attr, 'Primary_Key__c'),
           label: helper.getValue(attr, 'Label__c'),
           type: 'text'
         });
       });
+      if (!isProduct) {
+        addDefaultAssetColsForExport(exportColumns);
+      }
     } else if (templateFields && templateFields.length > 0) {
       // add columns specified in template
       let field;
@@ -774,7 +776,7 @@ async function addExportColumns(
   return [...exportRecordsAndColumns, exportColumns];
 }
 
-async function addDefaultAssetColsForExport(exportColumns) {
+function addDefaultAssetColsForExport(exportColumns) {
   Array.from(DEFAULT_ASSET_COLUMNS.keys()).forEach(defaultCol => {
     exportColumns.push({
       fieldName: DEFAULT_ASSET_COLUMNS.get(defaultCol),
