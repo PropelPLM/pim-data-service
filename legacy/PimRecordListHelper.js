@@ -692,7 +692,6 @@ async function addExportColumns(
       let isAttributeField;
       let isDefaultProductColumn;
       const defaultProductColumnNames = Array.from(defaultProductColumns.keys());
-      const defaultAssetColumnNames = Array.from(defaultAssetColumns.keys());
       const lastHeaderRowIndex = templateHeaders.length - 1;
       const numOfColumnAttributes = columnAttributes.length;
       let missedCount;
@@ -700,7 +699,6 @@ async function addExportColumns(
         field = templateFields[i];
         isAttributeField = field.includes(ATTRIBUTE_FLAG);
         isDefaultProductColumn = defaultProductColumnNames.includes(field.slice(11, -1));
-        isDefaultAssetColumn = defaultAssetColumnNames.includes(field.slice(11, -1));
         if (isAttributeField && isProduct && isDefaultProductColumn) {
           // value specified in template is a field's value, and col in template is a default product column
           field = field.slice(11, -1);
@@ -709,15 +707,7 @@ async function addExportColumns(
             label: templateHeaders[lastHeaderRowIndex][i],
             type: 'text'
           });
-        } else if (isAttributeField && !isProduct && isDefaultAssetColumn) {
-          // value specified in template is a field's value, and col in template is a default asset column (system attributes)
-          field = field.slice(11, -1);
-          exportColumns.push({
-            fieldName: defaultAssetColumns.get(field),
-            label: templateHeaders[lastHeaderRowIndex][i],
-            type: 'text'
-          });
-        } else if (isAttributeField && !isDefaultProductColumn && !isDefaultAssetColumn) {
+        } else if (isAttributeField && !isDefaultProductColumn) {
           // value specified in template is a field's value, and col in template is an attribute column
           field = field.slice(11, -1);
           missedCount = 0;
