@@ -96,6 +96,7 @@ function populateRecordDetailsMap(helper, record, parentProduct) {
     helper.getValue(topLevelRecord, 'Category__r').Name
   );
   tempMap.set('Category__c', helper.getValue(topLevelRecord, 'Category__c'));
+  console.log('record: ', record)
 
   if (!parentProduct) return tempMap;
 
