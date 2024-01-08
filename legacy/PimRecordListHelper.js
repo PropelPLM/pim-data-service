@@ -768,6 +768,7 @@ async function addExportColumns(
       }
     }
   }
+  console.log('exportColumns: ', exportColumns)
   // populate export records with raw values specified in the template
   Array.from(templateHeaderValueMap.keys()).forEach(header => {
     exportRecordsAndColumns[0].forEach(recordMap => {
