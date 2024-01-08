@@ -215,7 +215,9 @@ async function getRecordByCategory(
   } else {
     pm = await buildStructureWithSecondaryCategoryIds(listCategoryIds);
   }
+  console.log('pm: ', pm)
   let tempRecords = await PimRecordService(pm, helper, service);
+  console.log('tempRecords: ', tempRecords)
   return tempRecords;
 }
 
