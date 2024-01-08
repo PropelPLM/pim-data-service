@@ -104,6 +104,7 @@ module.exports = {
   validateNamespaceForField,
   DADownloadDetails,
   parseProductReferenceAttrVal,
+  getDefaultAssetColsPriKeyToLabelsMap,
   ATTRIBUTE_FLAG,
   DA_DOWNLOAD_DETAIL_KEY,
   DEFAULT_COLUMNS,
@@ -640,4 +641,12 @@ async function parseProductReferenceAttrVal(attrValValue, reqBody) {
       return record.Name;
     })
     .join(', ');
+}
+
+function getDefaultAssetColsPriKeyToLabelsMap() {
+  let inverseMap = new Map();
+  Array.from(DEFAULT_ASSET_COLUMNS.keys()).forEach(label => {
+    inverseMap.set(DEFAULT_ASSET_COLUMNS.get(label), label);
+  });
+  return inverseMap;
 }

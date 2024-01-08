@@ -14,6 +14,7 @@ const {
   parseDaAttrValWithVarMap,
   prepareIdsForSOQL,
   parseProductReferenceAttrVal,
+  getDefaultAssetColsPriKeyToLabelsMap,
   DEFAULT_ASSET_COLUMNS
 } = require('./utils');
 
@@ -1065,9 +1066,13 @@ class PimStructure {
       exportColumns = exportColumns.filter(col => !Array.from(DEFAULT_ASSET_COLUMNS.values()).includes(col));
     }
     // rename Category__r.Name to Category
+    const defaultAssetColMap = getDefaultAssetColsPriKeyToLabelsMap();
+    const defaultAssetColFieldnames = Array.from(defaultAssetColMap.keys());
     exportColumns = exportColumns.map(col => {
       if (col === CATEGORY_NAME_FIELD) {
         return { fieldName: col, label: CATEGORY_NAME_LABEL, type: 'text' };
+      } else if (defaultAssetColFieldnames.includes(col)) {
+        return { fieldName: col, label: defaultAssetColFieldnames.get(col), type: 'text' };
       }
       return { fieldName: col, label: col, type: 'text' };
     });
