@@ -179,7 +179,6 @@ async function PimRecordListHelper(
       templateHeaders,
       exportRecordsAndColumns,
       DEFAULT_PRODUCT_COLUMNS,
-      DEFAULT_ASSET_COLUMNS,
       isProduct
     ),
     templateAdditionalHeaders: []
@@ -603,7 +602,6 @@ async function addExportColumns(
   templateHeaders,
   exportRecordsAndColumns,
   defaultProductColumns,
-  defaultAssetColumns,
   isProduct = true
 ) {
   let exportColumns = [];
@@ -654,11 +652,7 @@ async function addExportColumns(
       );
       linkedGroupObjects.forEach(linkedGroupObj => {
         if (linkedGroupObj.Name === 'System Attributes') {
-          exportColumns.push({
-            fieldName: 'CreatedDate',
-            label: 'Created Date',
-            type: 'text'
-          });
+          addDefaultAssetColsForExport(exportColumns);
         }
       })
     }
@@ -777,6 +771,16 @@ async function addExportColumns(
     });
   });
   return [...exportRecordsAndColumns, exportColumns];
+}
+
+async function addDefaultAssetColsForExport(exportColumns) {
+  Array.from(DEFAULT_ASSET_COLUMNS.keys()).forEach(defaultCol => {
+    exportColumns.push({
+      fieldName: DEFAULT_ASSET_COLUMNS.get(defaultCol),
+      label: defaultCol,
+      type: 'text'
+    });
+  });
 }
 
 async function populateRecordDetailsForLowestVariants(lowestVariants) {
