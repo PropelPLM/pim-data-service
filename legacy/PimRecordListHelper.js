@@ -621,6 +621,7 @@ async function addExportColumns(
   const linkedAttributes = reqBody.linkedLabels;
   let linkedGroups = reqBody.linkedGroups;
   console.log('linkedGroups: ', linkedGroups)
+  console.log('reqBody: ', reqBody)
   let linkedGroupsChildren = [];
   let columnAttributeIds = new Set();
   if (linkedAttributes.length > 0) {
