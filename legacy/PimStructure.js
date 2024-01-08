@@ -13,7 +13,8 @@ const {
   parseDigitalAssetAttrVal,
   parseDaAttrValWithVarMap,
   prepareIdsForSOQL,
-  parseProductReferenceAttrVal
+  parseProductReferenceAttrVal,
+  DEFAULT_ASSET_COLUMNS
 } = require('./utils');
 
 let helper;
@@ -103,7 +104,6 @@ class PimStructure {
         exportRecordsAndColumns = [exportRecords],
         attrValValue;
 
-        console.log('baseRecord: ', baseRecord)
       // Map<productId or vvId, Map<Attribute Label Id, DADownloadDetails object>>
       productVariantsDaDetailsMap = new Map();
       appearingLabelIds = prepareIdsForSOQL(appearingLabelIds);
@@ -487,7 +487,8 @@ class PimStructure {
           productVariantValueMapList,
           templateFields,
           templateHeaders,
-          exportRecordsAndColumns
+          exportRecordsAndColumns,
+          isProduct
         ),
         templateAdditionalHeaders: []
       };
@@ -979,14 +980,15 @@ class PimStructure {
     productVariantValueMapList,
     templateFields,
     templateHeaders,
-    exportRecordsAndColumns
+    exportRecordsAndColumns,
+    isProduct
   ) {
     let exportColumns = [];
     let templateHeaderValueMap = new Map();
     if (!templateFields || templateFields.length === 0) {
       // if not template export, push all attribute columns except sobject id and rename Category__r.Name to Category
       exportColumns = Array.from(productVariantValueMapList[0].keys())
-        .filter(col => col !== ID_FIELD && col !== CATEGORY_ID_FIELD)
+        .filter(col => col !== ID_FIELD && col !== CATEGORY_ID_FIELD && (!isProduct && DEFAULT_ASSET_COLUMNS.values().contains(col)))
         .map(col => {
           if (col === CATEGORY_NAME_FIELD) {
             return { fieldName: col, label: CATEGORY_NAME_LABEL, type: 'text' };
