@@ -659,6 +659,7 @@ async function addExportColumns(
   }
   if (columnAttributeIds.size > 0) {
     columnAttributeIds = Array.from(columnAttributeIds);
+    console.log('columnAttributeIds: ', columnAttributeIds)
     columnAttributeIds = prepareIdsForSOQL(columnAttributeIds);
 
     // get SOQL query for Label__c of all attribute labels
