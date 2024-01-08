@@ -283,9 +283,8 @@ async function buildStructureWithCategoryIds(
   if (listCategoryIds.size === 0) {
     throw 'No Category Ids';
   }
-  console.log('isProduct ', isProduct)
   // return productsList
-  return await service.simpleQuery(
+  const recordList =  await service.simpleQuery(
     helper.namespaceQuery(
       `select Id, Name, Category__c, Category__r.Name, ${
         isProduct ? '' : 'CreatedDate, Asset_Status__c, External_File_Id__c, Mime_Type__c, Size__c, View_Link__c,'
@@ -331,6 +330,8 @@ async function buildStructureWithCategoryIds(
       where Category__c IN (${listCategoryIds})`
     )
   );
+  console.log('recordList ', recordList)
+  return recordList;
 }
 
 // PIM repo ProductManager.buildStructureWithSecondaryCategoryIds()
