@@ -641,6 +641,21 @@ async function addExportColumns(
     linkedGroupsChildren.forEach(childAttr => {
       columnAttributeIds.add(childAttr.Id);
     });
+    if (!isProduct) {
+      // check if "System Attributes" attribute group is selected
+      const linkedGroupObjects = await service.simpleQuery(
+        helper.namespaceQuery(
+          `select Id, Name
+          from Attribute_Group__c
+          where Id IN (${linkedGroups})`
+        )
+      );
+      linkedGroupObjects.forEach(linkedGroupObj => {
+        if (linkedGroupObj.Name === 'System Attributes') {
+          console.log('present')
+        }
+      })
+    }
   }
   if (columnAttributeIds.size > 0) {
     columnAttributeIds = Array.from(columnAttributeIds);
