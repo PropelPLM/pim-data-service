@@ -17,6 +17,7 @@ let helper;
 let service;
 const DA_TYPE = 'DigitalAsset';
 const PRODUCT_REFERENCE_TYPE = 'ProductReference';
+const SYSTEM_ATTRIBUTES_LABEL = 'System Attributes';
 
 async function PimRecordListHelper(
   reqBody,
@@ -620,7 +621,6 @@ async function addExportColumns(
   // add columns for selected attributes and children of selected attribute groups
   const linkedAttributes = reqBody.linkedLabels;
   let linkedGroups = reqBody.linkedGroups;
-  let linkedGroupsChildren = [];
   let columnAttributeIds = new Set();
   if (linkedAttributes.length > 0) {
     linkedAttributes.forEach(attr => {
@@ -629,30 +629,10 @@ async function addExportColumns(
   }
   if (linkedGroups.length > 0) {
     linkedGroups = prepareIdsForSOQL(linkedGroups);
-    linkedGroupsChildren = await service.simpleQuery(
-      helper.namespaceQuery(
-        `select Id, Name, Attribute_Group__c
-        from Attribute_Label__c
-        where Attribute_Group__c IN (${linkedGroups})`
-      )
-    );
-    linkedGroupsChildren.forEach(childAttr => {
-      columnAttributeIds.add(childAttr.Id);
-    });
+    await addChildrenOfLinkedGroups(linkedGroups, columnAttributeIds);
     if (!isProduct) {
-      // check if "System Attributes" attribute group is selected
-      const linkedGroupObjects = await service.simpleQuery(
-        helper.namespaceQuery(
-          `select Id, Name
-          from Attribute_Group__c
-          where Id IN (${linkedGroups})`
-        )
-      );
-      linkedGroupObjects.forEach(linkedGroupObj => {
-        if (linkedGroupObj.Name === 'System Attributes') {
-          addDefaultAssetColsForExport(exportColumns);
-        }
-      })
+      // check if "System Attributes" attribute group is selected and slate those for export
+      await checkForDefaultAssetCols(exportColumns, linkedGroups);
     }
   }
   if (columnAttributeIds.size > 0) {
@@ -700,7 +680,7 @@ async function addExportColumns(
         });
       });
       if (!isProduct) {
-        addDefaultAssetColsForExport(exportColumns);
+        addDefaultAssetColsForExport(exportColumns, linkedGroups);
       }
     } else if (templateFields && templateFields.length > 0) {
       // add columns specified in template
@@ -772,6 +752,35 @@ async function addExportColumns(
     });
   });
   return [...exportRecordsAndColumns, exportColumns];
+}
+
+async function addChildrenOfLinkedGroups(linkedGroups, columnAttributeIds) {
+  const linkedGroupsChildren = await service.simpleQuery(
+    helper.namespaceQuery(
+      `select Id, Name, Attribute_Group__c
+      from Attribute_Label__c
+      where Attribute_Group__c IN (${linkedGroups})`
+    )
+  );
+  linkedGroupsChildren.forEach(childAttr => {
+    columnAttributeIds.add(childAttr.Id);
+  });
+}
+
+// iterate through selected attribute groups, if System Attributes is selected, add default asset columns
+async function checkForDefaultAssetCols(exportColumns, linkedGroups) {
+  const linkedGroupObjects = await service.simpleQuery(
+    helper.namespaceQuery(
+      `select Id, Name
+      from Attribute_Group__c
+      where Id IN (${linkedGroups})`
+    )
+  );
+  linkedGroupObjects.forEach(linkedGroupObj => {
+    if (linkedGroupObj.Name === SYSTEM_ATTRIBUTES_LABEL) {
+      addDefaultAssetColsForExport(exportColumns);
+    }
+  })
 }
 
 function addDefaultAssetColsForExport(exportColumns) {

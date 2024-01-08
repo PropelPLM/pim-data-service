@@ -1065,7 +1065,8 @@ class PimStructure {
       // remove asset default columns
       exportColumns = exportColumns.filter(col => !Array.from(DEFAULT_ASSET_COLUMNS.values()).includes(col));
     }
-    // rename Category__r.Name to Category
+    
+    // rename Category__r.Name to Category and set default asset column labels
     const defaultAssetColMap = getDefaultAssetColsPriKeyToLabelsMap();
     const defaultAssetColFieldnames = Array.from(defaultAssetColMap.keys());
     exportColumns = exportColumns.map(col => {

@@ -643,6 +643,10 @@ async function parseProductReferenceAttrVal(attrValValue, reqBody) {
     .join(', ');
 }
 
+/**
+ * reverses the map of DEFAULT_ASSET_COLUMNS aka System Attribute fields such that the keys are the primary keys and values are the labels
+ * @returns {Map<String, String>} - a Map of SObject field primary keys => SObject field labels
+ *  */
 function getDefaultAssetColsPriKeyToLabelsMap() {
   let inverseMap = new Map();
   Array.from(DEFAULT_ASSET_COLUMNS.keys()).forEach(label => {
