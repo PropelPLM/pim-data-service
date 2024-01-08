@@ -3,7 +3,7 @@ const PimRecordService = require('./PimRecordService');
 const {
   ATTRIBUTE_FLAG,
   DA_DOWNLOAD_DETAIL_KEY,
-  DEFAULT_PRODUCT_COLUMNS,
+  DEFAULT_COLUMNS,
   DEFAULT_ASSET_COLUMNS,
   getLowestVariantsFromProducts,
   extractLowestVariantValues,
@@ -178,7 +178,7 @@ async function PimRecordListHelper(
       templateFields,
       templateHeaders,
       exportRecordsAndColumns,
-      DEFAULT_PRODUCT_COLUMNS,
+      DEFAULT_COLUMNS,
       isProduct
     ),
     templateAdditionalHeaders: []
@@ -599,7 +599,7 @@ async function addExportColumns(
   templateFields,
   templateHeaders,
   exportRecordsAndColumns,
-  defaultProductColumns,
+  defaultColumns,
   isProduct = true
 ) {
   let exportColumns = [];
@@ -607,10 +607,10 @@ async function addExportColumns(
 
   // populate default columns first if not templated export
   if (!templateFields || templateFields.length === 0) {
-    Array.from(defaultProductColumns.keys()).forEach(defaultCol => {
+    Array.from(defaultColumns.keys()).forEach(defaultCol => {
       if (!isProduct && defaultCol === 'Title') return;
       exportColumns.push({
-        fieldName: defaultProductColumns.get(defaultCol),
+        fieldName: defaultColumns.get(defaultCol),
         label: defaultCol,
         type: 'text'
       });
@@ -705,24 +705,24 @@ async function addExportColumns(
       // add columns specified in template
       let field;
       let isAttributeField;
-      let isDefaultProductColumn;
-      const defaultProductColumnNames = Array.from(defaultProductColumns.keys());
+      let isDefaultColumn;
+      const defaultColumnNames = Array.from(defaultColumns.keys());
       const lastHeaderRowIndex = templateHeaders.length - 1;
       const numOfColumnAttributes = columnAttributes.length;
       let missedCount;
       for (let i = 0; i < templateFields.length; i++) {
         field = templateFields[i];
         isAttributeField = field.includes(ATTRIBUTE_FLAG);
-        isDefaultProductColumn = defaultProductColumnNames.includes(field.slice(11, -1));
-        if (isAttributeField && isProduct && isDefaultProductColumn) {
+        isDefaultColumn = defaultColumnNames.includes(field.slice(11, -1));
+        if (isAttributeField && isProduct && isDefaultColumn) {
           // value specified in template is a field's value, and col in template is a default product column
           field = field.slice(11, -1);
           exportColumns.push({
-            fieldName: defaultProductColumns.get(field),
+            fieldName: defaultColumns.get(field),
             label: templateHeaders[lastHeaderRowIndex][i],
             type: 'text'
           });
-        } else if (isAttributeField && !isDefaultProductColumn) {
+        } else if (isAttributeField && !isDefaultColumn) {
           // value specified in template is a field's value, and col in template is an attribute column
           field = field.slice(11, -1);
           missedCount = 0;
