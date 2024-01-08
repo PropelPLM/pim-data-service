@@ -779,12 +779,12 @@ async function checkForDefaultAssetCols(exportColumns, linkedGroups) {
       where Id IN (${linkedGroups})`
     )
   );
-  linkedGroupObjects.forEach(linkedGroupObj => {
+  for (let linkedGroupObj of linkedGroupObjects) {
     if (linkedGroupObj.Name === SYSTEM_ATTRIBUTES_LABEL) {
       await addDefaultAssetColsForExport(exportColumns);
       return true;
     }
-  });
+  }
   return false;
 }
 
