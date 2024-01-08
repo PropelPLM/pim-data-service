@@ -283,6 +283,7 @@ async function buildStructureWithCategoryIds(
   if (listCategoryIds.size === 0) {
     throw 'No Category Ids';
   }
+  console.log('isProduct ', isProduct)
   // return productsList
   return await service.simpleQuery(
     helper.namespaceQuery(
