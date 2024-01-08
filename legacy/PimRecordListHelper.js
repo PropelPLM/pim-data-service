@@ -59,6 +59,7 @@ async function PimRecordListHelper(
   let filteredRecords = exportRecords.filter(record => {
     return recordIds?.includes(record.get('Id')) || variantValueIds?.includes(record.get('Id'));
   });
+  console.log('filteredRecords: ', filteredRecords)
   let exportRecordsAndColumns = [filteredRecords]; // [[filtered]] zz
 
   /** PIM repo ProductService.productStructureByCategory end */
@@ -768,7 +769,6 @@ async function addExportColumns(
       }
     }
   }
-  console.log('exportColumns: ', exportColumns)
   // populate export records with raw values specified in the template
   Array.from(templateHeaderValueMap.keys()).forEach(header => {
     exportRecordsAndColumns[0].forEach(recordMap => {
