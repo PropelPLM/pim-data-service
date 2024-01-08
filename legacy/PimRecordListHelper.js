@@ -634,7 +634,6 @@ async function addExportColumns(
     if (!isProduct) {
       // check if "System Attributes" attribute group is selected and slate those for export
       hasDefaultAssetCols = await checkForDefaultAssetCols(exportColumns, linkedGroups);
-      console.log('hasDefaultAssetCols: ', hasDefaultAssetCols)
     }
   }
   if (columnAttributeIds.size > 0 || hasDefaultAssetCols) {
