@@ -622,6 +622,7 @@ async function addExportColumns(
   const linkedAttributes = reqBody.linkedLabels;
   let linkedGroups = reqBody.linkedGroups;
   let columnAttributeIds = new Set();
+  let hasDefaultAssetCols = false;
   if (linkedAttributes.length > 0) {
     linkedAttributes.forEach(attr => {
       columnAttributeIds.add(attr);
@@ -632,10 +633,11 @@ async function addExportColumns(
     await addChildrenOfLinkedGroups(linkedGroups, columnAttributeIds);
     if (!isProduct) {
       // check if "System Attributes" attribute group is selected and slate those for export
-      await checkForDefaultAssetCols(exportColumns, linkedGroups);
+      hasDefaultAssetCols = await checkForDefaultAssetCols(exportColumns, linkedGroups);
     }
   }
-  if (columnAttributeIds.size > 0) {
+  if (columnAttributeIds.size > 0 || hasDefaultAssetCols) {
+    // specific attributes/attribute groups/system attributes have been selected
     columnAttributeIds = Array.from(columnAttributeIds);
     columnAttributeIds = prepareIdsForSOQL(columnAttributeIds);
 
@@ -779,8 +781,10 @@ async function checkForDefaultAssetCols(exportColumns, linkedGroups) {
   linkedGroupObjects.forEach(linkedGroupObj => {
     if (linkedGroupObj.Name === SYSTEM_ATTRIBUTES_LABEL) {
       addDefaultAssetColsForExport(exportColumns);
+      return true;
     }
-  })
+  });
+  return false;
 }
 
 function addDefaultAssetColsForExport(exportColumns) {
