@@ -987,7 +987,7 @@ class PimStructure {
     let templateHeaderValueMap = new Map();
     const isTemplateExport = templateFields && templateFields.length > 0;
     if (!isTemplateExport) {
-      exportColumns = parseExportColsByRecordType(isProduct);
+      exportColumns = this.parseExportColsByRecordType(isProduct);
     } else if (isTemplateExport) {
       const lastHeaderRowIndex = templateHeaders.length - 1;
       let field;
