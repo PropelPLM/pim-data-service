@@ -987,7 +987,7 @@ class PimStructure {
     let templateHeaderValueMap = new Map();
     const isTemplateExport = templateFields && templateFields.length > 0;
     if (!isTemplateExport) {
-      exportColumns = this.parseExportColsByRecordType(isProduct);
+      exportColumns = this.parseExportColsByRecordType(isProduct, Array.from(productVariantValueMapList[0].keys()));
     } else if (isTemplateExport) {
       const lastHeaderRowIndex = templateHeaders.length - 1;
       let field;
@@ -1056,9 +1056,9 @@ class PimStructure {
     return [...exportRecordsAndColumns, exportColumns || []];
   }
 
-  parseExportColsByRecordType(isProduct) {
+  parseExportColsByRecordType(isProduct, recordFields) {
     // remove sobject record id and category id
-    let exportColumns = Array.from(productVariantValueMapList[0].keys())
+    let exportColumns = recordFields
         .filter(col => col !== ID_FIELD && col !== CATEGORY_ID_FIELD);
     if (isProduct) {
       // remove asset default columns
