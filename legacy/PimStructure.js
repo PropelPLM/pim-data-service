@@ -103,6 +103,7 @@ class PimStructure {
         exportRecordsAndColumns = [exportRecords],
         attrValValue;
 
+        console.log('baseRecord: ', baseRecord)
       // Map<productId or vvId, Map<Attribute Label Id, DADownloadDetails object>>
       productVariantsDaDetailsMap = new Map();
       appearingLabelIds = prepareIdsForSOQL(appearingLabelIds);
