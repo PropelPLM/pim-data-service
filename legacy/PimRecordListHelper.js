@@ -59,7 +59,6 @@ async function PimRecordListHelper(
   let filteredRecords = exportRecords.filter(record => {
     return recordIds?.includes(record.get('Id')) || variantValueIds?.includes(record.get('Id'));
   });
-  console.log('filteredRecords: ', filteredRecords)
   let exportRecordsAndColumns = [filteredRecords]; // [[filtered]] zz
 
   /** PIM repo ProductService.productStructureByCategory end */
@@ -283,8 +282,8 @@ async function buildStructureWithCategoryIds(
   if (listCategoryIds.size === 0) {
     throw 'No Category Ids';
   }
-  // return productsList
-  const recordList =  await service.simpleQuery(
+  // return list of records
+  return await service.simpleQuery(
     helper.namespaceQuery(
       `select Id, Name, Category__c, Category__r.Name, ${
         isProduct ? '' : 'CreatedDate, Asset_Status__c, External_File_Id__c, Mime_Type__c, Size__c, View_Link__c,'
@@ -330,8 +329,6 @@ async function buildStructureWithCategoryIds(
       where Category__c IN (${listCategoryIds})`
     )
   );
-  console.log('recordList ', recordList)
-  return recordList;
 }
 
 // PIM repo ProductManager.buildStructureWithSecondaryCategoryIds()

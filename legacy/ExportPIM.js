@@ -98,6 +98,7 @@ function convertArrayOfObjectsToCSV(
   columns,
   templateAdditionalHeaders
 ) {
+  console.log('records: ', records)
   let csvStringResult,
     counter,
     keys = [],
