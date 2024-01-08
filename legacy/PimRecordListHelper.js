@@ -781,14 +781,14 @@ async function checkForDefaultAssetCols(exportColumns, linkedGroups) {
   );
   linkedGroupObjects.forEach(linkedGroupObj => {
     if (linkedGroupObj.Name === SYSTEM_ATTRIBUTES_LABEL) {
-      addDefaultAssetColsForExport(exportColumns);
+      await addDefaultAssetColsForExport(exportColumns);
       return true;
     }
   });
   return false;
 }
 
-function addDefaultAssetColsForExport(exportColumns) {
+async function addDefaultAssetColsForExport(exportColumns) {
   Array.from(DEFAULT_ASSET_COLUMNS.keys()).forEach(defaultCol => {
     exportColumns.push({
       fieldName: DEFAULT_ASSET_COLUMNS.get(defaultCol),
