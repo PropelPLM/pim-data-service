@@ -653,7 +653,7 @@ async function addExportColumns(
       linkedGroupObjects.forEach(linkedGroupObj => {
         if (linkedGroupObj.Name === 'System Attributes') {
           exportColumns.push({
-            fieldName: 'Created Date',
+            fieldName: 'CreatedDate',
             label: 'Created Date',
             type: 'text'
           });
@@ -721,7 +721,6 @@ async function addExportColumns(
         if (isAttributeField && isProduct && isDefaultProductColumn) {
           // value specified in template is a field's value, and col in template is a default product column
           field = field.slice(11, -1);
-          console.log('field: ', field)
           exportColumns.push({
             fieldName: defaultProductColumns.get(field),
             label: templateHeaders[lastHeaderRowIndex][i],
