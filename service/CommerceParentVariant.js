@@ -138,10 +138,11 @@ class CommerceParentVariant {
     this.attributes.forEach((attribute) => {
 
       if (
-        this.mapping[attribute['Attribute_Label__r.Primary_Key__c']] &&
-        !attribute['Overwritten_Variant_Value__c']
+        this.mapping[attribute[`${this.namespacePlus('Attribute_Label__r.Primary_Key__c')}`]] &&
+        !attribute[`${this.helper.namespace('Overwritten_Variant_Value__c')}`]
       ) {
-        tmpObj[this.mapping[attribute['Attribute_Label__r.Primary_Key__c']]] = attribute['Value__c']
+        tmpObj[this.mapping[attribute[`${this.namespacePlus('Attribute_Label__r.Primary_Key__c')}`]]] =
+          attribute[`${this.helper.namespace('Value__c')}`]
       }
     })
 
@@ -182,30 +183,30 @@ class CommerceParentVariant {
       }
 
       // setting the last variant and it's value
-      tmpObj[`Variation Attribute Value ${properOrderVariants.length}`] = variantValue['Label__c']
+      tmpObj[`Variation Attribute Value ${properOrderVariants.length}`] =
+        variantValue[`${this.helper.namespace('Label__c')}`]
 
       // blasting through the first time
       this.attributes.forEach((attribute) => {
   
         if (
-          this.mapping[attribute['Attribute_Label__r.Primary_Key__c']] &&
-          !attribute['Overwritten_Variant_Value__c']
+          this.mapping[attribute[`${this.namespacePlus('Attribute_Label__r.Primary_Key__c')}`]] &&
+          !attribute[`${this.helper.namespace('Overwritten_Variant_Value__c')}`]
         ) {
-          tmpObj[this.mapping[attribute['Attribute_Label__r.Primary_Key__c']]] = attribute['Value__c']
+          tmpObj[this.mapping[attribute[`${this.namespacePlus('Attribute_Label__r.Primary_Key__c')}`]]] =
+            attribute[`${this.helper.namespace('Value__c')}`]
         }
       })
 
       // now blast through for the overwrites
       this.attributes.forEach((attribute) => {
-        if (attribute['Overwritten_Variant_Value__c'] && attribute['Overwritten_Variant_Value__c'] === variantValue.Id) {
-
-          // special case just to get the title
-          if (attribute['Attribute_Label__r.Label__c'] === 'Title') {
-            tmpObj['Product Name'] = attribute['Value__c']
-          }
+        if (attribute[`${this.helper.namespace('Overwritten_Variant_Value__c')}`] && 
+          attribute[`${this.helper.namespace('Overwritten_Variant_Value__c')}`] === variantValue.Id
+        ) {
     
-          if (this.mapping[attribute['Attribute_Label__r.Primary_Key__c']]) {
-            tmpObj[this.mapping[attribute['Attribute_Label__r.Primary_Key__c']]] = attribute['Value__c']
+          if (this.mapping[attribute[`${this.namespacePlus('Attribute_Label__r.Primary_Key__c')}`]]) {
+            tmpObj[this.mapping[attribute[`${this.namespacePlus('Attribute_Label__r.Primary_Key__c')}`]]] =
+              attribute[`${this.helper.namespace('Value__c')}`]
           }
         }
       })
@@ -223,6 +224,23 @@ class CommerceParentVariant {
       ContentLocation: 'S',
       VersionData: btoa(convertToCsv(data))
     }
+  }
+
+  /**
+   * Solving this here for now but need to move this into the propel-sfdc-connect code ASAP
+   * only send fields that reference parent custome fields in this function ie Attribute_Label__r.Label__c
+   * do not send Attribute_Label__r.Name as the helper.namespace will handle them
+   */
+  namespacePlus(parentField) {
+    let returnField = ''
+    if (parentField) {
+      const parts = parentField.split('.')
+
+      returnField += `${this.helper.namespaceString}__${parts[0]}`
+      returnField += '.'
+      returnField += `${this.helper.namespaceString}__${parts[1]}`
+    }
+    return returnField
   }
 }
 
