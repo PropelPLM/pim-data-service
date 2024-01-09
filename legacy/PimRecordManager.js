@@ -18,7 +18,9 @@ async function buildWithRecordIds(recordIds, isProduct) {
   try {
     const records = await service.queryExtend(
       helper.namespaceQuery(
-        `select Id, Name, Category__c, Category__r.Name,
+        `select Id, Name, Category__c, Category__r.Name, ${
+          isProduct ? '' : 'CreatedDate, Asset_Status__c, External_File_Id__c, Mime_Type__c, Size__c, View_Link__c,'
+        }
       (
         select
             Id,

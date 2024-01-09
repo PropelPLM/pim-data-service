@@ -8,6 +8,13 @@ const DEFAULT_COLUMNS = new Map([
   ['Title', 'Title'],
   ['Category Name', 'Category__r.Name']
 ]);
+const DEFAULT_ASSET_COLUMNS = new Map([
+  ['Created Date', 'CreatedDate'], 
+  ['External Asset ID', 'External_File_Id__c'],
+  ['File Type', 'Mime_Type__c'],
+  ['File Size', 'Size__c'],
+  ['CDN URL', 'View_Link__c']
+]);
 const PRODUCT_TYPE = 'Product';
 
 class DADownloadDetails {
@@ -97,9 +104,11 @@ module.exports = {
   validateNamespaceForField,
   DADownloadDetails,
   parseProductReferenceAttrVal,
+  getDefaultAssetColsPriKeyToLabelsMap,
   ATTRIBUTE_FLAG,
   DA_DOWNLOAD_DETAIL_KEY,
   DEFAULT_COLUMNS,
+  DEFAULT_ASSET_COLUMNS,
   PRODUCT_TYPE
 };
 /**
@@ -490,6 +499,7 @@ async function callAsposeToExport({
     );
     exportTypeSpecificInformation = {
       defaultColumns: Object.fromEntries(DEFAULT_COLUMNS),
+      defaultAssetColumns: Object.fromEntries(DEFAULT_ASSET_COLUMNS),
       labelToPrimaryKeyMap: Object.fromEntries(labelToPrimaryKeyMap),
       listPageData: listPageData.map(recordMap => Object.fromEntries(recordMap))
     };
@@ -631,4 +641,16 @@ async function parseProductReferenceAttrVal(attrValValue, reqBody) {
       return record.Name;
     })
     .join(', ');
+}
+
+/**
+ * reverses the map of DEFAULT_ASSET_COLUMNS aka System Attribute fields such that the keys are the primary keys and values are the labels
+ * @returns {Map<String, String>} - a Map of SObject field primary keys => SObject field labels
+ *  */
+function getDefaultAssetColsPriKeyToLabelsMap() {
+  let inverseMap = new Map();
+  Array.from(DEFAULT_ASSET_COLUMNS.keys()).forEach(label => {
+    inverseMap.set(DEFAULT_ASSET_COLUMNS.get(label), label);
+  });
+  return inverseMap;
 }

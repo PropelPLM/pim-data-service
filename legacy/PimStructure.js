@@ -13,7 +13,9 @@ const {
   parseDigitalAssetAttrVal,
   parseDaAttrValWithVarMap,
   prepareIdsForSOQL,
-  parseProductReferenceAttrVal
+  parseProductReferenceAttrVal,
+  getDefaultAssetColsPriKeyToLabelsMap,
+  DEFAULT_ASSET_COLUMNS
 } = require('./utils');
 
 let helper;
@@ -490,7 +492,8 @@ class PimStructure {
           supportedAttrPriKeyLabelMap,
           templateFields,
           templateHeaders,
-          exportRecordsAndColumns
+          exportRecordsAndColumns,
+          isProduct
         ),
         templateAdditionalHeaders: []
       };
@@ -983,22 +986,15 @@ class PimStructure {
     supportedAttrPriKeyLabelMap,
     templateFields,
     templateHeaders,
-    exportRecordsAndColumns
+    exportRecordsAndColumns,
+    isProduct
   ) {
     let exportColumns = [];
     let templateHeaderValueMap = new Map();
-    if (!templateFields || templateFields.length === 0) {
-      // if not template export, push all attribute columns except sobject id and rename Category__r.Name to Category
-      exportColumns = Array.from(productVariantValueMapList[0].keys())
-        .filter(col => col !== ID_FIELD && col !== CATEGORY_ID_FIELD)
-        .map(col => {
-          if (col === CATEGORY_NAME_FIELD) {
-            return { fieldName: col, label: CATEGORY_NAME_LABEL, type: 'text' };
-          }
-          return { fieldName: col, label: col, type: 'text' };
-        });
-    } else if (templateFields && templateFields.length > 0) {
-      // template export
+    const isTemplateExport = templateFields && templateFields.length > 0;
+    if (!isTemplateExport) {
+      exportColumns = this.parseExportColsByRecordType(isProduct, Array.from(productVariantValueMapList[0].keys()));
+    } else if (isTemplateExport) {
       const lastHeaderRowIndex = templateHeaders.length - 1;
       let field;
       // clean up data for easier parsing
@@ -1074,6 +1070,29 @@ class PimStructure {
       });
     }
     return [...exportRecordsAndColumns, exportColumns || []];
+  }
+
+  parseExportColsByRecordType(isProduct, recordFields) {
+    // remove sobject record id and category id
+    let exportColumns = recordFields
+        .filter(col => col !== ID_FIELD && col !== CATEGORY_ID_FIELD);
+    if (isProduct) {
+      // remove asset default columns
+      exportColumns = exportColumns.filter(col => !Array.from(DEFAULT_ASSET_COLUMNS.values()).includes(col));
+    }
+    
+    // rename Category__r.Name to Category and set default asset column labels
+    const defaultAssetColMap = getDefaultAssetColsPriKeyToLabelsMap();
+    const defaultAssetColFieldnames = Array.from(defaultAssetColMap.keys());
+    exportColumns = exportColumns.map(col => {
+      if (col === CATEGORY_NAME_FIELD) {
+        return { fieldName: col, label: CATEGORY_NAME_LABEL, type: 'text' };
+      } else if (defaultAssetColFieldnames.includes(col)) {
+        return { fieldName: col, label: defaultAssetColMap.get(col), type: 'text' };
+      }
+      return { fieldName: col, label: col, type: 'text' };
+    });
+    return exportColumns;
   }
 
   async parseAppearringAttrLabelsAndValues(appearingLabelIds, service) {

@@ -4,6 +4,7 @@ const {
   ATTRIBUTE_FLAG,
   DA_DOWNLOAD_DETAIL_KEY,
   DEFAULT_COLUMNS,
+  DEFAULT_ASSET_COLUMNS,
   getLowestVariantsFromProducts,
   extractLowestVariantValues,
   initAssetDownloadDetailsList,
@@ -16,6 +17,7 @@ let helper;
 let service;
 const DA_TYPE = 'DigitalAsset';
 const PRODUCT_REFERENCE_TYPE = 'ProductReference';
+const SYSTEM_ATTRIBUTES_LABEL = 'System Attributes';
 
 async function PimRecordListHelper(
   reqBody,
@@ -280,11 +282,11 @@ async function buildStructureWithCategoryIds(
   if (listCategoryIds.size === 0) {
     throw 'No Category Ids';
   }
-  // return productsList
+  // return list of records
   return await service.simpleQuery(
     helper.namespaceQuery(
       `select Id, Name, Category__c, Category__r.Name, ${
-        isProduct ? '' : 'Asset_Status__c, Mime_Type__c, Size__c, View_Link__c,'
+        isProduct ? '' : 'CreatedDate, Asset_Status__c, External_File_Id__c, Mime_Type__c, Size__c, View_Link__c,'
       }
       (
         select
@@ -619,8 +621,8 @@ async function addExportColumns(
   // add columns for selected attributes and children of selected attribute groups
   const linkedAttributes = reqBody.linkedLabels;
   let linkedGroups = reqBody.linkedGroups;
-  let linkedGroupsChildren = [];
   let columnAttributeIds = new Set();
+  let hasDefaultAssetCols = false;
   if (linkedAttributes.length > 0) {
     linkedAttributes.forEach(attr => {
       columnAttributeIds.add(attr);
@@ -628,18 +630,14 @@ async function addExportColumns(
   }
   if (linkedGroups.length > 0) {
     linkedGroups = prepareIdsForSOQL(linkedGroups);
-    linkedGroupsChildren = await service.simpleQuery(
-      helper.namespaceQuery(
-        `select Id, Name, Attribute_Group__c
-        from Attribute_Label__c
-        where Attribute_Group__c IN (${linkedGroups})`
-      )
-    );
-    linkedGroupsChildren.forEach(childAttr => {
-      columnAttributeIds.add(childAttr.Id);
-    });
+    await addChildrenOfLinkedGroups(linkedGroups, columnAttributeIds);
+    if (!isProduct) {
+      // check if "System Attributes" attribute group is selected and slate those for export
+      hasDefaultAssetCols = await checkForDefaultAssetCols(exportColumns, linkedGroups);
+    }
   }
-  if (columnAttributeIds.size > 0) {
+  if (columnAttributeIds.size > 0 || hasDefaultAssetCols) {
+    // specific attributes/attribute groups/system attributes have been selected
     columnAttributeIds = Array.from(columnAttributeIds);
     columnAttributeIds = prepareIdsForSOQL(columnAttributeIds);
 
@@ -675,14 +673,17 @@ async function addExportColumns(
     );
 
     if (!templateFields || templateFields.length === 0) {
+      // if not template export, push all attribute columns and default asset columns (if is asset)
       columnAttributes.forEach(attr => {
-        // if not template export, push all attribute columns
         exportColumns.push({
           fieldName: helper.getValue(attr, 'Primary_Key__c'),
           label: helper.getValue(attr, 'Label__c'),
           type: 'text'
         });
       });
+      if (!isProduct) {
+        addDefaultAssetColsForExport(exportColumns, linkedGroups);
+      }
     } else if (templateFields && templateFields.length > 0) {
       // add columns specified in template
       let field;
@@ -696,8 +697,8 @@ async function addExportColumns(
         field = templateFields[i];
         isAttributeField = field.includes(ATTRIBUTE_FLAG);
         isDefaultColumn = defaultColumnNames.includes(field.slice(11, -1));
-        if (isAttributeField && isDefaultColumn) {
-          // value specified in template is a field's value, and col in template is a default column
+        if (isAttributeField && isProduct && isDefaultColumn) {
+          // value specified in template is a field's value, and col in template is a default product column
           field = field.slice(11, -1);
           exportColumns.push({
             fieldName: defaultColumns.get(field),
@@ -753,6 +754,47 @@ async function addExportColumns(
     });
   });
   return [...exportRecordsAndColumns, exportColumns];
+}
+
+async function addChildrenOfLinkedGroups(linkedGroups, columnAttributeIds) {
+  const linkedGroupsChildren = await service.simpleQuery(
+    helper.namespaceQuery(
+      `select Id, Name, Attribute_Group__c
+      from Attribute_Label__c
+      where Attribute_Group__c IN (${linkedGroups})`
+    )
+  );
+  linkedGroupsChildren.forEach(childAttr => {
+    columnAttributeIds.add(childAttr.Id);
+  });
+}
+
+// iterate through selected attribute groups, if System Attributes is selected, add default asset columns
+async function checkForDefaultAssetCols(exportColumns, linkedGroups) {
+  const linkedGroupObjects = await service.simpleQuery(
+    helper.namespaceQuery(
+      `select Id, Name
+      from Attribute_Group__c
+      where Id IN (${linkedGroups})`
+    )
+  );
+  for (let linkedGroupObj of linkedGroupObjects) {
+    if (linkedGroupObj.Name === SYSTEM_ATTRIBUTES_LABEL) {
+      await addDefaultAssetColsForExport(exportColumns);
+      return true;
+    }
+  }
+  return false;
+}
+
+async function addDefaultAssetColsForExport(exportColumns) {
+  Array.from(DEFAULT_ASSET_COLUMNS.keys()).forEach(defaultCol => {
+    exportColumns.push({
+      fieldName: DEFAULT_ASSET_COLUMNS.get(defaultCol),
+      label: defaultCol,
+      type: 'text'
+    });
+  });
 }
 
 async function populateRecordDetailsForLowestVariants(lowestVariants) {
