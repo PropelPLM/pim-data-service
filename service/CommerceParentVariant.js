@@ -146,6 +146,18 @@ class CommerceParentVariant {
       }
     })
 
+    // you can remove this iteration after replaceing the csv parser with one that doesn't care about key order
+    this.attributes.forEach((attribute) => {
+
+      if (
+        this.mapping[attribute[`${this.namespacePlus('Attribute_Label__r.Primary_Key__c')}`]] &&
+        attribute[`${this.helper.namespace('Overwritten_Variant_Value__c')}`]
+      ) {
+        tmpObj[this.mapping[attribute[`${this.namespacePlus('Attribute_Label__r.Primary_Key__c')}`]]] =
+          attribute[`${this.helper.namespace('Value__c')}`]
+      }
+    })
+
     this.importObjs.push(tmpObj)
 
     // add variants
@@ -215,6 +227,8 @@ class CommerceParentVariant {
     })
   }
 
+  // TODO: switch out this csv parser. Need one to use the key to match with the column.
+  // needs to support different order of keys in the objects
   getCsvObj(data, filename) {
     const nameOnDisk = `${Date.now()}_${filename}`
 
