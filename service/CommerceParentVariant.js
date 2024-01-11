@@ -96,7 +96,8 @@ class CommerceParentVariant {
       ))
 
     } catch(error) {
-      this.log.addToLogs([{errors: [error] }], this.helper.namespace('Category__c'))
+      this.log.addToLogs([{errors: [error] }], 'Fetch_Data')
+      console.log(error)
     }
   }
 
@@ -189,12 +190,13 @@ class CommerceParentVariant {
       }
 
       const parentVvs = variantValue[`${this.helper.namespace('Parent_Value_Path__c')}`].split(',')
-      for (let i = properOrderVariants.length - 1; i > 0; i--) {
-        tmpObj[`Variation Attribute Value ${i}`] =
-          this.variantValueMap.get(parentVvs[i - 1])[`${this.helper.namespace('Label__c')}`]
+      for (let i = 0; i < properOrderVariants.length - 1; i++) {
+        tmpObj[`Variation Attribute Value ${i + 1}`] =
+          this.variantValueMap.get(parentVvs[i])[`${this.helper.namespace('Label__c')}`]
       }
 
       // setting the last variant and it's value
+      // I do this because I am only iterating through the lowest level variants, this will always be the lowest level.
       tmpObj[`Variation Attribute Value ${properOrderVariants.length}`] =
         variantValue[`${this.helper.namespace('Label__c')}`]
 
