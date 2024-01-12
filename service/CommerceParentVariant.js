@@ -148,16 +148,19 @@ class CommerceParentVariant {
     })
 
     // you can remove this iteration after replaceing the csv parser with one that doesn't care about key order
-    this.attributes.forEach((attribute) => {
+    // TODO: you will miss these headers if you don't have these attributes filled out on the parent product.
+    // this will be fixed with the new csv parser but for now you can't have a product in pim without all the attributes
+    // that are mapped filled out on the main pim product
+    // this.attributes.forEach((attribute) => {
 
-      if (
-        this.mapping[attribute[`${this.namespacePlus('Attribute_Label__r.Primary_Key__c')}`]] &&
-        attribute[`${this.helper.namespace('Overwritten_Variant_Value__c')}`]
-      ) {
-        tmpObj[this.mapping[attribute[`${this.namespacePlus('Attribute_Label__r.Primary_Key__c')}`]]] =
-          attribute[`${this.helper.namespace('Value__c')}`]
-      }
-    })
+    //   if (
+    //     this.mapping[attribute[`${this.namespacePlus('Attribute_Label__r.Primary_Key__c')}`]] &&
+    //     attribute[`${this.helper.namespace('Overwritten_Variant_Value__c')}`]
+    //   ) {
+    //     tmpObj[this.mapping[attribute[`${this.namespacePlus('Attribute_Label__r.Primary_Key__c')}`]]] =
+    //       attribute[`${this.helper.namespace('Value__c')}`]
+    //   }
+    // })
 
     this.importObjs.push(tmpObj)
 
@@ -202,7 +205,6 @@ class CommerceParentVariant {
 
       // blasting through the first time
       this.attributes.forEach((attribute) => {
-  
         if (
           this.mapping[attribute[`${this.namespacePlus('Attribute_Label__r.Primary_Key__c')}`]] &&
           !attribute[`${this.helper.namespace('Overwritten_Variant_Value__c')}`]
@@ -214,6 +216,7 @@ class CommerceParentVariant {
 
       // now blast through for the overwrites
       this.attributes.forEach((attribute) => {
+
         if (attribute[`${this.helper.namespace('Overwritten_Variant_Value__c')}`] && 
           attribute[`${this.helper.namespace('Overwritten_Variant_Value__c')}`] === variantValue.Id
         ) {
