@@ -222,7 +222,6 @@ class CommerceParentVariant {
         ) {
     
           if (this.mapping[attribute[`${this.namespacePlus('Attribute_Label__r.Primary_Key__c')}`]]) {
-            console.log('gets past the second check')
             tmpObj[this.mapping[attribute[`${this.namespacePlus('Attribute_Label__r.Primary_Key__c')}`]]] =
               attribute[`${this.helper.namespace('Value__c')}`]
           }
