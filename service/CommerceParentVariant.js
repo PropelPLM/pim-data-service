@@ -37,6 +37,8 @@ class CommerceParentVariant {
     this.attributeSet = this.options.attribute_set
   
     if (!this.attributeSet) { console.log('attribute_set was blank') }
+
+    console.log(this.helper)
   }
 
   async fetchData() {
@@ -251,8 +253,11 @@ class CommerceParentVariant {
    * do not send Attribute_Label__r.Name as the helper.namespace will handle them
    */
   namespacePlus(parentField) {
-    let returnField = ''
-    if (parentField) {
+    if (!parentField) { return null }
+    
+    let returnField = parentField
+    if (this.helper.namespaceString) {
+      returnField = ''
       const parts = parentField.split('.')
 
       returnField += `${this.helper.namespaceString}__${parts[0]}`
