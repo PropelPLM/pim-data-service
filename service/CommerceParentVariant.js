@@ -37,8 +37,6 @@ class CommerceParentVariant {
     this.attributeSet = this.options.attribute_set
   
     if (!this.attributeSet) { console.log('attribute_set was blank') }
-
-    console.log(this.helper)
   }
 
   async fetchData() {
