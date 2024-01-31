@@ -197,7 +197,7 @@ class PimStructure {
             if (valuesIdList.length > 0) {
               overwrittenValues = await service.simpleQuery(
                 helper.namespaceQuery(
-                  `select Id, Attribute_Label__c, Attribute_Label_Type__c, Value__c, Product__c, Overwritten_Variant_Value__c
+                  `select Id, Attribute_Label__c, Attribute_Label_Type__c, Value__c, Value_Long__c, Product__c, Overwritten_Variant_Value__c
                   from Attribute_Value__c
                   where (
                     Overwritten_Variant_Value__c IN (${valuesIdList}) AND
@@ -243,7 +243,7 @@ class PimStructure {
 
                   let newValue = helper.getValue(
                     overwrittenValues[j],
-                    'Value__c'
+                    (overwrittenValues[j][helper.namespace('Value_Long__c')]) ? 'Value_Long__c' : 'Value__c'
                   );
                   if (
                     helper.getValue(
@@ -327,7 +327,7 @@ class PimStructure {
           if (valuesIdList.length > 0) {
             overwrittenValues = await service.simpleQuery(
               helper.namespaceQuery(
-                `select Id, Attribute_Label__c, Attribute_Label_Type__c, Value__c, Product__c, Overwritten_Variant_Value__c
+                `select Id, Attribute_Label__c, Attribute_Label_Type__c, Value__c, Value_Long__c, Product__c, Overwritten_Variant_Value__c
                 from Attribute_Value__c
                 where (
                   Overwritten_Variant_Value__c IN (${valuesIdList}) AND
@@ -403,7 +403,7 @@ class PimStructure {
                 });
                 let newValue = helper.getValue(
                   overwrittenValues[j],
-                  'Value__c'
+                  (overwrittenValues[j][helper.namespace('Value_Long__c')]) ? 'Value_Long__c' : 'Value__c'
                 );
                 if (
                   helper.getValue(
@@ -621,7 +621,7 @@ class PimStructure {
       if (valuesIdList.length > 0) {
         overwrittenValues = await service.simpleQuery(
           helper.namespaceQuery(
-            `select Id, Attribute_Label__c, Attribute_Label_Type__c, Value__c, Product__c, Overwritten_Variant_Value__c
+            `select Id, Attribute_Label__c, Attribute_Label_Type__c, Value__c, Value_Long__c, Product__c, Overwritten_Variant_Value__c
             from Attribute_Value__c
             where (
               Overwritten_Variant_Value__c IN (${valuesIdList}) AND
@@ -690,7 +690,10 @@ class PimStructure {
               }
             });
 
-            let newValue = helper.getValue(overwrittenValues[j], 'Value__c');
+            let newValue = helper.getValue(
+              overwrittenValues[j],
+              (overwrittenValues[j][helper.namespace('Value_Long__c')]) ? 'Value_Long__c' : 'Value__c'
+            );
             if (
               helper.getValue(
                 overwrittenValues[j],
@@ -1111,7 +1114,8 @@ class PimStructure {
           Overwritten_Variant_Value__c,
           Product__c,
           Digital_Asset__c,
-          Value__c
+          Value__c,
+          Value_Long__c
         from Attribute_Value__c
         where (
           Attribute_Label__c IN (${appearingLabelIds}) AND

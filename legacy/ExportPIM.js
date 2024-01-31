@@ -15,6 +15,8 @@ const {
   sendCsvToAsposeCells
 } = require('./utils');
 
+const { getSessionId } = require('../lib/utility')
+
 async function LegacyExportPIM(req) {
   const reqBody = req.body;
   const isListPageExport = reqBody.options.isListPageExport;
@@ -24,10 +26,8 @@ async function LegacyExportPIM(req) {
   }
 
   // highjacking the flow here are inserting the session id from the JWT flow
-  const response = await propelConnect.jwtSession({
-    clientId: process.env.PIM_DATA_SERVICE_CLIENT_ID,
+  const response = await getSessionId({
     isTest: reqBody.isTest,
-    privateKey: process.env.PIM_DATA_SERVICE_KEY,
     user: reqBody.user
   });
   reqBody.sessionId = response.access_token;
