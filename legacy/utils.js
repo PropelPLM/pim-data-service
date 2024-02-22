@@ -482,13 +482,13 @@ async function callAsposeToExport({
 
   let exportTypeSpecificInformation;
 
+  const columnAttributes = await service.simpleQuery(
+    helper.namespaceQuery(
+      `select Id, Label__c, Primary_Key__c
+    from Attribute_Label__c order by Primary_Key__c`
+    )
+  );
   if (listPageData) {
-    const columnAttributes = await service.simpleQuery(
-      helper.namespaceQuery(
-        `select Id, Label__c, Primary_Key__c
-      from Attribute_Label__c order by Primary_Key__c`
-      )
-    );
     const labelToPrimaryKeyMap = new Map(
       columnAttributes.map(label => {
         return [
@@ -504,10 +504,19 @@ async function callAsposeToExport({
       listPageData: listPageData.map(recordMap => Object.fromEntries(recordMap))
     };
   } else {
+    const primaryKeyToLabelMap = new Map(
+      columnAttributes.map(label => {
+        return [
+          helper.getValue(label, 'Primary_Key__c'),
+          helper.getValue(label, 'Label__c')
+        ];
+      })
+    );
     exportTypeSpecificInformation = {
       detailPageData: detailPageData.map(recordMap =>
         Object.fromEntries(recordMap)
       ),
+      primaryKeyToLabelMap: Object.fromEntries(primaryKeyToLabelMap),
       productVariantValueMap: Object.fromEntries(baseRecord) // JUST NAMED THIS COS OF HARDCODE IN PROPEL-DOC-JAVA
     };
   }
