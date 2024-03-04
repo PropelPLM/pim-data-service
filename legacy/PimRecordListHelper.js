@@ -93,6 +93,7 @@ async function PimRecordListHelper(
       // get SKUs (lowest variants) of parent products of selected records
       const lowestVariants = await getLowestVariantsFromProducts(productsToQueryForSKU, reqBody);
       exportRecordsAndColumns[0] = await populateRecordDetailsForLowestVariants(lowestVariants);
+      console.log('1: ', exportRecordsAndColumns[0]);
       // update variant value ids and record ids with only those relevant to lowest variants
       vvIds.clear();
       for (let lowestVariant of lowestVariants) {
@@ -147,6 +148,7 @@ async function PimRecordListHelper(
     exportRecordsAndColumns[0].sort((a, b) =>
       a.get('Record_ID') > b.get('Record_ID') ? 1 : -1
     );
+    console.log('2: ', exportRecordsAndColumns[0]);
 
     /** PIM repo ProductService.getProductDetail end */
     // for each key of attribute results (Product__c Id or Variant_Value__c Id)
