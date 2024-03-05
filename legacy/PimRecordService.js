@@ -48,6 +48,7 @@ async function getResultForProductStructure(recordList, isProduct) {
       });
     });
   });
+  console.log('productVariantValueMapList: ', productVariantValueMapList)
   return productVariantValueMapList;
 }
 
