@@ -22,12 +22,15 @@ async function PimRecordService(
 // PIM repo ProductService.getResultForProductStructure(recordList)
 // returns List of Maps
 async function getResultForProductStructure(recordList, isProduct) {
-  let productVariantValueMapList = [
-    populateRecordDetailsMap(helper, recordList[0])
-  ];
+  let productVariantValueMapList = [];
+
+  if (!isProduct) {
+    // populate digital asset record details
+    productVariantValueMapList = [populateRecordDetailsMap(helper, recordList[0])];
+    return productVariantValueMapList;
+  }
   console.log('1. productVariantValueMapList: ', productVariantValueMapList)
 
-  if (!isProduct) return productVariantValueMapList;
   let variantStructure = await getVariantStructure(recordList),
     productVariants,
     variantValues;
