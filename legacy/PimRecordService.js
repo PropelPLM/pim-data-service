@@ -29,7 +29,6 @@ async function getResultForProductStructure(recordList, isProduct) {
     productVariantValueMapList = [populateRecordDetailsMap(helper, recordList[0])];
     return productVariantValueMapList;
   }
-  console.log('1. productVariantValueMapList: ', productVariantValueMapList)
 
   let variantStructure = await getVariantStructure(recordList),
     productVariants,
@@ -51,7 +50,6 @@ async function getResultForProductStructure(recordList, isProduct) {
       });
     });
   });
-  console.log('2. productVariantValueMapList: ', productVariantValueMapList)
   return productVariantValueMapList;
 }
 
