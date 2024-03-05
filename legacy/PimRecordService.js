@@ -22,6 +22,7 @@ async function PimRecordService(
 // PIM repo ProductService.getResultForProductStructure(recordList)
 // returns List of Maps
 async function getResultForProductStructure(recordList, isProduct) {
+  console.log('recordList: ', recordList)
   let productVariantValueMapList = [
     populateRecordDetailsMap(helper, recordList[0])
   ];

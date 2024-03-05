@@ -57,12 +57,10 @@ async function PimRecordListHelper(
     isSKUExport = exportType === 'lowestVariants';
 
   // filter the records if rows were selected or filters applied in product list page
-  console.log('exportRecords: ', exportRecords)
   let filteredRecords = exportRecords.filter(record => {
     return recordIds?.includes(record.get('Id')) || variantValueIds?.includes(record.get('Id'));
   });
   let exportRecordsAndColumns = [filteredRecords]; // [[filtered]] zz
-  console.log('filteredRecords: ', exportRecordsAndColumns[0])
 
   /** PIM repo ProductService.productStructureByCategory end */
 
@@ -217,6 +215,7 @@ async function getRecordByCategory(
   } else {
     pm = await buildStructureWithSecondaryCategoryIds(listCategoryIds);
   }
+  console.log('pm: ', pm)
   let tempRecords = await PimRecordService(pm, helper, service);
   return tempRecords;
 }
