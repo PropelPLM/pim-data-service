@@ -1,6 +1,8 @@
 var fs = require('fs');
 var crypto = require('crypto');
 const https = require('https');
+const archiver = require('archiver');
+const ReadableStream = require('stream').Readable;
 
 // adding the propel-sfdc-connect package
 const propelConnect = require('@propelsoftwaresolutions/propel-sfdc-connect');
@@ -13,30 +15,30 @@ const {
   sendCsvToAsposeCells
 } = require('./utils');
 
+const { getSessionId } = require('../lib/utility')
+
 async function LegacyExportPIM(req) {
   const reqBody = req.body;
   const isListPageExport = reqBody.options.isListPageExport;
   // Create csv string result with records and columns in request body
-  if (reqBody.recordIds.length == 0) {
+  if (!reqBody.recordIds.length && !reqBody.variantValueIds.length) {
     return 'Error';
   }
 
   // highjacking the flow here are inserting the session id from the JWT flow
-  const response = await propelConnect.jwtSession({
-    clientId: process.env.PIM_DATA_SERVICE_CLIENT_ID,
+  const response = await getSessionId({
     isTest: reqBody.isTest,
-    privateKey: process.env.PIM_DATA_SERVICE_KEY,
     user: reqBody.user
-  })
+  });
   reqBody.sessionId = response.access_token;
-  if (!reqBody.sessionId) { return 'Error - no session id'; }
+  if (!reqBody.sessionId) {
+    return 'Error - no session id';
+  }
 
-  let daDownloadDetailsList, recordsAndCols;
+  let daDownloadDetailsList, recordsAndCols, templateAdditionalHeaders;
   try {
-    ({ daDownloadDetailsList, recordsAndCols } = await new PimStructure().build(
-      reqBody,
-      isListPageExport
-    ));
+    ({ daDownloadDetailsList, recordsAndCols, templateAdditionalHeaders } =
+      await new PimStructure().build(reqBody, isListPageExport));
   } catch (err) {
     console.log('error: ', err);
   }
@@ -47,8 +49,7 @@ async function LegacyExportPIM(req) {
   sendDADownloadRequests(
     baseFileName,
     daDownloadDetailsList,
-    reqBody.sessionId,
-    reqBody.hostUrl
+    reqBody
   );
 
   if (!reqBody.includeAttributes) return;
@@ -59,7 +60,8 @@ async function LegacyExportPIM(req) {
 
   let csvString = convertArrayOfObjectsToCSV(
     recordsAndCols[0],
-    recordsAndCols[1]
+    recordsAndCols[1],
+    templateAdditionalHeaders
   );
   if (csvString == null) {
     logErrorResponse('csvString is empty!', '[ExportPIM]');
@@ -91,7 +93,11 @@ async function LegacyExportPIM(req) {
   return csvString;
 }
 
-function convertArrayOfObjectsToCSV(records, columns) {
+function convertArrayOfObjectsToCSV(
+  records,
+  columns,
+  templateAdditionalHeaders
+) {
   let csvStringResult,
     counter,
     keys = [],
@@ -100,7 +106,10 @@ function convertArrayOfObjectsToCSV(records, columns) {
     lineDivider,
     recordAttributes;
   // check if "objectRecords" parameter is null, then return from function
-  if (records == null || !records.length) {
+  if (
+    (records == null || !records.length) &&
+    (templateAdditionalHeaders == null || !templateAdditionalHeaders.length)
+  ) {
     return null;
   }
   // store ,[comma] in columnDivider variable for separate CSV values and
@@ -122,6 +131,10 @@ function convertArrayOfObjectsToCSV(records, columns) {
     }
   });
   csvStringResult = '';
+  for (let headerRow of templateAdditionalHeaders) {
+    csvStringResult += headerRow.join(columnDivider);
+    csvStringResult += lineDivider;
+  }
   csvStringResult += cols.join(columnDivider);
   csvStringResult += lineDivider;
   for (let i = 0; i < records.length; i++) {
@@ -164,41 +177,66 @@ function createBaseFileName() {
 async function sendDADownloadRequests(
   zipFileName,
   daDownloadDetailsList,
-  sessionId,
-  hostName
+  reqBody
 ) {
   if (!daDownloadDetailsList || !daDownloadDetailsList.length) return;
+  reqBody.shouldPostToUser = true;
+  reqBody.communityId = null;
   zipFileName = `Digital_Asset-Export_${zipFileName}.zip`;
+  const zipFileNameOnDisk = crypto.randomBytes(20).toString('hex') + zipFileName;
+  const output = fs.createWriteStream(zipFileNameOnDisk);
+  const archive = archiver('zip', {
+    zlib: { level: 9 }
+  });
+  archive.pipe(output)
 
-  const payload = JSON.stringify({
-    platform: 'aws',
-    zipFileName,
-    daDownloadDetailsList,
-    hostName,
-    sessionId,
-    salesforceUrl: hostName
+  // listen for all archive data to be written, 'close' event is fired only when a file descriptor is involved
+  output.on('close', function() {
+    console.log(archive.pointer() + ' total bytes');
+    console.log('archiver has been finalized and the output file descriptor has closed.');
   });
-  const options = {
-    hostname: 'cloud-doc-stateless.herokuapp.com',
-    path: '/platform/files/download/',
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Content-Length': Buffer.byteLength(payload)
-    }
-  };
-  const request = https.request(options, res => {
-    let data = '';
-    res.on('data', chunk => {
-      data = data + chunk.toString();
+
+  let filename, cdnUrl, fileContent, zipInputStream;
+  let promises = [];
+  for (let asset of daDownloadDetailsList) {
+    cdnUrl = asset.key;
+    fileContent = Buffer.alloc(0);
+    zipInputStream = new ReadableStream();
+    filename = asset.fileName
+
+    promises.push(requestAndAppendDA(cdnUrl, fileContent, zipInputStream, filename, archive))
+  }
+  Promise.all(promises).then(() => {
+    archive.on('finish', () => {
+      postToChatter(zipFileName, zipFileNameOnDisk, '', reqBody);
     });
-    res.on('end', () => {
-      console.log(data);
+    archive.finalize();
+    console.log('File zipped successfully.');
+  })
+}
+
+// GET digital asset, convert the fileContent buffer into a stream to be appended to the zip archiver
+const requestAndAppendDA = (cdnUrl, fileContent, zipInputStream, filename, archive) => {
+  return new Promise((resolve, reject) => {
+    https.get(cdnUrl, (response) => {
+      response.on('data', (chunk) => {
+        fileContent = Buffer.concat([fileContent, chunk]);
+      });
+  
+      response.on('end', () => {
+        try {
+          zipInputStream.push(fileContent);
+          archive.append(zipInputStream, { name: filename });
+          zipInputStream.push(null)
+          resolve();
+        } catch (err) {
+          console.log('error: ', err);
+        }
+      });
+    }).on('error', (error) => {
+      console.error('Download failed:', error.message);
     });
-  });
-  request.write(payload);
-  request.end();
-  console.log('Payload sent: ', payload);
+  })
 }
 
 module.exports = LegacyExportPIM;

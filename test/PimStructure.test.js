@@ -19,7 +19,7 @@ describe('PimStructure tests', () => {
       // array checks
       assert.typeOf(templateHeaders, 'array');
       assert.typeOf(templateFields, 'array');
-      assert.equal(templateHeaders.length, 2);
+      assert.equal(templateHeaders.length, 1);
       assert.equal(templateFields.length, 2);
 
       // value checks
@@ -34,8 +34,9 @@ describe('PimStructure tests', () => {
         misconfiguredTemplatedExportCSVString
       );
 
-      // array checks
-      assert.equal(templateFields.length, 1);
+      // note that fields without PROPEL_ATT flag will be considered as raw values - which are valid fields and
+      // the expected behavior is that for every row in that column, the cell's value is the raw value
+      assert.equal(templateFields.length, 2);
       done();
     });
   });

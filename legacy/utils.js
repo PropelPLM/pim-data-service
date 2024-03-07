@@ -8,6 +8,13 @@ const DEFAULT_COLUMNS = new Map([
   ['Title', 'Title'],
   ['Category Name', 'Category__r.Name']
 ]);
+const DEFAULT_ASSET_COLUMNS = new Map([
+  ['Created Date', 'CreatedDate'], 
+  ['External Asset ID', 'External_File_Id__c'],
+  ['File Type', 'Mime_Type__c'],
+  ['File Size', 'Size__c'],
+  ['CDN URL', 'View_Link__c']
+]);
 const PRODUCT_TYPE = 'Product';
 
 class DADownloadDetails {
@@ -79,15 +86,16 @@ initAssetDownloadDetailsList = (
 module.exports = {
   callAsposeToExport,
   cleanString,
-  getLowestVariantValuesList,
+  getLowestVariantsFromProducts,
+  extractLowestVariantValues,
   getDigitalAssetMap,
   getNestedField,
   initAssetDownloadDetailsList,
   logSuccessResponse,
   logErrorResponse,
   parseDigitalAssetAttrVal,
+  parseDaAttrValWithVarMap,
   postToChatter,
-  prependCDNToViewLink,
   prepareIdsForSOQL,
   removeFileFromDisk,
   sendConfirmationEmail,
@@ -96,9 +104,11 @@ module.exports = {
   validateNamespaceForField,
   DADownloadDetails,
   parseProductReferenceAttrVal,
+  getDefaultAssetColsPriKeyToLabelsMap,
   ATTRIBUTE_FLAG,
   DA_DOWNLOAD_DETAIL_KEY,
   DEFAULT_COLUMNS,
+  DEFAULT_ASSET_COLUMNS,
   PRODUCT_TYPE
 };
 /**
@@ -321,26 +331,6 @@ function validateNamespaceForField(namespace) {
   }
 }
 
-async function prependCDNToViewLink(viewLink, reqBody) {
-  const service = new ForceService(reqBody.hostUrl, reqBody.sessionId);
-  const helper = new PimExportHelper(reqBody.namespace);
-  const CDN_METADATA_NAME = 'CloudfrontDistribution';
-
-  if (viewLink !== null || !viewLink.isEmpty()) {
-    const prefix = await service.simpleQuery(
-      helper.namespaceQuery(
-        `select Id, Value__c
-        from Configuration__mdt
-        where DeveloperName = '${CDN_METADATA_NAME}'`
-      )
-    );
-    if (prefix.length > 0) {
-      return helper.getValue(prefix[0], 'Value__c') + viewLink;
-    }
-  }
-  return viewLink;
-}
-
 async function parseDigitalAssetAttrVal(
   digitalAssetMap,
   attrValValue,
@@ -348,18 +338,61 @@ async function parseDigitalAssetAttrVal(
   helper,
   reqBody
 ) {
-  const digitalAsset = digitalAssetMap?.get(attrValValue);
-  if (!digitalAsset) return attrValValue;
+  try {
+    const digitalAsset = digitalAssetMap?.get(attrValValue);
+    if (!digitalAsset) return attrValValue;
+  
+    daDownloadDetailsList.push(
+      new DADownloadDetails(digitalAsset, reqBody.namespace)
+    );
+    return await getDigitalAssetViewLink(digitalAsset, helper);
+  } catch (err) {
+    console.log('Digital asset parsing failed: ' + err);
+  }
+}
 
-  daDownloadDetailsList.push(
-    new DADownloadDetails(digitalAsset, reqBody.namespace)
-  );
+// stores digital asset in Map<productId or vvId, Map<Attribute Label Id, DADownloadDetails object>>
+// and returns view link of digital asset
+async function parseDaAttrValWithVarMap(
+  recordId,
+  digitalAssetMap,
+  attrLabel,
+  attrValValue,
+  productVariantsDaDetailsMap,
+  helper,
+  reqBody
+) {
+  try {
+    const digitalAsset = digitalAssetMap?.get(attrValValue);
+    if (!digitalAsset) return attrValValue;
+  
+    if (productVariantsDaDetailsMap.get(recordId) == null) {
+      // with the product id/variant value id as key, instantiate Map<attrLabel Id, DA download details obj>
+      productVariantsDaDetailsMap.set(
+        recordId,
+        new Map([
+          [attrLabel, new DADownloadDetails(digitalAsset, reqBody.namespace)]
+        ])
+      );
+    } else {
+      // with the product id/variant value id as key, add a new key value pair to the value - Map<attrLabel Id, DA download details obj>
+      productVariantsDaDetailsMap
+        .get(recordId)
+        .set(attrLabel, new DADownloadDetails(digitalAsset, reqBody.namespace));
+    }
+    return await getDigitalAssetViewLink(digitalAsset, helper);
+  } catch (err) {
+    console.log('Parsing digital asset in Map or parsing of digital asset view link failed: ' + err);
+  }
+}
+
+async function getDigitalAssetViewLink(digitalAsset, helper) {
   const viewLink = helper.getValue(digitalAsset, 'View_Link__c');
-  // if value is already complete url, add it to the map, else prepend the CDN url to the partial url then add to map
-  attrValValue = viewLink.includes('https')
-    ? viewLink
-    : await module.exports.prependCDNToViewLink(viewLink, reqBody);
-  return attrValValue;
+  // if value is a complete url, add it to the map, else throw error
+  if (!viewLink.includes('https')) {
+    throw new Error('Invalid digital asset view link');
+  }
+  return viewLink;
 }
 
 function prepareIdsForSOQL(idList) {
@@ -449,13 +482,13 @@ async function callAsposeToExport({
 
   let exportTypeSpecificInformation;
 
+  const columnAttributes = await service.simpleQuery(
+    helper.namespaceQuery(
+      `select Id, Label__c, Primary_Key__c
+    from Attribute_Label__c order by Primary_Key__c`
+    )
+  );
   if (listPageData) {
-    const columnAttributes = await service.simpleQuery(
-      helper.namespaceQuery(
-        `select Id, Label__c, Primary_Key__c
-      from Attribute_Label__c order by Primary_Key__c`
-      )
-    );
     const labelToPrimaryKeyMap = new Map(
       columnAttributes.map(label => {
         return [
@@ -466,14 +499,24 @@ async function callAsposeToExport({
     );
     exportTypeSpecificInformation = {
       defaultColumns: Object.fromEntries(DEFAULT_COLUMNS),
+      defaultAssetColumns: Object.fromEntries(DEFAULT_ASSET_COLUMNS),
       labelToPrimaryKeyMap: Object.fromEntries(labelToPrimaryKeyMap),
       listPageData: listPageData.map(recordMap => Object.fromEntries(recordMap))
     };
   } else {
+    const primaryKeyToLabelMap = new Map(
+      columnAttributes.map(label => {
+        return [
+          helper.getValue(label, 'Primary_Key__c'),
+          helper.getValue(label, 'Label__c')
+        ];
+      })
+    );
     exportTypeSpecificInformation = {
       detailPageData: detailPageData.map(recordMap =>
         Object.fromEntries(recordMap)
       ),
+      primaryKeyToLabelMap: Object.fromEntries(primaryKeyToLabelMap),
       productVariantValueMap: Object.fromEntries(baseRecord) // JUST NAMED THIS COS OF HARDCODE IN PROPEL-DOC-JAVA
     };
   }
@@ -497,8 +540,35 @@ async function callAsposeToExport({
   req.end();
 }
 
+async function getLowestVariantsFromProducts(productList, reqBody) {
+  const service = new ForceService(reqBody.hostUrl, reqBody.sessionId);
+  const helper = new PimExportHelper(reqBody.namespace);
+
+  const allVariantsFromProducts = await service.queryExtend(
+    helper.namespaceQuery(
+      `select 
+          Id, 
+          Name, 
+          Label__c, 
+          Parent_Value_Path__c, 
+          Variant__r.Product__c, 
+          Variant__r.Product__r.Category__c, 
+          Variant__r.Product__r.Category__r.Name
+        from Variant_Value__c
+        where Variant__r.Product__c IN (${service.QUERY_LIST})
+      `
+    ),
+    prepareIdsForSOQL(productList).split(',')
+  );
+
+  const lowestVariantValueIds = await extractLowestVariantValues(allVariantsFromProducts, reqBody.namespace);
+  return allVariantsFromProducts.filter(value =>
+    lowestVariantValueIds.includes(value.Name)
+  );
+}
+
 // returns a list of the lowest level variant values' ids (i.e. SKUs) from a list of variant values
-async function getLowestVariantValuesList(valuesList, namespace) {
+async function extractLowestVariantValues(valuesList, namespace) {
   const helper = new PimExportHelper(namespace);
   let numOfParentValues,
     highestNumOfParentValues = 0,
@@ -580,4 +650,16 @@ async function parseProductReferenceAttrVal(attrValValue, reqBody) {
       return record.Name;
     })
     .join(', ');
+}
+
+/**
+ * reverses the map of DEFAULT_ASSET_COLUMNS aka System Attribute fields such that the keys are the primary keys and values are the labels
+ * @returns {Map<String, String>} - a Map of SObject field primary keys => SObject field labels
+ *  */
+function getDefaultAssetColsPriKeyToLabelsMap() {
+  let inverseMap = new Map();
+  Array.from(DEFAULT_ASSET_COLUMNS.keys()).forEach(label => {
+    inverseMap.set(DEFAULT_ASSET_COLUMNS.get(label), label);
+  });
+  return inverseMap;
 }

@@ -22,11 +22,11 @@ async function PimRecordService(
 // PIM repo ProductService.getResultForProductStructure(recordList)
 // returns List of Maps
 async function getResultForProductStructure(recordList, isProduct) {
-  let productVariantValueMapList = [
-    populateRecordDetailsMap(helper, recordList[0])
-  ];
+  let productVariantValueMapList = isProduct ? [] : [populateRecordDetailsMap(helper, recordList[0])];
 
+  // return digital asset record details
   if (!isProduct) return productVariantValueMapList;
+  
   let variantStructure = await getVariantStructure(recordList),
     productVariants,
     variantValues;
@@ -96,6 +96,11 @@ function populateRecordDetailsMap(helper, record, parentProduct) {
     helper.getValue(topLevelRecord, 'Category__r').Name
   );
   tempMap.set('Category__c', helper.getValue(topLevelRecord, 'Category__c'));
+  tempMap.set('CreatedDate', record.CreatedDate);
+  tempMap.set('External_File_Id__c', helper.getValue(topLevelRecord, 'External_File_Id__c'));
+  tempMap.set('Mime_Type__c', helper.getValue(topLevelRecord, 'Mime_Type__c'));
+  tempMap.set('Size__c', helper.getValue(topLevelRecord, 'Size__c'));
+  tempMap.set('View_Link__c', helper.getValue(topLevelRecord, 'View_Link__c'));
 
   if (!parentProduct) return tempMap;
 

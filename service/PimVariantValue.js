@@ -16,7 +16,7 @@ class PimVariantValue {
     try {
       this.variantValues = await this.helper.connection.queryExtend(this.helper.namespaceQuery(
         `select Id, Name from Variant_Value__c where Name in (${this.helper.connection.QUERY_LIST})`
-      ), this.variantNames)
+      ), Array.from(new Set(this.variantNames)))
     } catch(error) {
       this.log.addToLogs([{errors: [error] }], this.helper.namespace('Variant_Value__c'))
 

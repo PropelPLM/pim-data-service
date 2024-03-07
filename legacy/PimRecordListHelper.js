@@ -4,7 +4,9 @@ const {
   ATTRIBUTE_FLAG,
   DA_DOWNLOAD_DETAIL_KEY,
   DEFAULT_COLUMNS,
-  getLowestVariantValuesList,
+  DEFAULT_ASSET_COLUMNS,
+  getLowestVariantsFromProducts,
+  extractLowestVariantValues,
   initAssetDownloadDetailsList,
   prepareIdsForSOQL,
   parseDigitalAssetAttrVal,
@@ -15,6 +17,7 @@ let helper;
 let service;
 const DA_TYPE = 'DigitalAsset';
 const PRODUCT_REFERENCE_TYPE = 'ProductReference';
+const SYSTEM_ATTRIBUTES_LABEL = 'System Attributes';
 
 async function PimRecordListHelper(
   reqBody,
@@ -53,19 +56,9 @@ async function PimRecordListHelper(
     ),
     isSKUExport = exportType === 'lowestVariants';
 
-  let variantsPresentInLowestVariantExport,
-    recordIsPresentInNonLowestVariantExport;
   // filter the records if rows were selected or filters applied in product list page
   let filteredRecords = exportRecords.filter(record => {
-    variantsPresentInLowestVariantExport =
-      isSKUExport && variantValueIds?.includes(record.get('Id'));
-    recordIsPresentInNonLowestVariantExport =
-      (!isSKUExport && recordIds.includes(record.get('Id'))) ||
-      variantValueIds?.includes(record.get('Id'));
-    return (
-      variantsPresentInLowestVariantExport ||
-      recordIsPresentInNonLowestVariantExport
-    );
+    return recordIds?.includes(record.get('Id')) || variantValueIds?.includes(record.get('Id'));
   });
   let exportRecordsAndColumns = [filteredRecords]; // [[filtered]] zz
 
@@ -87,7 +80,26 @@ async function PimRecordListHelper(
     }
 
     let attributeResults = new Map();
-    if (vvIds.size > 0) {
+    let selectedRecordParentProductId;
+    let productsToQueryForSKU = [];
+    if (isSKUExport && exportRecordsAndColumns[0].length) {
+      // get parent products of selected records
+      for (let selectedRecord of exportRecordsAndColumns[0]) {
+        selectedRecordParentProductId = selectedRecord.get('Parent_ID') ?? selectedRecord.get('Id');
+        if (!productsToQueryForSKU.includes(selectedRecordParentProductId)) {
+          productsToQueryForSKU.push(selectedRecordParentProductId);
+        }
+      }
+      // get SKUs (lowest variants) of parent products of selected records
+      const lowestVariants = await getLowestVariantsFromProducts(productsToQueryForSKU, reqBody);
+      exportRecordsAndColumns[0] = await populateRecordDetailsForLowestVariants(lowestVariants);
+      // update variant value ids and record ids with only those relevant to lowest variants
+      vvIds.clear();
+      for (let lowestVariant of lowestVariants) {
+        vvIds.add(lowestVariant.Id)
+        recordIdSet.add(helper.getValue(lowestVariant, 'Variant__r.Product__c'));
+      }
+    } else if (!isSKUExport && exportRecordsAndColumns[0].length) {
       const stringifiedQuotedVariantValueIds = prepareIdsForSOQL(vvIds);
       let variantValues = await service.queryExtend(
         helper.namespaceQuery(
@@ -98,28 +110,7 @@ async function PimRecordListHelper(
         ),
         stringifiedQuotedVariantValueIds.split(',')
       );
-
-      let lowestVariantValueIds;
-      if (isSKUExport) {
-        // get the lowest level variant values' ids
-        lowestVariantValueIds = await getLowestVariantValuesList(
-          variantValues,
-          namespace
-        );
-        // filter out all records not selected for export
-        variantValues = variantValues.filter(value =>
-          lowestVariantValueIds.includes(value.Name)
-        );
-        exportRecordsAndColumns[0] = exportRecordsAndColumns[0].filter(record =>
-          lowestVariantValueIds.includes(record.get('Record_ID'))
-        );
-        vvIds.clear();
-      }
       variantValues.forEach(value => {
-        if (isSKUExport) {
-          // update variant value ids and record ids with only those relevant to lowest variants
-          vvIds.add(value.Id);
-        }
         recordIdSet.add(helper.getValue(value, 'Variant__r.Product__c'));
       });
     }
@@ -190,7 +181,8 @@ async function PimRecordListHelper(
       exportRecordsAndColumns,
       DEFAULT_COLUMNS,
       isProduct
-    )
+    ),
+    templateAdditionalHeaders: []
   };
 }
 
@@ -290,11 +282,11 @@ async function buildStructureWithCategoryIds(
   if (listCategoryIds.size === 0) {
     throw 'No Category Ids';
   }
-  // return productsList
+  // return list of records
   return await service.simpleQuery(
     helper.namespaceQuery(
       `select Id, Name, Category__c, Category__r.Name, ${
-        isProduct ? '' : 'Asset_Status__c, Mime_Type__c, Size__c, View_Link__c,'
+        isProduct ? '' : 'CreatedDate, Asset_Status__c, External_File_Id__c, Mime_Type__c, Size__c, View_Link__c,'
       }
       (
         select
@@ -311,7 +303,8 @@ async function buildStructureWithCategoryIds(
             Overwritten_Variant_Value__r.Label__c,
             Overwritten_Variant_Value__r.Name,
             Overwritten_Variant_Value__r.Parent_Value_Path__c,
-            Value__c
+            Value__c,
+            Value_Long__c
         from Attributes__r
         order by Attribute_Label__r.Order__c asc
       )
@@ -377,7 +370,8 @@ async function buildStructureWithSecondaryCategoryIds(listCategoryIds) {
             Overwritten_Variant_Value__r.Label__c,
             Overwritten_Variant_Value__r.Name,
             Overwritten_Variant_Value__r.Parent_Value_Path__c,
-            Value__c
+            Value__c,
+            Value__Long__c
         from Attributes__r
         order by Attribute_Label__r.Order__c asc
       ),
@@ -432,10 +426,14 @@ async function getAttributesForRecordMap(
       if (
         helper.getValue(attribute, 'Overwritten_Variant_Value__c') !== null ||
         helper.getValue(attribute, 'Attribute_Label__r') === null
-      )
+      ) {
         continue;
+      }
 
-      let attrValValue = helper.getValue(attribute, 'Value__c');
+      let attrValValue = helper.getValue(
+        attribute,
+        (attribute[helper.namespace('Value_Long__c')]) ? 'Value_Long__c' : 'Value__c'
+      );
       // replace digital asset id with CDN url if Attribute_Label__c is of Type__c 'DigitalAsset'
       if (
         helper.getValue(attribute, 'Attribute_Label__r.Type__c') === DA_TYPE
@@ -481,7 +479,13 @@ async function getAttributesForRecordMap(
         if (!variantToAttributeMap.has(pathVVId)) continue;
 
         for (let attribute of variantToAttributeMap.get(pathVVId)) {
-          let attrValValue = helper.getValue(attribute, 'Value__c');
+          if ( helper.getValue(attribute, 'Attribute_Label__r') === null ) {
+            continue;
+          }
+          let attrValValue = helper.getValue(
+            attribute,
+            ([helper.namespace('Value_Long__c')]) ? 'Value_Long__c' : 'Value__c'
+          );
           // replace digital asset id with CDN url if Attribute_Label__c is of Type__c 'DigitalAsset'
           if (
             helper.getValue(attribute, 'Attribute_Label__r.Type__c') === DA_TYPE
@@ -512,9 +516,14 @@ async function getAttributesForRecordMap(
 
     if (variantToAttributeMap.has(vvId)) {
       for (let attribute of variantToAttributeMap.get(vvId)) {
-        if (!helper.getValue(attribute, 'Attribute_Label__r')) continue;
+        if (!helper.getValue(attribute, 'Attribute_Label__r')) {
+          continue;
+        }
 
-        let attrValValue = helper.getValue(attribute, 'Value__c');
+        let attrValValue = helper.getValue(
+          attribute,
+          ([helper.namespace('Value_Long__c')]) ? 'Value_Long__c' : 'Value__c'
+        );
         // replace digital asset id with CDN url if Attribute_Label__c is of Type__c 'DigitalAsset'
         if (
           helper.getValue(attribute, 'Attribute_Label__r.Type__c') === DA_TYPE
@@ -554,35 +563,20 @@ async function getAttributesForRecordMap(
 // PIM repo ProductManager.getVariantMap()
 async function getVariantMap(productsList) {
   let variantMap = new Map();
+  let currentValue
   productsList.forEach(product => {
     if (helper.getValue(product, 'Attributes__r') !== null) {
       helper.getValue(product, 'Attributes__r').records.forEach(attribute => {
+        currentValue = helper.getValue(attribute, 'Overwritten_Variant_Value__c')
         // iterate through each product's Attribute_Value__c
-        if (
-          helper.getValue(attribute, 'Overwritten_Variant_Value__c') !== null
-        ) {
+        if ( currentValue !== null ) {
           // if the Attribute_Value__c (e.g. 4kg) belongs to a variant (e.g. AC-SWSH-1001-BLK-M)
-          if (
-            variantMap.has(
-              helper.getValue(attribute, 'Overwritten_Variant_Value__c')
-            )
-          ) {
+          if ( variantMap.has(currentValue) ) {
             // add on the Attribute_Value__c to the list of attribute values belonging to the variant
-            variantMap.set(
-              helper.getValue(attribute, 'Overwritten_Variant_Value__c'),
-              [
-                ...variantMap.get(
-                  helper.getValue(attribute, 'Overwritten_Variant_Value__c')
-                ),
-                attribute
-              ]
-            );
+            variantMap.get(currentValue).push(attribute)
           } else {
             // instantiate the list of attribute values
-            variantMap.set(
-              helper.getValue(attribute, 'Overwritten_Variant_Value__c'),
-              [attribute]
-            );
+            variantMap.set( currentValue, [attribute] );
           }
         }
       });
@@ -638,8 +632,8 @@ async function addExportColumns(
   // add columns for selected attributes and children of selected attribute groups
   const linkedAttributes = reqBody.linkedLabels;
   let linkedGroups = reqBody.linkedGroups;
-  let linkedGroupsChildren = [];
   let columnAttributeIds = new Set();
+  let hasDefaultAssetCols = false;
   if (linkedAttributes.length > 0) {
     linkedAttributes.forEach(attr => {
       columnAttributeIds.add(attr);
@@ -647,18 +641,14 @@ async function addExportColumns(
   }
   if (linkedGroups.length > 0) {
     linkedGroups = prepareIdsForSOQL(linkedGroups);
-    linkedGroupsChildren = await service.simpleQuery(
-      helper.namespaceQuery(
-        `select Id, Name, Attribute_Group__c
-        from Attribute_Label__c
-        where Attribute_Group__c IN (${linkedGroups})`
-      )
-    );
-    linkedGroupsChildren.forEach(childAttr => {
-      columnAttributeIds.add(childAttr.Id);
-    });
+    await addChildrenOfLinkedGroups(linkedGroups, columnAttributeIds);
+    if (!isProduct) {
+      // check if "System Attributes" attribute group is selected and slate those for export
+      hasDefaultAssetCols = await checkForDefaultAssetCols(exportColumns, linkedGroups);
+    }
   }
-  if (columnAttributeIds.size > 0) {
+  if (columnAttributeIds.size > 0 || hasDefaultAssetCols) {
+    // specific attributes/attribute groups/system attributes have been selected
     columnAttributeIds = Array.from(columnAttributeIds);
     columnAttributeIds = prepareIdsForSOQL(columnAttributeIds);
 
@@ -694,50 +684,74 @@ async function addExportColumns(
     );
 
     if (!templateFields || templateFields.length === 0) {
+      // if not template export, push all attribute columns and default asset columns (if is asset)
       columnAttributes.forEach(attr => {
-        // if not template export, push all attribute columns
         exportColumns.push({
           fieldName: helper.getValue(attr, 'Primary_Key__c'),
           label: helper.getValue(attr, 'Label__c'),
           type: 'text'
         });
       });
+      if (!isProduct) {
+        addDefaultAssetColsForExport(exportColumns, linkedGroups);
+      }
     } else if (templateFields && templateFields.length > 0) {
       // add columns specified in template
       let field;
       let isAttributeField;
       let isDefaultColumn;
       const defaultColumnNames = Array.from(defaultColumns.keys());
+      const lastHeaderRowIndex = templateHeaders.length - 1;
+      const numOfColumnAttributes = columnAttributes.length;
+      let missedCount;
       for (let i = 0; i < templateFields.length; i++) {
         field = templateFields[i];
         isAttributeField = field.includes(ATTRIBUTE_FLAG);
         isDefaultColumn = defaultColumnNames.includes(field.slice(11, -1));
-        if (isAttributeField && isDefaultColumn) {
-          // value specified in template is a field's value, and col in template is a default column
+        if (isAttributeField && isProduct && isDefaultColumn) {
+          // value specified in template is a field's value, and col in template is a default product column
           field = field.slice(11, -1);
           exportColumns.push({
             fieldName: defaultColumns.get(field),
-            label: templateHeaders[i],
+            label: templateHeaders[lastHeaderRowIndex][i],
             type: 'text'
           });
         } else if (isAttributeField && !isDefaultColumn) {
           // value specified in template is a field's value, and col in template is an attribute column
           field = field.slice(11, -1);
-          columnAttributes.forEach(colAttr => {
-            if (helper.getValue(colAttr, 'Label__c') === field) {
+          missedCount = 0;
+          for (let colAttr of columnAttributes) {
+            if (field === helper.getValue(colAttr, 'Label__c') || field === helper.getValue(colAttr, 'Primary_Key__c')) {
               exportColumns.push({
                 fieldName: helper.getValue(colAttr, 'Primary_Key__c'),
-                label: templateHeaders[i],
+                label: templateHeaders[lastHeaderRowIndex][i],
+                type: 'text'
+              });
+              break;
+            }
+            missedCount++;
+            if (missedCount === numOfColumnAttributes - 1) {
+              // Invalid attribute field
+              templateHeaderValueMap.set(
+                templateHeaders[lastHeaderRowIndex][i],
+                ''
+              );
+              exportColumns.push({
+                fieldName: templateHeaders[lastHeaderRowIndex][i],
+                label: templateHeaders[lastHeaderRowIndex][i],
                 type: 'text'
               });
             }
-          });
+          }
         } else if (!isAttributeField) {
           // col's value specified in template is a raw value
-          templateHeaderValueMap.set(templateHeaders[i], field);
+          templateHeaderValueMap.set(
+            templateHeaders[lastHeaderRowIndex][i],
+            field
+          );
           exportColumns.push({
-            fieldName: templateHeaders[i],
-            label: templateHeaders[i],
+            fieldName: templateHeaders[lastHeaderRowIndex][i],
+            label: templateHeaders[lastHeaderRowIndex][i],
             type: 'text'
           });
         }
@@ -751,6 +765,72 @@ async function addExportColumns(
     });
   });
   return [...exportRecordsAndColumns, exportColumns];
+}
+
+async function addChildrenOfLinkedGroups(linkedGroups, columnAttributeIds) {
+  const linkedGroupsChildren = await service.simpleQuery(
+    helper.namespaceQuery(
+      `select Id, Name, Attribute_Group__c
+      from Attribute_Label__c
+      where Attribute_Group__c IN (${linkedGroups})`
+    )
+  );
+  linkedGroupsChildren.forEach(childAttr => {
+    columnAttributeIds.add(childAttr.Id);
+  });
+}
+
+// iterate through selected attribute groups, if System Attributes is selected, add default asset columns
+async function checkForDefaultAssetCols(exportColumns, linkedGroups) {
+  const linkedGroupObjects = await service.simpleQuery(
+    helper.namespaceQuery(
+      `select Id, Name
+      from Attribute_Group__c
+      where Id IN (${linkedGroups})`
+    )
+  );
+  for (let linkedGroupObj of linkedGroupObjects) {
+    if (linkedGroupObj.Name === SYSTEM_ATTRIBUTES_LABEL) {
+      await addDefaultAssetColsForExport(exportColumns);
+      return true;
+    }
+  }
+  return false;
+}
+
+async function addDefaultAssetColsForExport(exportColumns) {
+  Array.from(DEFAULT_ASSET_COLUMNS.keys()).forEach(defaultCol => {
+    exportColumns.push({
+      fieldName: DEFAULT_ASSET_COLUMNS.get(defaultCol),
+      label: defaultCol,
+      type: 'text'
+    });
+  });
+}
+
+async function populateRecordDetailsForLowestVariants(lowestVariants) {
+  let recordMapList = [];
+  let recordMap;
+  for (let lowestVariant of lowestVariants) {
+    recordMap = new Map();
+    recordMap.set('Id', lowestVariant.Id);
+    recordMap.set('Record_ID', lowestVariant.Name);
+    recordMap.set('Category__c', helper.getValue(lowestVariant, 'Variant__r.Product__r.Category__c'));
+    recordMap.set(
+      'Category__r.Name',
+      helper.getValue(lowestVariant, 'Variant__r.Product__r.Category__r.Name')
+    );
+    recordMap.set(
+      'Title',
+      helper.getValue(lowestVariant, 'Label__c')
+        ? helper.getValue(lowestVariant, 'Label__c')
+        : lowestVariant.Name
+    );
+    recordMap.set('Parent_ID', helper.getValue(lowestVariant, 'Variant__r.Product__c'));
+    recordMapList.push(recordMap);
+  }
+
+  return recordMapList;
 }
 
 module.exports = PimRecordListHelper;

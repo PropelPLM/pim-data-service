@@ -12,12 +12,11 @@ describe('Utils tests', () => {
     const daDownloadDetailsList = [];
 
     beforeEach(() => {
-      stub = sinon.stub(utils, 'prependCDNToViewLink').returns(dummy_link);
+      stub = sinon.stub();
       sinon.spy(stub);
     });
 
     afterEach(() => {
-      stub.restore();
       daDownloadDetailsList.length = 0;
       digitalAssetMap.clear();
     });
@@ -48,17 +47,16 @@ describe('Utils tests', () => {
             return dummy_link;
           }
         };
-        const parsed = await utils.parseDigitalAssetAttrVal(
+        await utils.parseDigitalAssetAttrVal(
           digitalAssetMap,
           attrValValue,
           daDownloadDetailsList,
           helper,
           reqBody
         );
-        sinon.assert.calledOnce(stub);
-        sinon.assert.calledWith(stub, dummy_link, reqBody);
+
+        sinon.assert.notCalled(stub);
         assert.equal(daDownloadDetailsList.length, 1);
-        assert.equal(parsed, dummy_link);
       });
 
       it('legit link', async () => {

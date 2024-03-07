@@ -22,13 +22,22 @@ describe('Index Tests', () => {
   })
 })
 
-describe('Import Category Test', () => {
+describe('Import Commerce Cloud Product Route', () => {
 
-  describe('testing /import/pim/category', () => {
-    it('/import/pim/category post', (done) => {
+  describe('testing /import/commerce/product', () => {
+    it('/import/commerce/product post', (done) => {
       chai.request(server)
-        .post('/import/pim/category')
-        .send('{}')
+        .post('/import/commerce/product')
+        .send(
+          {
+            body: {
+              data: 'bmFtZSxhdHRyaWJ1dGVfdGFiLGNsYXNzaWZpY2F0aW9uLHJhbmssY2F0ZWdvcnlfYXNzb2NpYXRpb25zCkdyb3VwIEEsVGFiIEEsUHJvZHVjdCw1LDEyMDIyCkdyb3VwIEIsVGFiIEIsUHJvZHVjdCw2LDEyMDMzOzExMDIx',
+              dataType: 'csv',
+              mappingId: 'test'
+            }
+          },
+          {}
+        )
         .end((err, response) => {
           response.body.should.have.property('success')
         done()
@@ -37,13 +46,43 @@ describe('Import Category Test', () => {
   })
 })
 
-describe('Import Product Test', () => {
+describe('Import Asset Link Test', () => {
 
-  describe('testing /import/pim/product', () => {
-    it('/import/pim/product post', (done) => {
+  describe('testing /import/pim/assetlink', () => {
+    it('/import/pim/assetlink post', (done) => {
       chai.request(server)
-        .post('/import/pim/product')
-        .send('{}')
+        .post('/import/pim/assetlink')
+        .send({body:{data: ''}})
+        .end((err, response) => {
+          response.body.should.have.property('success')
+        done()
+        })
+    })
+  })
+})
+
+describe('Import Attribute Test', () => {
+
+  describe('testing /import/pim/attributelabel', () => {
+    it('/import/pim/attributelabel post', (done) => {
+      chai.request(server)
+        .post('/import/pim/attributelabel')
+        .send({body:{data: ''}})
+        .end((err, response) => {
+          response.body.should.have.property('success')
+        done()
+        })
+    })
+  })
+})
+
+describe('Import Attribute Group Test', () => {
+
+  describe('testing /import/pim/attributegroup', () => {
+    it('/import/pim/attributegroup post', (done) => {
+      chai.request(server)
+        .post('/import/pim/attributegroup')
+        .send({body:{data: ''}})
         .end((err, response) => {
           response.body.should.have.property('success')
         done()
@@ -58,7 +97,37 @@ describe('Import Attribute Tab Test', () => {
     it('/import/pim/attributetab post', (done) => {
       chai.request(server)
         .post('/import/pim/attributetab')
-        .send('{}')
+        .send({body:{data: ''}})
+        .end((err, response) => {
+          response.body.should.have.property('success')
+        done()
+        })
+    })
+  })
+})
+
+describe('Import Category Test', () => {
+
+  describe('testing /import/pim/category', () => {
+    it('/import/pim/category post', (done) => {
+      chai.request(server)
+        .post('/import/pim/category')
+        .send({body:{data: ''}})
+        .end((err, response) => {
+          response.body.should.have.property('success')
+        done()
+        })
+    })
+  })
+})
+
+describe('Import Product Test', () => {
+
+  describe('testing /import/pim/product', () => {
+    it('/import/pim/product post', (done) => {
+      chai.request(server)
+        .post('/import/pim/product')
+        .send({body:{data: ''}})
         .end((err, response) => {
           response.body.should.have.property('success')
         done()
