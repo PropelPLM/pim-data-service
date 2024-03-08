@@ -489,8 +489,7 @@ async function getAttributesForRecordMap(
           console.log('================')
           console.log('attrValValue: ', attrValValue);
           console.log('helper getValue Value__c: ', helper.getValue(attribute, 'Value__c'));
-          console.log('helper namespace Value__c: ', helper.namespace(attribute, 'Value__c'));
-          console.log('helper namespace Value_Long__c: ', helper.namespace(attribute, 'Value_Long__c'));
+          console.log('helper getValue Value_Long__c: ', helper.getValue(attribute, 'Value_Long__c'));
           // replace digital asset id with CDN url if Attribute_Label__c is of Type__c 'DigitalAsset'
           if (
             helper.getValue(attribute, 'Attribute_Label__r.Type__c') === DA_TYPE
