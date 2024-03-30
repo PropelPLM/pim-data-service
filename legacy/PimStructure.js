@@ -129,7 +129,7 @@ class PimStructure {
           
           // PIM-1359 reopen: having to do this Value_Long__c logic all through out the code because we don't
           // have a central place where PIM data model to consumable object conversion. 
-          const theValue = (appearingValues[j]['Value_Long__c']) ? 'Value_Long__c' : 'Value__c';
+          const theValue = (helper.getValue(appearingValues[j], 'Value_Long__c')) ? 'Value_Long__c' : 'Value__c';
           attrValValue = helper.getValue(appearingValues[j], theValue);
           
           if (
