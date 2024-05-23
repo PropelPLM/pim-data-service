@@ -129,12 +129,7 @@ class PimStructure {
           
           // PIM-1359 reopen: having to do this Value_Long__c logic all through out the code because we don't
           // have a central place where PIM data model to consumable object conversion. 
-          const theValue = (helper.getValue(appearingValues[j], 'Value_Long__c')) ? 'Value_Long__c' : 'Value__c';
-          attrValValue = helper.getValue(appearingValues[j], theValue);
-          console.log('appearingValues[j]: ', appearingValues[j]);
-          console.log('attrValValue1: ', attrValValue);
           attrValValue = helper.getAttributeValueValue(appearingValues[j]);
-          console.log('attrValValue2: ', attrValValue);
           
           if (
             helper.getValue(appearingValues[j], 'Attribute_Label_Type__c') ===
@@ -250,10 +245,7 @@ class PimStructure {
                     }
                   });
 
-                  let newValue = helper.getValue(
-                    overwrittenValues[j],
-                    (overwrittenValues[j][helper.namespace('Value_Long__c')]) ? 'Value_Long__c' : 'Value__c'
-                  );
+                  let newValue = helper.getAttributeValueValue(overwrittenValues[j]);
                   if (
                     helper.getValue(
                       overwrittenValues[j],
@@ -410,10 +402,7 @@ class PimStructure {
                     affectedLabelName = label.Name;
                   }
                 });
-                let newValue = helper.getValue(
-                  overwrittenValues[j],
-                  (overwrittenValues[j][helper.namespace('Value_Long__c')]) ? 'Value_Long__c' : 'Value__c'
-                );
+                let newValue = helper.getAttributeValueValue(overwrittenValues[j]);
                 if (
                   helper.getValue(
                     overwrittenValues[j],
@@ -699,10 +688,7 @@ class PimStructure {
               }
             });
 
-            let newValue = helper.getValue(
-              overwrittenValues[j],
-              (overwrittenValues[j][helper.namespace('Value_Long__c')]) ? 'Value_Long__c' : 'Value__c'
-            );
+            let newValue = helper.getAttributeValueValue(overwrittenValues[j]);
             if (
               helper.getValue(
                 overwrittenValues[j],
