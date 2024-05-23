@@ -59,6 +59,16 @@ class PimExportHelper {
     });
     return queryResult;
   }
+
+  getAttributeValueValue(attribute) {
+    let valueField = 'Value__c';
+    if (this.helper.getValue(attribute, 'Value_Long__c')) {
+      valueField = 'Value_Long__c';
+    } else if (this.helper.getValue(attribute, 'Numeric_Value__c')) {
+      valueField = 'Numeric_Value__c';
+    }
+    return this.helper.getValue(attribute, valueField);
+  }
 }
 
 module.exports = PimExportHelper;
