@@ -20,7 +20,9 @@ class PimAttributeValue {
             Attribute_Label__r.Primary_Key__c,
             Overwritten_Variant_Value__r.Name,
             Product__r.Name,
-            Value__c 
+            Value__c,
+            Value_Long__c,
+            Numeric_Value__c 
         from Attribute_Value__c 
         where Product__r.Name in (${this.helper.connection.QUERY_LIST})`
       ), this.productNames)
@@ -65,7 +67,9 @@ class PimAttributeValue {
             Id,
             Attribute_Label__r.Name,
             Digital_Asset__c,
-            Value__c 
+            Value__c,
+            Value_Long__c,
+            Numeric_Value__c
         from Attribute_Value__c 
         where Attribute_Label__r.Name in (${attributeLabelNames}) and
         Digital_Asset__c in (${digitalAssetIds})`
