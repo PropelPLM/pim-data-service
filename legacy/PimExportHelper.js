@@ -60,14 +60,19 @@ class PimExportHelper {
     return queryResult;
   }
 
+  /**
+   * gets appropriate value from Attribute_Value__c with namespace
+   * @param {Object} attribute
+   * @return {Object}
+   */
   getAttributeValueValue(attribute) {
     let valueField = 'Value__c';
-    if (this.helper.getValue(attribute, 'Value_Long__c')) {
+    if (this.getValue(attribute, 'Value_Long__c')) {
       valueField = 'Value_Long__c';
-    } else if (this.helper.getValue(attribute, 'Numeric_Value__c')) {
+    } else if (this.getValue(attribute, 'Numeric_Value__c')) {
       valueField = 'Numeric_Value__c';
     }
-    return this.helper.getValue(attribute, valueField);
+    return this.getValue(attribute, valueField);
   }
 }
 
