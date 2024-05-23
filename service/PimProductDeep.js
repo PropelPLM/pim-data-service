@@ -32,7 +32,9 @@ class PimProductDeep {
                 Overwritten_Variant_Value__r.Label__c,
                 Overwritten_Variant_Value__r.Name,
                 Overwritten_Variant_Value__r.Parent_Value_Path__c,
-                Value__c
+                Value__c,
+                Value_Long__c,
+                Numeric_Value__c
             from Attributes__r
             order by Attribute_Label__r.Order__c asc
           ),
