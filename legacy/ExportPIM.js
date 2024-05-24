@@ -58,11 +58,13 @@ async function LegacyExportPIM(req) {
     return;
   }
 
+  console.log('exportPim recordsAndCols[0]: ', recordsAndCols[0]);
   let csvString = convertArrayOfObjectsToCSV(
     recordsAndCols[0],
     recordsAndCols[1],
     templateAdditionalHeaders
   );
+  console.log('csvString: ', csvString);
   if (csvString == null) {
     logErrorResponse('csvString is empty!', '[ExportPIM]');
     return;
