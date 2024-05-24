@@ -156,11 +156,13 @@ function convertArrayOfObjectsToCSV(
         records[i].get(skey) != null &&
         typeof records[i].get(skey) == 'object'
       ) {
-        console.log('is object: ', skey)
         recordAttributes.set(skey, recordAttributes.get(skey).Name);
       }
-      console.log('typeof: ', typeof records[i].get(skey))
-      csvStringResult += cleanString(records[i].get(skey) || '');
+      if (typeof records[i].get(skey) === 'number') {
+        csvStringResult += records[i].get(skey).toString();
+      } else {
+        csvStringResult += cleanString(records[i].get(skey) || '');
+      }
 
       counter++;
     }
