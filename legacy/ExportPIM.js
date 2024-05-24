@@ -58,7 +58,6 @@ async function LegacyExportPIM(req) {
     return;
   }
 
-  console.log('exportPim recordsAndCols[0][0].get(Number Attr): ', recordsAndCols[0][0].get('Number Attr'));
   let csvString = convertArrayOfObjectsToCSV(
     recordsAndCols[0],
     recordsAndCols[1],
@@ -149,11 +148,11 @@ function convertArrayOfObjectsToCSV(
         csvStringResult += columnDivider;
       }
       recordAttributes = records[i];
-      if (i < 20) {
-        console.log('recordAttributes: ', recordAttributes);
-        console.log('skey: ', skey);
-        console.log('recordAttributes.get(skey): ', recordAttributes.get(skey));
-      }
+      // if (i < 20) {
+      //   console.log('recordAttributes: ', recordAttributes);
+      //   console.log('skey: ', skey);
+      //   console.log('recordAttributes.get(skey): ', recordAttributes.get(skey));
+      // }
       if (
         records[i].get(skey) != null &&
         typeof records[i].get(skey) == 'object'
