@@ -156,7 +156,7 @@ class PimStructure {
             );
           }
           exportRecords[0].set(appearingLabels[i].Name, attrValValue);
-          console.log('exportRecords[0]: ', exportRecords[0]);
+          console.log('exportRecords[0].get(Number Attr): ', exportRecords[0].get('Number Attr'));
           // populate a Map of <Attribute_Label__r.Primary_Key__c, Attribute_Label__r.Name>
           supportedAttrPriKeyLabelMap.set(helper.getValue(appearingLabels[i], 'Primary_Key__c'), appearingLabels[i].Name);
         }
@@ -480,7 +480,7 @@ class PimStructure {
           exportRecordsAndColumns = [exportRecords];
         }
       }
-      console.log('exportRecordsAndColumns: ', exportRecordsAndColumns);
+      console.log('exportRecordsAndColumns[0][0].get(Number Attr): ', exportRecordsAndColumns[0][0].get('Number Attr'));
       exportRecordsColsAndAssets = {
         daDownloadDetailsList: await this.getFinalizedDaList(
           reqBody.isInherited,
@@ -500,7 +500,7 @@ class PimStructure {
         ),
         templateAdditionalHeaders: []
       };
-      console.log('exportRecordsColsAndAssets?.recordsAndCols[0]: ', exportRecordsColsAndAssets?.recordsAndCols[0]);
+      console.log('exportRecordsColsAndAssets?.recordsAndCols[0][0].get(Number Attr): ', exportRecordsColsAndAssets?.recordsAndCols[0][0].get('Number Attr'));
       Object.assign(asposeInput, {
         detailPageData: exportRecordsColsAndAssets?.recordsAndCols[0],
         baseRecord
