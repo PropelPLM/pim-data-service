@@ -129,8 +129,8 @@ class PimStructure {
           
           // PIM-1359 reopen: having to do this Value_Long__c logic all through out the code because we don't
           // have a central place where PIM data model to consumable object conversion. 
+          console.log('==============')
           attrValValue = helper.getAttributeValueValue(appearingValues[j]);
-          console.log('appearingValues[j]: ', appearingValues[j]);
           console.log('attrValValue: ', attrValValue);
           
           if (
@@ -156,6 +156,7 @@ class PimStructure {
             );
           }
           exportRecords[0].set(appearingLabels[i].Name, attrValValue);
+          console.log('exportRecords[0]: ', exportRecords[0]);
           // populate a Map of <Attribute_Label__r.Primary_Key__c, Attribute_Label__r.Name>
           supportedAttrPriKeyLabelMap.set(helper.getValue(appearingLabels[i], 'Primary_Key__c'), appearingLabels[i].Name);
         }
@@ -286,6 +287,7 @@ class PimStructure {
             currentVariantName = currentVariant.get('Record_ID');
             // overwrite base product with current variant
             exportRecords = [currentVariant];
+            console.log('exportRecords: ', exportRecords);
           }
         } else if (
           exportType === 'allVariants' ||
@@ -478,6 +480,7 @@ class PimStructure {
           exportRecordsAndColumns = [exportRecords];
         }
       }
+      console.log('exportRecordsAndColumns: ', exportRecordsAndColumns);
       exportRecordsColsAndAssets = {
         daDownloadDetailsList: await this.getFinalizedDaList(
           reqBody.isInherited,
@@ -497,6 +500,7 @@ class PimStructure {
         ),
         templateAdditionalHeaders: []
       };
+      console.log('exportRecordsColsAndAssets?.recordsAndCols[0]: ', exportRecordsColsAndAssets?.recordsAndCols[0]);
       Object.assign(asposeInput, {
         detailPageData: exportRecordsColsAndAssets?.recordsAndCols[0],
         baseRecord
