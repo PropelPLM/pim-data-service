@@ -58,8 +58,6 @@ class PimExportHelper {
       }
     });
     if (fieldApi === 'Numeric_Value__c') {
-      console.log('fieldApi === Numeric_Value__c: ', fieldApi === 'Numeric_Value__c');
-      console.log('fieldApi: ', fieldApi);
       console.log('queryResult: ', queryResult);
       console.log('parseInt(queryResult, 10): ', parseInt(queryResult, 10));
     }
@@ -77,6 +75,10 @@ class PimExportHelper {
       valueField = 'Value_Long__c';
     } else if (this.getValue(attribute, 'Numeric_Value__c')) {
       valueField = 'Numeric_Value__c';
+    }
+    if (valueField === 'Numeric_Value__c') {
+      console.log('numeric attribute: ', attribute);
+      console.log('this.getValue(attribute, valueField): ', this.getValue(attribute, valueField));
     }
     return this.getValue(attribute, valueField);
   }
