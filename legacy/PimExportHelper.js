@@ -57,7 +57,7 @@ class PimExportHelper {
         }
       }
     });
-    return queryResult;
+    return fieldApi === 'Numeric_Value__c' ? parseInt(queryResult, 10) : queryResult;
   }
 
   /**
@@ -70,7 +70,7 @@ class PimExportHelper {
     if (this.getValue(attribute, 'Value_Long__c')) {
       valueField = 'Value_Long__c';
     } else if (this.getValue(attribute, 'Numeric_Value__c')) {
-      valueField = parseInt('Numeric_Value__c', 10);
+      valueField = 'Numeric_Value__c';
     }
     return this.getValue(attribute, valueField);
   }
