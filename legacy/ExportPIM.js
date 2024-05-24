@@ -149,6 +149,9 @@ function convertArrayOfObjectsToCSV(
         csvStringResult += columnDivider;
       }
       recordAttributes = records[i];
+      console.log('recordAttributes: ', recordAttributes);
+      console.log('skey: ', skey);
+      console.log('recordAttributes.get(skey): ', recordAttributes.get(skey));
       if (
         records[i].get(skey) != null &&
         typeof records[i].get(skey) == 'object'
