@@ -70,7 +70,7 @@ class PimExportHelper {
     if (this.getValue(attribute, 'Value_Long__c')) {
       valueField = 'Value_Long__c';
     } else if (this.getValue(attribute, 'Numeric_Value__c')) {
-      valueField = 'Numeric_Value__c';
+      valueField = parseInt('Numeric_Value__c', 10);
     }
     return this.getValue(attribute, valueField);
   }
