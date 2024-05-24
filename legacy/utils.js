@@ -489,7 +489,6 @@ async function callAsposeToExport({
     )
   );
   if (listPageData) {
-    console.log('listPageData: ', listPageData);
     const labelToPrimaryKeyMap = new Map(
       columnAttributes.map(label => {
         return [
@@ -505,7 +504,6 @@ async function callAsposeToExport({
       listPageData: listPageData.map(recordMap => Object.fromEntries(recordMap))
     };
   } else {
-    console.log('detailPageData[0].get(Number Attr): ', detailPageData[0].get('Number Attr'));
     const primaryKeyToLabelMap = new Map(
       columnAttributes.map(label => {
         return [
