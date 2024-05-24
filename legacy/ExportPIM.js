@@ -148,14 +148,18 @@ function convertArrayOfObjectsToCSV(
         csvStringResult += columnDivider;
       }
       recordAttributes = records[i];
-      console.log('skey: ', skey);
-      console.log('recordAttributes.get(skey): ', recordAttributes.get(skey));
+      if (skey === 'Title' || skey === 'Number Attr') {
+        console.log('skey: ', skey);
+        console.log('recordAttributes.get(skey): ', recordAttributes.get(skey));
+      }
       if (
         records[i].get(skey) != null &&
         typeof records[i].get(skey) == 'object'
       ) {
+        console.log('is object: ', skey)
         recordAttributes.set(skey, recordAttributes.get(skey).Name);
       }
+      console.log('typeof: ', typeof records[i].get(skey))
       csvStringResult += cleanString(records[i].get(skey) || '');
 
       counter++;
