@@ -57,6 +57,10 @@ class PimExportHelper {
         }
       }
     });
+    console.log('fieldApi === Numeric_Value__c: ', fieldApi === 'Numeric_Value__c');
+    console.log('fieldApi: ', fieldApi);
+    console.log('queryResult: ', queryResult);
+    console.log('parseInt(queryResult, 10): ', parseInt(queryResult, 10));
     return fieldApi === 'Numeric_Value__c' ? parseInt(queryResult, 10) : queryResult;
   }
 
