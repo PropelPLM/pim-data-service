@@ -130,6 +130,8 @@ class PimStructure {
           // PIM-1359 reopen: having to do this Value_Long__c logic all through out the code because we don't
           // have a central place where PIM data model to consumable object conversion. 
           attrValValue = helper.getAttributeValueValue(appearingValues[j]);
+          console.log('appearingValues[j]: ', appearingValues[j]);
+          console.log('attrValValue: ', attrValValue);
           
           if (
             helper.getValue(appearingValues[j], 'Attribute_Label_Type__c') ===
