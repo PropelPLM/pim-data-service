@@ -58,7 +58,7 @@ async function LegacyExportPIM(req) {
     return;
   }
 
-  console.log('exportPim recordsAndCols[0]: ', recordsAndCols[0]);
+  console.log('exportPim recordsAndCols[0][0].get(Number Attr): ', recordsAndCols[0][0].get('Number Attr'));
   let csvString = convertArrayOfObjectsToCSV(
     recordsAndCols[0],
     recordsAndCols[1],
