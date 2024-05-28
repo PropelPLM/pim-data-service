@@ -22,7 +22,9 @@ class PimAttributeValueByParent {
           Digital_Asset__r.Name,
           Overwritten_Variant_Value__r.Name,
           Product__r.Name,
-          Value__c
+          Value__c,
+          Value_Long__c,
+          Numeric_Value__c
         from Attribute_Value__c
         where
           Digital_Asset__r.Name in (${valueStrings}) OR

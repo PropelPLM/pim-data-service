@@ -59,6 +59,21 @@ class PimExportHelper {
     });
     return queryResult;
   }
+
+  /**
+   * gets appropriate value from Attribute_Value__c with namespace
+   * @param {Object} attribute
+   * @return {Object}
+   */
+  getAttributeValueValue(attribute) {
+    let valueField = 'Value__c';
+    if (this.getValue(attribute, 'Value_Long__c') != null) {
+      valueField = 'Value_Long__c';
+    } else if (this.getValue(attribute, 'Numeric_Value__c') != null) {
+      valueField = 'Numeric_Value__c';
+    }
+    return this.getValue(attribute, valueField);
+  }
 }
 
 module.exports = PimExportHelper;

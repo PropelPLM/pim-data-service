@@ -153,7 +153,11 @@ function convertArrayOfObjectsToCSV(
       ) {
         recordAttributes.set(skey, recordAttributes.get(skey).Name);
       }
-      csvStringResult += cleanString(records[i].get(skey) || '');
+      if (typeof records[i].get(skey) === 'number') {
+        csvStringResult += records[i].get(skey).toString();
+      } else {
+        csvStringResult += cleanString(records[i].get(skey) || '');
+      }
 
       counter++;
     }

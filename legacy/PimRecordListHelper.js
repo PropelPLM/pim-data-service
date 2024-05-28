@@ -304,7 +304,8 @@ async function buildStructureWithCategoryIds(
             Overwritten_Variant_Value__r.Name,
             Overwritten_Variant_Value__r.Parent_Value_Path__c,
             Value__c,
-            Value_Long__c
+            Value_Long__c,
+            Numeric_Value__c
         from Attributes__r
         order by Attribute_Label__r.Order__c asc
       )
@@ -371,7 +372,8 @@ async function buildStructureWithSecondaryCategoryIds(listCategoryIds) {
             Overwritten_Variant_Value__r.Name,
             Overwritten_Variant_Value__r.Parent_Value_Path__c,
             Value__c,
-            Value__Long__c
+            Value__Long__c,
+            Numeric_Value__c
         from Attributes__r
         order by Attribute_Label__r.Order__c asc
       ),
@@ -430,10 +432,7 @@ async function getAttributesForRecordMap(
         continue;
       }
 
-      let attrValValue = helper.getValue(
-        attribute,
-        helper.getValue(attribute, 'Value_Long__c') ? 'Value_Long__c' : 'Value__c'
-      );
+      let attrValValue = helper.getAttributeValueValue(attribute);
       // replace digital asset id with CDN url if Attribute_Label__c is of Type__c 'DigitalAsset'
       if (
         helper.getValue(attribute, 'Attribute_Label__r.Type__c') === DA_TYPE
@@ -482,10 +481,7 @@ async function getAttributesForRecordMap(
           if ( helper.getValue(attribute, 'Attribute_Label__r') === null ) {
             continue;
           }
-          let attrValValue = helper.getValue(
-            attribute,
-            helper.getValue(attribute, 'Value_Long__c') ? 'Value_Long__c' : 'Value__c'
-          );
+          let attrValValue = helper.getAttributeValueValue(attribute);
           // replace digital asset id with CDN url if Attribute_Label__c is of Type__c 'DigitalAsset'
           if (
             helper.getValue(attribute, 'Attribute_Label__r.Type__c') === DA_TYPE
@@ -520,10 +516,7 @@ async function getAttributesForRecordMap(
           continue;
         }
 
-        let attrValValue = helper.getValue(
-          attribute,
-          helper.getValue(attribute, 'Value_Long__c') ? 'Value_Long__c' : 'Value__c'
-        );
+        let attrValValue = helper.getAttributeValueValue(attribute);
         // replace digital asset id with CDN url if Attribute_Label__c is of Type__c 'DigitalAsset'
         if (
           helper.getValue(attribute, 'Attribute_Label__r.Type__c') === DA_TYPE
