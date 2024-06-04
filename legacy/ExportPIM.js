@@ -3,6 +3,8 @@ var crypto = require('crypto');
 const https = require('https');
 const archiver = require('archiver');
 const ReadableStream = require('stream').Readable;
+const NUMBER_TYPE = 'number';
+const OBJECT_TYPE = 'object';
 
 // adding the propel-sfdc-connect package
 const propelConnect = require('@propelsoftwaresolutions/propel-sfdc-connect');
@@ -149,11 +151,11 @@ function convertArrayOfObjectsToCSV(
       recordAttributes = records[i];
       if (
         records[i].get(skey) != null &&
-        typeof records[i].get(skey) == 'object'
+        typeof records[i].get(skey) == OBJECT_TYPE
       ) {
         recordAttributes.set(skey, recordAttributes.get(skey).Name);
       }
-      if (typeof records[i].get(skey) === 'number') {
+      if (typeof records[i].get(skey) === NUMBER_TYPE) {
         csvStringResult += records[i].get(skey).toString();
       } else {
         csvStringResult += cleanString(records[i].get(skey) || '');
