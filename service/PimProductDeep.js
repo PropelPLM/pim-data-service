@@ -77,7 +77,7 @@ class PimProductDeep {
 
     this.products.forEach(product => {
       // first set the product objects in the map
-      returnMap.set(product.Name, product.Attributes__r.records.filter(attribute => {
+      returnMap.set(product.Name, product.Attributes__r?.records.filter(attribute => {
         if (attribute['Overwritten_Variant_Value__c'] == null) {
           return attribute
         }
