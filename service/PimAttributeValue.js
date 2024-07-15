@@ -87,16 +87,21 @@ class PimAttributeValue {
     let assetLabelValueMap = new Map();
 
     this.attributes.records.forEach((attribute) => {
+      let attributeLabelName = attribute.Attribute_Label__r?.Name;
+      if (!attributeLabelName) { // attributeLabelName === undefined
+          throw new Error('attribute.Attribute_Label__r.Name is undefined');
+      }
+
       if (assetLabelValueMap.has(attribute.Digital_Asset__c)) {
         assetLabelValueMap
           .get(attribute.Digital_Asset__c)
-          .set(attribute.Attribute_Label__r.Name, attribute.Id);
+          .set(attribute.Attribute_Label__r?.Name, attribute.Id);
       } else {
         assetLabelValueMap.set(
           attribute.Digital_Asset__c, 
-          new Map([[attribute.Attribute_Label__r.Name, attribute.Id]]));
+          new Map([[attribute.Attribute_Label__r?.Name, attribute.Id]]));
       }
-    })
+    });
 
     return assetLabelValueMap;
   }
