@@ -15,15 +15,15 @@ class PimAttributeValue {
   async populate() {
     try {
       this.attributes = await this.helper.connection.queryExtend(this.helper.namespaceQuery(
-        `select 
+        `select
             Id,
             Attribute_Label__r.Primary_Key__c,
             Overwritten_Variant_Value__r.Name,
             Product__r.Name,
             Value__c,
             Value_Long__c,
-            Numeric_Value__c 
-        from Attribute_Value__c 
+            Numeric_Value__c
+        from Attribute_Value__c
         where Product__r.Name in (${this.helper.connection.QUERY_LIST})`
       ), this.productNames)
     } catch(error) {
@@ -35,7 +35,7 @@ class PimAttributeValue {
 
   getNameMap() {
     const returnMap = new Map()
-    
+
     this.attributes.forEach(attribute => {
       if (attribute[this.helper.parentNamespace('Overwritten_Variant_Value__r.Name')]) {
         let myKey =
@@ -63,14 +63,14 @@ class PimAttributeValue {
   async populateWithDigitalAssetValues(digitalAssetIds, attributeLabelNames) {
     try {
       this.attributes = await this.helper.connection.simpleQuery(this.helper.namespaceQuery(
-        `select 
+        `select
             Id,
             Attribute_Label__r.Name,
             Digital_Asset__c,
             Value__c,
             Value_Long__c,
             Numeric_Value__c
-        from Attribute_Value__c 
+        from Attribute_Value__c
         where Attribute_Label__r.Name in (${attributeLabelNames}) and
         Digital_Asset__c in (${digitalAssetIds})`
       ));
@@ -87,19 +87,21 @@ class PimAttributeValue {
     let assetLabelValueMap = new Map();
 
     this.attributes.records.forEach((attribute) => {
-      let attributeLabelName = attribute.Attribute_Label__r?.Name;
+      let attributeLabelName = this.helper.getNestedField(attribute, this.helper.parentNamespace('Attribute_Label__r.Name'))
       if (!attributeLabelName) { // attributeLabelName === undefined
-          throw new Error('attribute.Attribute_Label__r.Name is undefined');
+        console.error('attribute.Attribute_Label__r.Name is undefined')
+        // skip if value has no label linked
+        return;
       }
-
-      if (assetLabelValueMap.has(attribute.Digital_Asset__c)) {
+      let parentAssetId = attribute[this.helper.namespace('Digital_Asset__c')]
+      if (assetLabelValueMap.has(parentAssetId)) {
         assetLabelValueMap
-          .get(attribute.Digital_Asset__c)
-          .set(attribute.Attribute_Label__r?.Name, attribute.Id);
+          .get(parentAssetId)
+          .set(attributeLabelName, attribute.Id);
       } else {
         assetLabelValueMap.set(
-          attribute.Digital_Asset__c, 
-          new Map([[attribute.Attribute_Label__r?.Name, attribute.Id]]));
+          parentAssetId,
+          new Map([[attributeLabelName, attribute.Id]]));
       }
     });
 
