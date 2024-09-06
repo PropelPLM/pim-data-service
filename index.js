@@ -30,6 +30,16 @@ const LegacyExportPim = require('./legacy/ExportPIM');
 const ERROR_OBJ = { message: '', success: false };
 const SUCCESS_OBJ = { message: 'Request received', success: true };
 
+const printBody = (req) => {
+  if (process.env.PRINT_BODY) {
+    if (req.body) {
+      console.log('--- request body', req.body);
+    } else {
+      console.log('--- body is empty');
+    }
+  }
+}
+
 /**
  * routes for our node app
  */
@@ -44,6 +54,7 @@ app.get('/', (req, res) => {
  */
 app.post('/import/commerce/product', (req, res) => {
   try {
+    printBody(req);
     new ImportCommerceProduct(req, res);
     res.status(200).send(SUCCESS_OBJ);
   } catch(error) {
@@ -58,6 +69,7 @@ app.post('/import/commerce/product', (req, res) => {
  */
 app.post('/import/pim/assetmetadata', (req, res) => {
   try {
+    printBody(req);
     new ImportAssetMetadata(req, res);
     res.status(200).send(SUCCESS_OBJ);
   } catch (error) {
@@ -72,6 +84,7 @@ app.post('/import/pim/assetmetadata', (req, res) => {
  */
 app.post('/import/pim/assetlink', (req, res) => {
   try {
+    printBody(req);
     new ImportAssetLink(req, res);
     res.status(200).send(SUCCESS_OBJ);
   } catch (error) {
@@ -86,6 +99,7 @@ app.post('/import/pim/assetlink', (req, res) => {
  */
 app.post('/import/pim/attributegroup', (req, res) => {
   try {
+    printBody(req);
     new ImportAttributeGroup(req, res);
     res.status(200).send(SUCCESS_OBJ);
   } catch (error) {
@@ -100,6 +114,7 @@ app.post('/import/pim/attributegroup', (req, res) => {
  */
 app.post('/import/pim/attributelabel', (req, res) => {
   try {
+    printBody(req);
     new ImportAttributeLabel(req, res);
     res.status(200).send(SUCCESS_OBJ);
   } catch (error) {
@@ -114,6 +129,7 @@ app.post('/import/pim/attributelabel', (req, res) => {
  */
 app.post('/import/pim/attributetab', (req, res) => {
   try {
+    printBody(req);
     new ImportAttributeTab(req, res);
     res.status(200).send(SUCCESS_OBJ);
   } catch (error) {
@@ -128,6 +144,7 @@ app.post('/import/pim/attributetab', (req, res) => {
  */
 app.post('/import/pim/category', (req, res) => {
   try {
+    printBody(req);
     new ImportCategory(req, res);
     res.status(200).send(SUCCESS_OBJ);
   } catch (error) {
@@ -142,6 +159,7 @@ app.post('/import/pim/category', (req, res) => {
  */
 app.post('/import/pim/product', (req, res) => {
   try {
+    printBody(req);
     new ImportProduct(req, res);
     res.status(200).send(SUCCESS_OBJ);
   } catch (error) {
@@ -158,6 +176,7 @@ app.post('/import/pim/product', (req, res) => {
  */
 app.post('/export/pim/product', (req, res) => {
   try {
+    printBody(req);
     new ExportPim(req);
     res.status(200).send(SUCCESS_OBJ);
   } catch (error) {
@@ -172,6 +191,7 @@ app.post('/export/pim/product', (req, res) => {
  */
 app.post('/export/legacy/pim/product', (req, res) => {
   try {
+    printBody(req);
     LegacyExportPim(req);
     res.status(200).send('');
   } catch (err) {
