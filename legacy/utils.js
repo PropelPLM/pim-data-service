@@ -411,10 +411,9 @@ function prepareIdsForSOQL(idList) {
   }
 }
 
-function sendCsvToAsposeCells(csvString, sessionId, herokuAsposeDomain, hostUrl, templateId) {
-  console.log('1herokuAsposeDomain: ', herokuAsposeDomain);
+function sendCsvToAsposeCells(csvString, sessionId, herokuAsposeHostname, hostUrl, templateId) {
   const options = {
-    hostname: 'propel-document-java-staging.herokuapp.com',
+    hostname: herokuAsposeHostname,
     path: '/v2/pimTemplateExport',
     method: 'POST',
     headers: {
@@ -458,15 +457,14 @@ async function callAsposeToExport({
   const helper = new PimExportHelper(reqBody.namespace);
   const {
     exportFormat,
-    herokuAsposeDomain,
+    herokuAsposeHostname,
     hostUrl,
     sessionId,
     templateId,
     templateContentVersionId
   } = reqBody;
-  console.log('1herokuAsposeDomain: ', herokuAsposeDomain);
   const options = {
-    hostname: 'propel-document-java-staging.herokuapp.com',
+    hostname: herokuAsposeHostname,
     path: '/v2/pimTemplateExport',
     method: 'POST',
     headers: {

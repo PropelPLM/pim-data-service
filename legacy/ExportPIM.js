@@ -88,7 +88,7 @@ async function LegacyExportPIM(req) {
     sendCsvToAsposeCells(
       csvString,
       reqBody.sessionId,
-      reqBody.herokuAsposeDomain,
+      reqBody.herokuAsposeHostname,
       reqBody.hostUrl,
       reqBody.templateId
     );
