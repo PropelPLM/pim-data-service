@@ -126,11 +126,11 @@ class PimStructure {
                 baseRecord.get('Id'))
           )
             continue;
-          
+
           // PIM-1359 reopen: having to do this Value_Long__c logic all through out the code because we don't
-          // have a central place where PIM data model to consumable object conversion. 
+          // have a central place where PIM data model to consumable object conversion.
           attrValValue = helper.getAttributeValueValue(appearingValues[j]);
-          
+
           if (
             helper.getValue(appearingValues[j], 'Attribute_Label_Type__c') ===
             DA_TYPE
@@ -532,9 +532,11 @@ class PimStructure {
           Parent_Value_Path__c,
           Parent_Variant_Value__c,
           Variant__c,
-          Variant__r.Name
+          Variant__r.Name,
+          Variant__r.Product__c
         from Variant_Value__c
-        where Id IN (${valueIds})`
+        where Id IN (${valueIds})
+        Order by Variant__r.Order__c`
       )
     );
 
@@ -1078,7 +1080,7 @@ class PimStructure {
       // remove asset default columns
       exportColumns = exportColumns.filter(col => !Array.from(DEFAULT_ASSET_COLUMNS.values()).includes(col));
     }
-    
+
     // rename Category__r.Name to Category and set default asset column labels
     const defaultAssetColMap = getDefaultAssetColsPriKeyToLabelsMap();
     const defaultAssetColFieldnames = Array.from(defaultAssetColMap.keys());
