@@ -502,6 +502,7 @@ class PimStructure {
     }
     if (useAspose) {
       await callAsposeToExport(asposeInput);
+      daDownloadDetailsList = exportRecordsColsAndAssets?.daDownloadDetailsList;
       return { daDownloadDetailsList };
     }
     if (templateHeaders?.length > 1) {
