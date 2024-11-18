@@ -35,7 +35,7 @@ class CommerceParentVariant {
 
   init() {
     this.attributeSet = this.options.attribute_set
-  
+
     if (!this.attributeSet) { console.log('attribute_set was blank') }
   }
 
@@ -46,14 +46,13 @@ class CommerceParentVariant {
       ))
 
       this.attributes = await this.helper.connection.queryLimit(this.helper.namespaceQuery(
-        `select 
+        `select
           Id,
           Name,
           Attribute_Label__c,
           Attribute_Label__r.Attribute_Group__r.Name,
           Attribute_Label__r.Attribute_Group__r.Attribute_Tab__r.Name,
           Attribute_Label__r.Label__c,
-          Attribute_Label__r.Mandatory__c,
           Attribute_Label__r.Primary_Key__c,
           Attribute_Label__r.Type__c,
           Overwritten_Variant_Value__c,
@@ -175,7 +174,7 @@ class CommerceParentVariant {
    */
   async populateVariantsObj() {
     const properOrderVariants = this.variants.reverse()
-    
+
     this.variantValues.forEach((variantValue) => {
       //console.log('what are we doing...' + JSON.stringify(variantValue))
       const tmpObj = {}
@@ -219,10 +218,10 @@ class CommerceParentVariant {
       // now blast through for the overwrites
       this.attributes.forEach((attribute) => {
 
-        if (attribute[`${this.helper.namespace('Overwritten_Variant_Value__c')}`] && 
+        if (attribute[`${this.helper.namespace('Overwritten_Variant_Value__c')}`] &&
           attribute[`${this.helper.namespace('Overwritten_Variant_Value__c')}`] === variantValue.Id
         ) {
-    
+
           if (this.mapping[attribute[`${this.namespacePlus('Attribute_Label__r.Primary_Key__c')}`]]) {
             tmpObj[this.mapping[attribute[`${this.namespacePlus('Attribute_Label__r.Primary_Key__c')}`]]] =
               attribute[`${this.helper.namespace('Value__c')}`]
@@ -254,7 +253,7 @@ class CommerceParentVariant {
    */
   namespacePlus(parentField) {
     if (!parentField) { return null }
-    
+
     let returnField = parentField
     if (this.helper.namespaceString) {
       returnField = ''

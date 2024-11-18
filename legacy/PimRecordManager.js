@@ -29,7 +29,6 @@ async function buildWithRecordIds(recordIds, isProduct) {
             Attribute_Label__r.Attribute_Group__r.Name,
             Attribute_Label__r.Attribute_Group__r.Attribute_Tab__r.Name,
             Attribute_Label__r.Label__c,
-            Attribute_Label__r.Mandatory__c,
             Attribute_Label__r.Primary_Key__c,
             Attribute_Label__r.Type__c,
             Overwritten_Variant_Value__c,
