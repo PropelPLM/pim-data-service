@@ -522,16 +522,17 @@ async function callAsposeToExport({
     };
   }
   Object.assign(data, exportTypeSpecificInformation);
+  console.log('callAsposeToExport Data:', JSON.stringify(data));
 
   const req = https
     .request(options, res => {
-      let data = '';
+      let returnData = '';
       console.log('callAsposeToExport Status Code:', res.statusCode);
       res.on('data', chunk => {
-        data = data + chunk.toString();
+        returnData = returnData + chunk.toString();
       });
       res.on('end', () => {
-        console.log(data);
+        console.log(returnData);
       });
     })
     .on('error', err => {
