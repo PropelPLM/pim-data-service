@@ -15,7 +15,7 @@
     "legacyexport": "node ./local/testLegacyExportProduct.js"
   },
   "dependencies": {
-    "@propelsoftwaresolutions/propel-sfdc-connect": "^1.4.0",
+    "@propelsoftwaresolutions/propel-sfdc-connect": "1.4.0",
     "archiver": "^6.0.1",
     "body-parser": "^1.20.0",
     "csv-parser": "^3.0.0",
@@ -32,6 +32,9 @@
     "dotenv": "^16.4.5",
     "eslint": "^8.22.0",
     "mocha": "^10.0.0"
+  },
+  "engines": {
+    "node": "22.x"
   },
   "repository": {
     "type": "git",
