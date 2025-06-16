@@ -522,7 +522,6 @@ async function callAsposeToExport({
     };
   }
   Object.assign(data, exportTypeSpecificInformation);
-  console.log('callAsposeToExport Data:', JSON.stringify(data));
 
   const req = https
     .request(options, res => {

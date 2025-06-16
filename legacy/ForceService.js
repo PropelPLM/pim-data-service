@@ -369,49 +369,55 @@ class ForceService {
 
   uploadFile(eventId, data) {
     return new Promise((resolve, reject) => {
-      const filename = `Import logs ${eventId}.json`
-      const dataLoad =
-        `--a7V4kRcFA8E79pivMuV2tukQ85cmNKeoEgJgq
-Content-Disposition: form-data; name="entity_document";
-Content-Type: application/json
+      const filename = `Import logs ${eventId}.json`;
+      const boundary = 'a7V4kRcFA8E79pivMuV2tukQ85cmNKeoEgJgq';
+      const delimiter = `\r\n--${boundary}`;
+      const close_delim = `${delimiter}--`;
 
-{
-    "PathOnClient" : "${filename}"
-}
+      const contentVersionJson = JSON.stringify({
+        "Title": `Import logs ${eventId}`,
+        "PathOnClient": filename
+      });
 
---a7V4kRcFA8E79pivMuV2tukQ85cmNKeoEgJgq
-Content-Type: application/octet-stream
-Content-Disposition: form-data; name="VersionData"; filename="${filename}"
+      const fileContent = JSON.stringify(data);
 
-${JSON.stringify(data)}
+      const metadata = `Content-Disposition: form-data; name="entity_content"\r\nContent-Type: application/json\r\n\r\n${contentVersionJson}`;
+      const filedata = `Content-Disposition: form-data; name="VersionData"; filename="${filename}"\r\nContent-Type: application/json\r\n\r\n${fileContent}`;
 
---a7V4kRcFA8E79pivMuV2tukQ85cmNKeoEgJgq--`
+      const postData = Buffer.from(`--${boundary}\r\n` + metadata + delimiter + '\r\n' + filedata + close_delim);
 
       const options = {
         hostname: this.serverUrl,
-        path: '/services/data/v23.0/sobjects/ContentVersion/',
+        path: '/services/data/v64.0/sobjects/ContentVersion/',
         method: 'POST',
         headers: {
-          'Content-Type': `multipart/form-data; boundary="a7V4kRcFA8E79pivMuV2tukQ85cmNKeoEgJgq"`,
-          'Authorization': 'OAuth ' + this.sessionId
+          'Content-Type': `multipart/form-data; boundary="${boundary}"`,
+          'Authorization': 'OAuth ' + this.sessionId,
+          'Content-Length': postData.length
         }
-      }
-      // var base64data = new Buffer(filedata).toString('base64');
-      const req = new https.request(options, (res) => {
-        let data = ''
+      };
+
+      const req = https.request(options, (res) => {
+        let responseData = '';
         res.on('data', (d) => {
-          data += d
-        })
+          responseData += d;
+        });
         res.on('end', () => {
-          resolve(data)
-        })
-      })
+          try {
+            resolve(JSON.parse(responseData));
+          } catch (e) {
+            reject(e);
+          }
+        });
+      });
+
       req.on('error', (e) => {
         reject(e.message);
-      })
-      req.write(dataLoad);
-      req.end()
-    })
+      });
+
+      req.write(postData);
+      req.end();
+    });
   }
 
   /** TODO: replace .flat() after update nodejs!! */
