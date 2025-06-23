@@ -74,6 +74,7 @@ initAssetDownloadDetailsList = (
 ) => {
   const daDownloadDetails = [];
   console.log('includeRecordAsset: ', includeRecordAsset);
+  console.log('isProduct: ', isProduct);
   if (isProduct || !includeRecordAsset) return daDownloadDetails;
 
   recordIds.forEach(recordId => {
@@ -81,6 +82,7 @@ initAssetDownloadDetailsList = (
     if (!digitalAsset) return;
     daDownloadDetails.push(new DADownloadDetails(digitalAsset, namespace));
   });
+  console.log('daDownloadDetails: ', JSON.parse(JSON.stringify(daDownloadDetails)));
   return daDownloadDetails;
 };
 
