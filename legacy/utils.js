@@ -340,8 +340,8 @@ async function parseDigitalAssetAttrVal(
 ) {
   try {
     const digitalAsset = digitalAssetMap?.get(attrValValue);
-    if (!digitalAsset || !reqBody.includeRecordAsset) return attrValValue;
-
+    if (!digitalAsset) return attrValValue;
+  
     daDownloadDetailsList.push(
       new DADownloadDetails(digitalAsset, reqBody.namespace)
     );
@@ -525,13 +525,13 @@ async function callAsposeToExport({
 
   const req = https
     .request(options, res => {
-      let returnData = '';
+      let data = '';
       console.log('callAsposeToExport Status Code:', res.statusCode);
       res.on('data', chunk => {
-        returnData = returnData + chunk.toString();
+        data = data + chunk.toString();
       });
       res.on('end', () => {
-        console.log(returnData);
+        console.log(data);
       });
     })
     .on('error', err => {
