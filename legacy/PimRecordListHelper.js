@@ -172,6 +172,8 @@ async function PimRecordListHelper(
     }
   }
 
+  console.log('daDownloadDetailsList in pimrecordlisthelper: ', JSON.parse(JSON.stringify(daDownloadDetailsList)));
+
   return {
     daDownloadDetailsList,
     recordsAndCols: await addExportColumns(
