@@ -45,8 +45,6 @@ async function LegacyExportPIM(req) {
     console.log('error: ', err);
   }
 
-  console.log('daDownloadDetailsList in exportpim.js: ', JSON.parse(JSON.stringify(daDownloadDetailsList)));
-
   const baseFileName = createBaseFileName();
   const filename = `${reqBody.recordType}-Export_${baseFileName}.csv`;
 
@@ -188,7 +186,6 @@ async function sendDADownloadRequests(
   daDownloadDetailsList,
   reqBody
 ) {
-  console.log('daDownloadDetailsList in sendDADownloadRequests: ', JSON.parse(JSON.stringify(daDownloadDetailsList)));
   if (!daDownloadDetailsList || !daDownloadDetailsList.length) return;
   reqBody.shouldPostToUser = true;
   reqBody.communityId = null;

@@ -138,8 +138,6 @@ async function PimRecordListHelper(
       )
     );
 
-    console.log('attributeResults in pimrecordlisthelper: ', JSON.parse(JSON.stringify(attributeResults)));
-
     if (attributeResults.has(DA_DOWNLOAD_DETAIL_KEY)) {
       daDownloadDetailsList = attributeResults.get(DA_DOWNLOAD_DETAIL_KEY);
       attributeResults.delete(DA_DOWNLOAD_DETAIL_KEY);
@@ -173,8 +171,6 @@ async function PimRecordListHelper(
       });
     }
   }
-
-  console.log('daDownloadDetailsList in pimrecordlisthelper: ', JSON.parse(JSON.stringify(daDownloadDetailsList)));
 
   return {
     daDownloadDetailsList,

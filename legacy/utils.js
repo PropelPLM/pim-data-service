@@ -73,8 +73,6 @@ initAssetDownloadDetailsList = (
   namespace
 ) => {
   const daDownloadDetails = [];
-  console.log('includeRecordAsset: ', includeRecordAsset);
-  console.log('isProduct: ', isProduct);
   if (isProduct || !includeRecordAsset) return daDownloadDetails;
 
   recordIds.forEach(recordId => {
@@ -82,7 +80,6 @@ initAssetDownloadDetailsList = (
     if (!digitalAsset) return;
     daDownloadDetails.push(new DADownloadDetails(digitalAsset, namespace));
   });
-  console.log('daDownloadDetails: ', JSON.parse(JSON.stringify(daDownloadDetails)));
   return daDownloadDetails;
 };
 
@@ -342,13 +339,9 @@ async function parseDigitalAssetAttrVal(
   reqBody
 ) {
   try {
-    console.log('reqBody in parseDigitalAssetAttrVal in utils: ', JSON.parse(JSON.stringify(reqBody)));
     const digitalAsset = digitalAssetMap?.get(attrValValue);
-    console.log('digitalAsset in parseDigitalAssetAttrVal in utils: ', JSON.parse(JSON.stringify(digitalAsset)));
     if (!digitalAsset || !reqBody.includeRecordAsset) return attrValValue;
 
-    console.log('this shouldnt run');
-  
     daDownloadDetailsList.push(
       new DADownloadDetails(digitalAsset, reqBody.namespace)
     );
