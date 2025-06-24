@@ -345,7 +345,9 @@ async function parseDigitalAssetAttrVal(
     console.log('reqBody in parseDigitalAssetAttrVal in utils: ', JSON.parse(JSON.stringify(reqBody)));
     const digitalAsset = digitalAssetMap?.get(attrValValue);
     console.log('digitalAsset in parseDigitalAssetAttrVal in utils: ', JSON.parse(JSON.stringify(digitalAsset)));
-    if (!digitalAsset) return attrValValue;
+    if (!digitalAsset || !reqBody.includeRecordAsset) return attrValValue;
+
+    console.log('this shouldnt run');
   
     daDownloadDetailsList.push(
       new DADownloadDetails(digitalAsset, reqBody.namespace)
