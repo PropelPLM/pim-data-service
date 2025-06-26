@@ -45,8 +45,14 @@ async function LegacyExportPIM(req) {
     console.log('error: ', err);
   }
 
-  const baseFileName = createBaseFileName();
-  const filename = `${reqBody.recordType}-Export_${baseFileName}.csv`;
+  console.log('reqBody.filename: ', reqBody.filename);
+  let filename;
+  if (reqBody.filename) {
+    filename = reqBody.filename;
+  } else {
+    const baseFileName = createBaseFileName();
+    filename = `${reqBody.recordType}-Export_${baseFileName}.csv`;
+  }
 
   if (reqBody.includeRecordAsset) {
     sendDADownloadRequests(
