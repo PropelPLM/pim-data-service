@@ -189,10 +189,10 @@ app.post('/export/pim/product', (req, res) => {
 /**
  * route for legacy exporter
  */
-app.post('/export/legacy/pim/product', (req, res) => {
+app.post('/export/legacy/pim/product', async (req, res) => {
   try {
     printBody(req);
-    const result = LegacyExportPim(req);
+    const result = await LegacyExportPim(req);
     console.log('result: ', JSON.parse(JSON.stringify(result)));
     res.status(200).send(JSON.parse(JSON.stringify(result)));
   } catch (err) {
