@@ -45,10 +45,10 @@ async function LegacyExportPIM(req) {
     console.log('error: ', err);
   }
 
-  console.log('reqBody.filename: ', reqBody.filename);
+  console.log('reqBody.exportFilename: ', reqBody.exportFilename);
   let filename;
-  if (reqBody.filename) {
-    filename = reqBody.filename;
+  if (reqBody.exportFilename) {
+    filename = reqBody.exportFilename;
   } else {
     const baseFileName = createBaseFileName();
     filename = `${reqBody.recordType}-Export_${baseFileName}.csv`;
