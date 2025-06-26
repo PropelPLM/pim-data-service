@@ -48,11 +48,14 @@ async function LegacyExportPIM(req) {
   const baseFileName = createBaseFileName();
   const filename = `${reqBody.recordType}-Export_${baseFileName}.csv`;
 
-  sendDADownloadRequests(
-    baseFileName,
-    daDownloadDetailsList,
-    reqBody
-  );
+  let daZipFilename;
+  if (reqBody.includeRecordAsset) {
+  let daZipFilename = sendDADownloadRequests(
+      baseFileName,
+      daDownloadDetailsList,
+      reqBody
+    );
+  }
 
   if (!reqBody.includeAttributes) return;
   if (recordsAndCols?.length !== 2) {
@@ -93,7 +96,11 @@ async function LegacyExportPIM(req) {
       reqBody.templateId
     );
   }
-  return csvString;
+  return {
+    csvString,
+    exportFilename: filename,
+    daZipFilename
+  };
 }
 
 function convertArrayOfObjectsToCSV(
@@ -220,6 +227,8 @@ async function sendDADownloadRequests(
     archive.finalize();
     console.log('File zipped successfully.');
   })
+
+  return zipFileName;
 }
 
 // GET digital asset, convert the fileContent buffer into a stream to be appended to the zip archiver
