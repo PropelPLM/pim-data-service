@@ -193,7 +193,6 @@ app.post('/export/legacy/pim/product', async (req, res) => {
   try {
     printBody(req);
     const result = await LegacyExportPim(req);
-    console.log('result: ', JSON.parse(JSON.stringify(result)));
     res.status(200).send(JSON.parse(JSON.stringify(result)));
   } catch (err) {
     res.status(400).send('');
