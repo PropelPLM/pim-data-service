@@ -50,7 +50,7 @@ async function LegacyExportPIM(req) {
 
   let daZipFilename;
   if (reqBody.includeRecordAsset) {
-  let daZipFilename = sendDADownloadRequests(
+    daZipFilename = sendDADownloadRequests(
       baseFileName,
       daDownloadDetailsList,
       reqBody
@@ -96,6 +96,7 @@ async function LegacyExportPIM(req) {
       reqBody.templateId
     );
   }
+
   return {
     csvString,
     exportFilename: filename,
