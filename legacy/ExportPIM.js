@@ -45,8 +45,9 @@ async function LegacyExportPIM(req) {
     console.log('error: ', err);
   }
 
+  const exportFormat = reqBody.exportFormat;
   const baseFileName = createBaseFileName();
-  const filename = `${reqBody.recordType}-Export_${baseFileName}.csv`;
+  const filename = `${reqBody.recordType}-Export_${baseFileName}.${exportFormat}`;
 
   let daZipFilename;
   if (reqBody.includeRecordAsset) {
@@ -73,7 +74,7 @@ async function LegacyExportPIM(req) {
     return;
   }
 
-  if (reqBody.exportFormat == 'csv') {
+  if (exportFormat == 'csv') {
     // CSV -> CSV export (both template and non-template)
     const nameOnDisk = crypto.randomBytes(20).toString('hex') + filename;
     const file = fs.createWriteStream(nameOnDisk);
@@ -86,7 +87,7 @@ async function LegacyExportPIM(req) {
         console.log('error: ', err);
       }
     });
-  } else if (reqBody.exportFormat == 'xlsx') {
+  } else if (exportFormat == 'xlsx') {
     // CSV -> XLSX export OR XLSX non template export
     sendCsvToAsposeCells(
       csvString,
@@ -94,8 +95,11 @@ async function LegacyExportPIM(req) {
       reqBody.useAsposeStaging,
       reqBody.hostUrl,
       reqBody.templateId
-    );
-  }
+    ) 
+  } else {
+      logErrorResponse(`${exportFormat} is not supported. Only \'csv\' and \'xlsx\' are supported.`, '[ExportPIM]');
+      return;
+  };
 
   return {
     csvString,
