@@ -193,10 +193,10 @@ app.post('/export/legacy/pim/product', (req, res) => {
   try {
     printBody(req);
 
-    const filename = createExportFilename(req.recordType, req.exportFormat);
+    const filename = createExportFilename(req.body.recordType, req.body.exportFormat);
     console.log('filename: ', filename);
     let daZipFilename;
-    if (req.includeRecordAsset) {
+    if (req.body.includeRecordAsset) {
       daZipFilename = createDaZipFilename();
     }
 
