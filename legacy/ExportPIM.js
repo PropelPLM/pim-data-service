@@ -19,7 +19,7 @@ const {
 
 const { getSessionId } = require('../lib/utility')
 
-async function LegacyExportPIM(req) {
+async function LegacyExportPIM(req, filename, daZipFilename) {
   const reqBody = req.body;
   const isListPageExport = reqBody.options.isListPageExport;
   // Create csv string result with records and columns in request body
@@ -45,14 +45,9 @@ async function LegacyExportPIM(req) {
     console.log('error: ', err);
   }
 
-  const exportFormat = reqBody.exportFormat;
-  const baseFileName = createBaseFileName();
-  const filename = `${reqBody.recordType}-Export_${baseFileName}.${exportFormat}`;
-
-  let daZipFilename;
   if (reqBody.includeRecordAsset) {
-    daZipFilename = sendDADownloadRequests(
-      baseFileName,
+    sendDADownloadRequests(
+      daZipFilename,
       daDownloadDetailsList,
       reqBody
     );
@@ -101,11 +96,7 @@ async function LegacyExportPIM(req) {
       return;
   };
 
-  return {
-    csvString,
-    exportFilename: filename,
-    daZipFilename
-  };
+  return csvString;
 }
 
 function convertArrayOfObjectsToCSV(
@@ -194,15 +185,14 @@ function createBaseFileName() {
 }
 
 async function sendDADownloadRequests(
-  zipFileName,
+  daZipFilename,
   daDownloadDetailsList,
   reqBody
 ) {
   if (!daDownloadDetailsList || !daDownloadDetailsList.length) return;
   reqBody.shouldPostToUser = true;
   reqBody.communityId = null;
-  zipFileName = `Digital_Asset-Export_${zipFileName}.zip`;
-  const zipFileNameOnDisk = crypto.randomBytes(20).toString('hex') + zipFileName;
+  const zipFileNameOnDisk = crypto.randomBytes(20).toString('hex') + daZipFilename;
   const output = fs.createWriteStream(zipFileNameOnDisk);
   const archive = archiver('zip', {
     zlib: { level: 9 }
@@ -233,7 +223,7 @@ async function sendDADownloadRequests(
     console.log('File zipped successfully.');
   })
 
-  return zipFileName;
+  return daZipFilename;
 }
 
 // GET digital asset, convert the fileContent buffer into a stream to be appended to the zip archiver
@@ -260,4 +250,22 @@ const requestAndAppendDA = (cdnUrl, fileContent, zipInputStream, filename, archi
   })
 }
 
-module.exports = LegacyExportPIM;
+function createExportFilename(recordType, exportFormat) {
+  const baseFileName = createBaseFileName();
+  const filename = `${recordType}-Export_${baseFileName}.${exportFormat}`;
+
+  return filename;
+}
+
+function createDaZipFilename() {
+  const baseFileName = createBaseFileName();
+  const daZipFilename = `Digital_Asset-Export_${baseFileName}.zip`;
+
+  return daZipFilename;
+}
+
+module.exports = {
+  LegacyExportPIM,
+  createExportFilename,
+  createDaZipFilename
+};
