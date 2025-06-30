@@ -218,7 +218,7 @@ async function sendDADownloadRequests(
   }
   Promise.all(promises).then(() => {
     archive.on('finish', () => {
-      postToChatter(zipFileName, zipFileNameOnDisk, '', reqBody);
+      postToChatter(daZipFilename, zipFileNameOnDisk, '', reqBody);
     });
     archive.finalize();
     console.log('File zipped successfully.');
