@@ -20,7 +20,6 @@ const {
 const { getSessionId } = require('../lib/utility')
 
 async function LegacyExportPIM(req, filename, daZipFilename) {
-  console.log('is this even runnning');
   const reqBody = req.body;
   const isListPageExport = reqBody.options.isListPageExport;
   // Create csv string result with records and columns in request body
@@ -71,8 +70,6 @@ async function LegacyExportPIM(req, filename, daZipFilename) {
   }
 
   const exportFormat = reqBody.exportFormat;
-  console.log('exportFormat: ', exportFormat);
-  console.log('reqBody: ', JSON.parse(JSON.stringify(reqBody)));
   if (exportFormat == 'csv') {
     // CSV -> CSV export (both template and non-template)
     const nameOnDisk = crypto.randomBytes(20).toString('hex') + filename;
