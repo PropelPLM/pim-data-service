@@ -69,6 +69,7 @@ async function LegacyExportPIM(req, filename, daZipFilename) {
     return;
   }
 
+  const exportFormat = reqBody.exportFormat;
   if (exportFormat == 'csv') {
     // CSV -> CSV export (both template and non-template)
     const nameOnDisk = crypto.randomBytes(20).toString('hex') + filename;
