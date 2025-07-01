@@ -337,6 +337,7 @@ async function buildStructureWithSecondaryCategoryIds(listCategoryIds) {
   if (listCategoryIds.size === 0) {
     throw 'No Category Ids';
   }
+  console.log('listCategoryIds: ', listCategoryIds);
   let links = await service.simpleQuery(
     helper.namespaceQuery(
       `select Id, Product__c
@@ -344,6 +345,7 @@ async function buildStructureWithSecondaryCategoryIds(listCategoryIds) {
       where Alternate_Category__c IN (${listCategoryIds})`
     )
   );
+  console.log('links: ', links);
 
   if (links.size > 0) {
     let productIds = [];
