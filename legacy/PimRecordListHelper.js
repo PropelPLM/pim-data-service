@@ -348,6 +348,7 @@ async function buildStructureWithSecondaryCategoryIds(listCategoryIds) {
   if (links.size > 0) {
     let productIds = [];
     links.forEach(link => {
+      console.log('product id ' + helper.getValue(link, 'Product__c'));
       productIds.push(helper.getValue(link, 'Product__c'));
     });
     productIds = prepareIdsForSOQL(productIds);
