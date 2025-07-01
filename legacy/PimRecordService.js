@@ -88,6 +88,9 @@ async function getVariantStructure(productsList) {
 
 function populateRecordDetailsMap(helper, record, parentProduct) {
   const topLevelRecord = parentProduct ?? record;
+  console.log('parentProduct: ', parentProduct);
+  console.log('record: ', record);
+  console.log('topLevelRecord: ', topLevelRecord);
   const tempMap = new Map();
   tempMap.set('Id', record.Id);
   tempMap.set('Record_ID', record.Name);
