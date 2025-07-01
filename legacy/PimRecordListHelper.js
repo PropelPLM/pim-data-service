@@ -346,6 +346,7 @@ async function buildStructureWithSecondaryCategoryIds(listCategoryIds) {
     )
   );
   console.log('links: ', links);
+  console.log('links.size: ', links.size);
 
   if (links.size > 0) {
     let productIds = [];
