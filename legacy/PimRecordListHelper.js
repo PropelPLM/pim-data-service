@@ -374,7 +374,7 @@ async function buildStructureWithSecondaryCategoryIds(listCategoryIds) {
             Overwritten_Variant_Value__r.Name,
             Overwritten_Variant_Value__r.Parent_Value_Path__c,
             Value__c,
-            Value__Long__c,
+            Value_Long__c,
             Numeric_Value__c
         from Attributes__r
         order by Attribute_Label__r.Order__c asc
