@@ -340,8 +340,8 @@ async function buildStructureWithSecondaryCategoryIds(listCategoryIds) {
   let links = await service.simpleQuery(
     helper.namespaceQuery(
       `select Id, Product__c
-      from Product_Category_Link__c
-      where Primary_Category__c IN (${listCategoryIds})`
+      from Alternate_Category_Link__c
+      where Alternate_Category__c IN (${listCategoryIds})`
     )
   );
 
