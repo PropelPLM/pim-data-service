@@ -337,7 +337,6 @@ async function buildStructureWithSecondaryCategoryIds(listCategoryIds) {
   if (listCategoryIds.size === 0) {
     throw 'No Category Ids';
   }
-  console.log('listCategoryIds: ', listCategoryIds);
   let links = await service.simpleQuery(
     helper.namespaceQuery(
       `select Id, Product__c
@@ -345,13 +344,10 @@ async function buildStructureWithSecondaryCategoryIds(listCategoryIds) {
       where Alternate_Category__c IN (${listCategoryIds})`
     )
   );
-  console.log('links: ', links);
-  console.log('links.length: ', links.length);
 
   if (links.length > 0) {
     let productIds = [];
     links.forEach(link => {
-      console.log('product id ' + helper.getValue(link, 'Product__c'));
       productIds.push(helper.getValue(link, 'Product__c'));
     });
     productIds = prepareIdsForSOQL(productIds);
