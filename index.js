@@ -25,7 +25,7 @@ const ImportCommerceProduct = require('./lib/ImportCommerceProduct');
 const ImportProduct = require('./lib/ImportProduct');
 const ExportPim = require('./lib/ExportProduct');
 
-const LegacyExportPim = require('./legacy/ExportPIM');
+const { LegacyExportPIM, createExportFilename, createDaZipFilename } = require('./legacy/ExportPIM');
 
 const ERROR_OBJ = { message: '', success: false };
 const SUCCESS_OBJ = { message: 'Request received', success: true };
@@ -192,8 +192,22 @@ app.post('/export/pim/product', (req, res) => {
 app.post('/export/legacy/pim/product', (req, res) => {
   try {
     printBody(req);
-    LegacyExportPim(req);
-    res.status(200).send('');
+
+    const { recordType, exportFormat, includeRecordAsset } = req.body;
+
+    const filename = createExportFilename(recordType, exportFormat);
+    let daZipFilename;
+    if (includeRecordAsset) {
+      daZipFilename = createDaZipFilename();
+    }
+
+    LegacyExportPIM(req, filename, daZipFilename);
+    
+    const retBody = {
+      exportFilename: filename,
+      daZipFilename: daZipFilename ? daZipFilename : null
+    }
+    res.status(200).send(JSON.parse(JSON.stringify(retBody)));
   } catch (err) {
     res.status(400).send('');
   }
