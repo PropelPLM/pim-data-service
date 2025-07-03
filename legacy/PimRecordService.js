@@ -88,13 +88,13 @@ async function getVariantStructure(productsList) {
 
 function populateRecordDetailsMap(helper, record, parentProduct) {
   const topLevelRecord = parentProduct ?? record;
+  const categoryName = helper.getValue(topLevelRecord, 'Category__r') ? 
+    helper.getValue(topLevelRecord, 'Category__r').Name :
+    '';
   const tempMap = new Map();
   tempMap.set('Id', record.Id);
   tempMap.set('Record_ID', record.Name);
-  tempMap.set(
-    'Category__r.Name',
-    helper.getValue(topLevelRecord, 'Category__r').Name
-  );
+  tempMap.set('Category__r.Name', categoryName);
   tempMap.set('Category__c', helper.getValue(topLevelRecord, 'Category__c'));
   tempMap.set('CreatedDate', record.CreatedDate);
   tempMap.set('External_File_Id__c', helper.getValue(topLevelRecord, 'External_File_Id__c'));

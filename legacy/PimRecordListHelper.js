@@ -340,12 +340,12 @@ async function buildStructureWithSecondaryCategoryIds(listCategoryIds) {
   let links = await service.simpleQuery(
     helper.namespaceQuery(
       `select Id, Product__c
-      from Product_Category_Link__c
-      where Primary_Category__c IN (${listCategoryIds})`
+      from Alternate_Category_Link__c
+      where Alternate_Category__c IN (${listCategoryIds})`
     )
   );
 
-  if (links.size > 0) {
+  if (links.length > 0) {
     let productIds = [];
     links.forEach(link => {
       productIds.push(helper.getValue(link, 'Product__c'));
@@ -370,7 +370,7 @@ async function buildStructureWithSecondaryCategoryIds(listCategoryIds) {
             Overwritten_Variant_Value__r.Name,
             Overwritten_Variant_Value__r.Parent_Value_Path__c,
             Value__c,
-            Value__Long__c,
+            Value_Long__c,
             Numeric_Value__c
         from Attributes__r
         order by Attribute_Label__r.Order__c asc
