@@ -19,7 +19,7 @@ const {
 
 const { getSessionId } = require('../lib/utility')
 
-async function LegacyExportPIM(req) {
+async function LegacyExportPIM(req, filename, daZipFilename) {
   const reqBody = req.body;
   const isListPageExport = reqBody.options.isListPageExport;
   // Create csv string result with records and columns in request body
@@ -45,14 +45,13 @@ async function LegacyExportPIM(req) {
     console.log('error: ', err);
   }
 
-  const baseFileName = createBaseFileName();
-  const filename = `${reqBody.recordType}-Export_${baseFileName}.csv`;
-
-  sendDADownloadRequests(
-    baseFileName,
-    daDownloadDetailsList,
-    reqBody
-  );
+  if (reqBody.includeRecordAsset) {
+    sendDADownloadRequests(
+      daZipFilename,
+      daDownloadDetailsList,
+      reqBody
+    );
+  }
 
   if (!reqBody.includeAttributes) return;
   if (recordsAndCols?.length !== 2) {
@@ -70,7 +69,8 @@ async function LegacyExportPIM(req) {
     return;
   }
 
-  if (reqBody.exportFormat == 'csv') {
+  const exportFormat = reqBody.exportFormat;
+  if (exportFormat == 'csv') {
     // CSV -> CSV export (both template and non-template)
     const nameOnDisk = crypto.randomBytes(20).toString('hex') + filename;
     const file = fs.createWriteStream(nameOnDisk);
@@ -83,7 +83,7 @@ async function LegacyExportPIM(req) {
         console.log('error: ', err);
       }
     });
-  } else if (reqBody.exportFormat == 'xlsx') {
+  } else if (exportFormat == 'xlsx') {
     // CSV -> XLSX export OR XLSX non template export
     sendCsvToAsposeCells(
       csvString,
@@ -91,8 +91,12 @@ async function LegacyExportPIM(req) {
       reqBody.useAsposeStaging,
       reqBody.hostUrl,
       reqBody.templateId
-    );
-  }
+    ) 
+  } else {
+      logErrorResponse(`${exportFormat} is not supported. Only \'csv\' and \'xlsx\' are supported.`, '[ExportPIM]');
+      return;
+  };
+
   return csvString;
 }
 
@@ -182,15 +186,14 @@ function createBaseFileName() {
 }
 
 async function sendDADownloadRequests(
-  zipFileName,
+  daZipFilename,
   daDownloadDetailsList,
   reqBody
 ) {
   if (!daDownloadDetailsList || !daDownloadDetailsList.length) return;
   reqBody.shouldPostToUser = true;
   reqBody.communityId = null;
-  zipFileName = `Digital_Asset-Export_${zipFileName}.zip`;
-  const zipFileNameOnDisk = crypto.randomBytes(20).toString('hex') + zipFileName;
+  const zipFileNameOnDisk = crypto.randomBytes(20).toString('hex') + daZipFilename;
   const output = fs.createWriteStream(zipFileNameOnDisk);
   const archive = archiver('zip', {
     zlib: { level: 9 }
@@ -215,11 +218,13 @@ async function sendDADownloadRequests(
   }
   Promise.all(promises).then(() => {
     archive.on('finish', () => {
-      postToChatter(zipFileName, zipFileNameOnDisk, '', reqBody);
+      postToChatter(daZipFilename, zipFileNameOnDisk, '', reqBody);
     });
     archive.finalize();
     console.log('File zipped successfully.');
   })
+
+  return daZipFilename;
 }
 
 // GET digital asset, convert the fileContent buffer into a stream to be appended to the zip archiver
@@ -246,4 +251,22 @@ const requestAndAppendDA = (cdnUrl, fileContent, zipInputStream, filename, archi
   })
 }
 
-module.exports = LegacyExportPIM;
+function createExportFilename(recordType, exportFormat) {
+  const baseFileName = createBaseFileName();
+  const filename = `${recordType}-Export_${baseFileName}.${exportFormat}`;
+
+  return filename;
+}
+
+function createDaZipFilename() {
+  const baseFileName = createBaseFileName();
+  const daZipFilename = `Digital_Asset-Export_${baseFileName}.zip`;
+
+  return daZipFilename;
+}
+
+module.exports = {
+  LegacyExportPIM,
+  createExportFilename,
+  createDaZipFilename
+};
