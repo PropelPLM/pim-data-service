@@ -212,7 +212,6 @@ async function getRecordByCategory(
   let pm;
   if (isPrimaryCategory) {
     pm = await buildStructureWithCategoryIds(listCategoryIds, isProduct);
-    console.log('pm[0]: ', JSON.parse(JSON.stringify(pm[0])));
   } else {
     pm = await buildStructureWithSecondaryCategoryIds(listCategoryIds);
   }
@@ -756,8 +755,6 @@ async function addExportColumns(
       recordMap.set(header, templateHeaderValueMap.get(header));
     });
   });
-  console.log('exportRecordsAndColumns: ', JSON.parse(JSON.stringify(exportRecordsAndColumns)));
-  console.log('exportColumns: ', JSON.parse(JSON.stringify(exportColumns)));
   return [...exportRecordsAndColumns, exportColumns];
 }
 

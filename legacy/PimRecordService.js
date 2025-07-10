@@ -47,7 +47,6 @@ async function getResultForProductStructure(recordList, isProduct) {
       });
     });
   });
-  console.log('productVariantValueMapList: ', JSON.parse(JSON.stringify(productVariantValueMapList[0])));
   return productVariantValueMapList;
 }
 
@@ -77,8 +76,6 @@ async function getVariantStructure(productsList) {
     )
   );
 
-  console.log('variantsList[0]: ', JSON.parse(JSON.stringify(variantsList[0].Variant_Values__r)));
-
   let variantParentProductId;
   variantsList.forEach(variant => {
     variantParentProductId = helper.getValue(variant, 'Product__c');
@@ -107,8 +104,10 @@ function populateRecordDetailsMap(helper, record, parentProduct) {
   tempMap.set('View_Link__c', helper.getValue(topLevelRecord, 'View_Link__c'));
 
   let completenessScore = record.Completeness_Score__c;
-  if (!completenessScore || completenessScore < 0) {
-    completenessScore = '--';
+  // We cant do !completenessScore here because if completenessScore == 0, it will evaluate to true.
+  // Hence we need to specifically check for null and undefined.
+  if (completenessScore === null || completenessScore === undefined || completenessScore < 0) {
+      completenessScore = '--';
   }
   tempMap.set('Completeness_Score__c', completenessScore);
 
