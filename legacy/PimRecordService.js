@@ -47,7 +47,7 @@ async function getResultForProductStructure(recordList, isProduct) {
       });
     });
   });
-  console.log('productVariantValueMapList: ', JSON.parse(JSON.stringify(productVariantValueMapList)));
+  console.log('productVariantValueMapList: ', JSON.parse(JSON.stringify(productVariantValueMapList.values()[0])));
   return productVariantValueMapList;
 }
 
@@ -107,6 +107,7 @@ function populateRecordDetailsMap(helper, record, parentProduct) {
   tempMap.set('Size__c', helper.getValue(topLevelRecord, 'Size__c'));
   tempMap.set('View_Link__c', helper.getValue(topLevelRecord, 'View_Link__c'));
 
+  console.log('tempMap: ', JSON.parse(JSON.stringify(tempMap)));
   if (!parentProduct) return tempMap;
 
   tempMap.set(
@@ -116,7 +117,6 @@ function populateRecordDetailsMap(helper, record, parentProduct) {
       : record.Name
   );
   tempMap.set('Parent_ID', topLevelRecord.Id);
-  console.log('tempMap: ', JSON.parse(JSON.stringify(tempMap)));
   return tempMap;
 }
 
