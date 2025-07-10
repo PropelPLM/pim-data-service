@@ -66,7 +66,8 @@ async function getVariantStructure(productsList) {
           Id,
           Name,
           Label__c,
-          Parent_Value_Path__c
+          Parent_Value_Path__c,
+          Completeness_Score__c
         from Variant_Values__r
         order by Name
       )
@@ -75,6 +76,8 @@ async function getVariantStructure(productsList) {
       order by Order__c`
     )
   );
+
+  console.log('variantsList[0]: ', JSON.parse(JSON.stringify(variantsList[0])));
 
   let variantParentProductId;
   variantsList.forEach(variant => {
