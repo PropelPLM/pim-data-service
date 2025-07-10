@@ -98,6 +98,7 @@ function populateRecordDetailsMap(helper, record, parentProduct) {
   const tempMap = new Map();
   tempMap.set('Id', record.Id);
   tempMap.set('Record_ID', record.Name);
+  tempMap.set('Completeness_Score__c', record.Completeness_Score__c);
   tempMap.set('Category__r.Name', categoryName);
   tempMap.set('Category__c', helper.getValue(topLevelRecord, 'Category__c'));
   tempMap.set('CreatedDate', record.CreatedDate);
@@ -115,6 +116,7 @@ function populateRecordDetailsMap(helper, record, parentProduct) {
       : record.Name
   );
   tempMap.set('Parent_ID', topLevelRecord.Id);
+  console.log('tempMap: ', JSON.parse(JSON.stringify(tempMap)));
   return tempMap;
 }
 
