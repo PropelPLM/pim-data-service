@@ -755,6 +755,7 @@ async function addExportColumns(
       recordMap.set(header, templateHeaderValueMap.get(header));
     });
   });
+  console.log('exportColumns: ', JSON.parse(JSON.stringify(exportColumns)));
   return [...exportRecordsAndColumns, exportColumns];
 }
 
