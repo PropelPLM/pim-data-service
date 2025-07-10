@@ -107,7 +107,6 @@ function populateRecordDetailsMap(helper, record, parentProduct) {
   tempMap.set('Size__c', helper.getValue(topLevelRecord, 'Size__c'));
   tempMap.set('View_Link__c', helper.getValue(topLevelRecord, 'View_Link__c'));
 
-  console.log('tempMap: ', JSON.parse(JSON.stringify(tempMap)));
   if (!parentProduct) return tempMap;
 
   tempMap.set(
