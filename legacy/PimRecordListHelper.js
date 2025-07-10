@@ -286,7 +286,7 @@ async function buildStructureWithCategoryIds(
   // return list of records
   return await service.simpleQuery(
     helper.namespaceQuery(
-      `select Id, Name, Category__c, Category__r.Name, ${
+      `select Id, Name, Category__c, Category__r.Name, Completeness_Score__c, ${
         isProduct ? '' : 'CreatedDate, Asset_Status__c, External_File_Id__c, Mime_Type__c, Size__c, View_Link__c,'
       }
       (
