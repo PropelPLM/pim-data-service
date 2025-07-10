@@ -6,7 +6,8 @@ const DA_DOWNLOAD_DETAIL_KEY = 'DA_DOWNLOAD_DETAIL_KEY';
 const DEFAULT_COLUMNS = new Map([
   ['Record ID', 'Record_ID'], // JUST NAMED THIS COS OF HARDCODE IN PROPEL-DOC-JAVA
   ['Title', 'Title'],
-  ['Category Name', 'Category__r.Name']
+  ['Category Name', 'Category__r.Name'],
+  ['Completeness Score', 'Completeness_Score__c'],
 ]);
 const DEFAULT_ASSET_COLUMNS = new Map([
   ['Created Date', 'CreatedDate'], 
