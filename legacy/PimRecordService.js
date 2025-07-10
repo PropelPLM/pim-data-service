@@ -77,7 +77,7 @@ async function getVariantStructure(productsList) {
     )
   );
 
-  console.log('variantsList[0]: ', JSON.parse(JSON.stringify(variantsList[0])));
+  console.log('variantsList[0]: ', JSON.parse(JSON.stringify(variantsList[0].Variant_Values__r)));
 
   let variantParentProductId;
   variantsList.forEach(variant => {
