@@ -98,7 +98,6 @@ function populateRecordDetailsMap(helper, record, parentProduct) {
   const tempMap = new Map();
   tempMap.set('Id', record.Id);
   tempMap.set('Record_ID', record.Name);
-  tempMap.set('Completeness_Score__c', record.Completeness_Score__c);
   tempMap.set('Category__r.Name', categoryName);
   tempMap.set('Category__c', helper.getValue(topLevelRecord, 'Category__c'));
   tempMap.set('CreatedDate', record.CreatedDate);
@@ -106,6 +105,12 @@ function populateRecordDetailsMap(helper, record, parentProduct) {
   tempMap.set('Mime_Type__c', helper.getValue(topLevelRecord, 'Mime_Type__c'));
   tempMap.set('Size__c', helper.getValue(topLevelRecord, 'Size__c'));
   tempMap.set('View_Link__c', helper.getValue(topLevelRecord, 'View_Link__c'));
+
+  let completenessScore = record.Completeness_Score__c;
+  if (!completenessScore || completenessScore < 0) {
+    completenessScore = '--';
+  }
+  tempMap.set('Completeness_Score__c', completenessScore);
 
   if (!parentProduct) return tempMap;
 
