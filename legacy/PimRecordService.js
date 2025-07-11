@@ -65,7 +65,8 @@ async function getVariantStructure(productsList) {
           Id,
           Name,
           Label__c,
-          Parent_Value_Path__c
+          Parent_Value_Path__c,
+          Completeness_Score__c
         from Variant_Values__r
         order by Name
       )
@@ -101,6 +102,14 @@ function populateRecordDetailsMap(helper, record, parentProduct) {
   tempMap.set('Mime_Type__c', helper.getValue(topLevelRecord, 'Mime_Type__c'));
   tempMap.set('Size__c', helper.getValue(topLevelRecord, 'Size__c'));
   tempMap.set('View_Link__c', helper.getValue(topLevelRecord, 'View_Link__c'));
+
+  let completenessScore = helper.getValue(record, 'Completeness_Score__c');
+  // We cant do !completenessScore here because if completenessScore == 0, it will evaluate to true.
+  // Hence we need to specifically check for null and undefined.
+  if (completenessScore === null || completenessScore === undefined || completenessScore < 0) {
+      completenessScore = '--';
+  }
+  tempMap.set('Completeness_Score__c', completenessScore);
 
   if (!parentProduct) return tempMap;
 
