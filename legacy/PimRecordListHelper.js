@@ -86,8 +86,9 @@ async function PimRecordListHelper(
     if (isSKUExport && exportRecordsAndColumns[0].length) {
       // get parent products of selected records
       console.log('exportOption in isSKUExport: ', exportOption);
-
+      console.log('exportRecordsAndColumns[0].length: ', exportRecordsAndColumns[0].length);
       for (let selectedRecord of exportRecordsAndColumns[0]) {
+        console.log('selectedRecord: ', JSON.parse(JSON.stringify(selectedRecord)));
         selectedRecordParentProductId = selectedRecord.get('Parent_ID') ?? selectedRecord.get('Id');
         if (!productsToQueryForSKU.includes(selectedRecordParentProductId)) {
           productsToQueryForSKU.push(selectedRecordParentProductId);
@@ -102,6 +103,7 @@ async function PimRecordListHelper(
         if (exportOption === 'export-filtered') {
           if (variantValueIds.includes(lowestVariant.Id)) {
             vvIds.add(lowestVariant.Id)
+            recordIdSet.add(helper.getValue(lowestVariant, 'Variant__r.Product__c'));
           }
         } else {
           vvIds.add(lowestVariant.Id)
