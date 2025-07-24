@@ -98,8 +98,13 @@ async function PimRecordListHelper(
       exportRecordsAndColumns[0] = await populateRecordDetailsForLowestVariants(lowestVariants);
       // update variant value ids and record ids with only those relevant to lowest variants
       vvIds.clear();
+      for (let id of variantValueIds) {
+        console.log('vv id: ', id);
+      }
       for (let lowestVariant of lowestVariants) {
+        console.log('lowestVariant: ', lowestVariant);
         if (exportOption === 'export-filtered') {
+          console.log('variantValueIds.includes(lowestVariant.Id): ', variantValueIds.includes(lowestVariant.Id));
           if (variantValueIds.includes(lowestVariant.Id)) {
             vvIds.add(lowestVariant.Id)
             recordIdSet.add(helper.getValue(lowestVariant, 'Variant__r.Product__c'));
