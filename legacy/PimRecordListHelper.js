@@ -99,7 +99,7 @@ async function PimRecordListHelper(
       // update variant value ids and record ids with only those relevant to lowest variants
       vvIds.clear();
       for (let lowestVariant of lowestVariants) {
-        if (exportOption === 'lowestVariants') {
+        if (exportOption === 'export-filtered') {
           if (variantValueIds.includes(lowestVariant.Id)) {
             vvIds.add(lowestVariant.Id)
             recordIdSet.add(helper.getValue(lowestVariant, 'Variant__r.Product__c'));
@@ -109,7 +109,7 @@ async function PimRecordListHelper(
           recordIdSet.add(helper.getValue(lowestVariant, 'Variant__r.Product__c'));
         }
       }
-      console.log('vvIds.length: ', vvIds.length);
+      console.log('vvIds.length(): ', vvIds.length());
     } else if (!isSKUExport && exportRecordsAndColumns[0].length) {
       const stringifiedQuotedVariantValueIds = prepareIdsForSOQL(vvIds);
       let variantValues = await service.queryExtend(
