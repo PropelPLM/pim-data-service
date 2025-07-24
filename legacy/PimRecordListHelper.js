@@ -85,32 +85,25 @@ async function PimRecordListHelper(
     let productsToQueryForSKU = [];
     if (isSKUExport && exportRecordsAndColumns[0].length) {
       // get parent products of selected records
-      console.log('exportOption in isSKUExport: ', exportOption);
-      console.log('exportRecordsAndColumns[0]: ', JSON.parse(JSON.stringify(exportRecordsAndColumns[0])));
-      console.log('exportRecordsAndColumns[0].length: ', exportRecordsAndColumns[0].length);
       for (let selectedRecord of exportRecordsAndColumns[0]) {
         selectedRecordParentProductId = selectedRecord.get('Parent_ID') ?? selectedRecord.get('Id');
-        console.log('selectedRecordParentProductId: ', selectedRecordParentProductId);
         if (!productsToQueryForSKU.includes(selectedRecordParentProductId)) {
           productsToQueryForSKU.push(selectedRecordParentProductId);
         }
       }
       // get SKUs (lowest variants) of parent products of selected records
-      console.log('productsToQueryForSKU: ', JSON.parse(JSON.stringify(productsToQueryForSKU)));
-      const lowestVariants = await getLowestVariantsFromProducts(productsToQueryForSKU, reqBody);
+      let lowestVariants = await getLowestVariantsFromProducts(productsToQueryForSKU, reqBody);
+      if (exportOption === 'export-filtered') {
+        lowestVariants = lowestVariants.filter(lowestVariant => {
+          return variantValueIds.includes(lowestVariant.Id);
+        });
+      }
       exportRecordsAndColumns[0] = await populateRecordDetailsForLowestVariants(lowestVariants);
       // update variant value ids and record ids with only those relevant to lowest variants
       vvIds.clear();
       for (let lowestVariant of lowestVariants) {
-        if (exportOption === 'export-filtered') {
-          if (variantValueIds.includes(lowestVariant.Id)) {
-            vvIds.add(lowestVariant.Id)
-            recordIdSet.add(helper.getValue(lowestVariant, 'Variant__r.Product__c'));
-          }
-        } else {
-          vvIds.add(lowestVariant.Id)
-          recordIdSet.add(helper.getValue(lowestVariant, 'Variant__r.Product__c'));
-        }
+        vvIds.add(lowestVariant.Id)
+        recordIdSet.add(helper.getValue(lowestVariant, 'Variant__r.Product__c'));
       }
     } else if (!isSKUExport && exportRecordsAndColumns[0].length) {
       const stringifiedQuotedVariantValueIds = prepareIdsForSOQL(vvIds);
