@@ -39,7 +39,8 @@ async function PimRecordListHelper(
     exportType,
     recordIds,
     variantValueIds,
-    namespace
+    namespace,
+    exportOption
   } = reqBody;
 
   /** PIM repo ProductService.productStructureByCategory start */
@@ -84,6 +85,8 @@ async function PimRecordListHelper(
     let productsToQueryForSKU = [];
     if (isSKUExport && exportRecordsAndColumns[0].length) {
       // get parent products of selected records
+      console.log('exportOption in isSKUExport: ', exportOption);
+
       for (let selectedRecord of exportRecordsAndColumns[0]) {
         selectedRecordParentProductId = selectedRecord.get('Parent_ID') ?? selectedRecord.get('Id');
         if (!productsToQueryForSKU.includes(selectedRecordParentProductId)) {
