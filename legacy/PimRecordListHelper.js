@@ -86,15 +86,17 @@ async function PimRecordListHelper(
     if (isSKUExport && exportRecordsAndColumns[0].length) {
       // get parent products of selected records
       console.log('exportOption in isSKUExport: ', exportOption);
+      console.log('exportRecordsAndColumns[0]: ', JSON.parse(JSON.stringify(exportRecordsAndColumns[0])));
       console.log('exportRecordsAndColumns[0].length: ', exportRecordsAndColumns[0].length);
       for (let selectedRecord of exportRecordsAndColumns[0]) {
-        console.log('selectedRecord: ', JSON.parse(JSON.stringify(selectedRecord)));
         selectedRecordParentProductId = selectedRecord.get('Parent_ID') ?? selectedRecord.get('Id');
+        console.log('selectedRecordParentProductId: ', selectedRecordParentProductId);
         if (!productsToQueryForSKU.includes(selectedRecordParentProductId)) {
           productsToQueryForSKU.push(selectedRecordParentProductId);
         }
       }
       // get SKUs (lowest variants) of parent products of selected records
+      console.log('productsToQueryForSKU: ', JSON.parse(JSON.stringify(productsToQueryForSKU)));
       const lowestVariants = await getLowestVariantsFromProducts(productsToQueryForSKU, reqBody);
       exportRecordsAndColumns[0] = await populateRecordDetailsForLowestVariants(lowestVariants);
       // update variant value ids and record ids with only those relevant to lowest variants
