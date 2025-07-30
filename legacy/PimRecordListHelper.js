@@ -39,7 +39,8 @@ async function PimRecordListHelper(
     exportType,
     recordIds,
     variantValueIds,
-    namespace
+    namespace,
+    exportOption
   } = reqBody;
 
   /** PIM repo ProductService.productStructureByCategory start */
@@ -91,7 +92,15 @@ async function PimRecordListHelper(
         }
       }
       // get SKUs (lowest variants) of parent products of selected records
-      const lowestVariants = await getLowestVariantsFromProducts(productsToQueryForSKU, reqBody);
+      let lowestVariants = await getLowestVariantsFromProducts(productsToQueryForSKU, reqBody);
+      if (exportOption === 'export-filtered') {
+        // For export-filtered, we want to apply What You See Is What You Get (WYSIWYG).
+        // The variantValueIds here are passed in from the BE and it may potentially contain lowest variants.
+        // Hence, to only show WYSIWYG, we have to filter out these variantValueIds in lowestVariants.
+        lowestVariants = lowestVariants.filter(lowestVariant => {
+          return variantValueIds.includes(lowestVariant.Id);
+        });
+      }
       exportRecordsAndColumns[0] = await populateRecordDetailsForLowestVariants(lowestVariants);
       // update variant value ids and record ids with only those relevant to lowest variants
       vvIds.clear();
