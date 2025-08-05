@@ -57,7 +57,7 @@ async function getVariantStructure(productsList) {
   const variantStructure = new Map();
 
   if (productsIds.length == 0) return variantStructure;
-  const variantsList = await service.simpleQuery(
+  const variantsList = await service.queryExtend(
     helper.namespaceQuery(
       `select Id, Name, Product__c,
       (
@@ -71,9 +71,8 @@ async function getVariantStructure(productsList) {
         order by Name
       )
       from Variant__c
-      where Product__c IN (${productsIds})
-      order by Order__c`
-    )
+      where Product__c IN (${service.QUERY_LIST})`.replace(/\n/g, ' ')
+    ), productsIds.split(',')
   );
 
   let variantParentProductId;

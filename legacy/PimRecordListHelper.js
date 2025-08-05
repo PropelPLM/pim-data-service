@@ -50,6 +50,7 @@ async function PimRecordListHelper(
   };
 
   // PIM repo ProductPQLHelper.getRecordByCategory()
+  // TODO: Should not query all product. only the targeted recordIds
   const exportRecords = await getRecordByCategory(
       pqlBuilder,
       isPrimaryCategory,
@@ -292,7 +293,7 @@ async function buildStructureWithCategoryIds(
     throw 'No Category Ids';
   }
   // return list of records
-  return await service.simpleQuery(
+  return await service.queryExtend(
     helper.namespaceQuery(
       `select Id, Name, Category__c, Category__r.Name, ${
         isProduct ? 'Completeness_Score__c,' : 'CreatedDate, Asset_Status__c, External_File_Id__c, Mime_Type__c, Size__c, View_Link__c,'
@@ -336,8 +337,8 @@ async function buildStructureWithCategoryIds(
       from Product__c`
           : ` from Digital_Asset__c`
       }
-      where Category__c IN (${listCategoryIds})`
-    )
+      where Category__c IN (${service.QUERY_LIST})`.replace(/\n/g, ' ')
+    ), listCategoryIds.split(',')
   );
 }
 
@@ -361,7 +362,7 @@ async function buildStructureWithSecondaryCategoryIds(listCategoryIds) {
     });
     productIds = prepareIdsForSOQL(productIds);
     // return productsList
-    return await service.simpleQuery(
+    return await service.queryExtend(
       helper.namespaceQuery(
         `select Id, Name, Category__c, Category__r.Name,
       (
@@ -399,8 +400,8 @@ async function buildStructureWithSecondaryCategoryIds(listCategoryIds) {
         from Variants__r
       )
       from Product__c
-      where Id IN (${productIds})`
-      )
+      where Id IN (${service.QUERY_LIST})`.replace(/\n/g, ' ')
+      ), productIds.split(',')
     );
   }
 }

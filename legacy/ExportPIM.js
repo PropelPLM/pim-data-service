@@ -29,7 +29,7 @@ async function LegacyExportPIM(req, filename, daZipFilename) {
 
   // highjacking the flow here are inserting the session id from the JWT flow
   const response = await getSessionId({
-    isTest: reqBody.isTest,
+    isTest: reqBody.isTest || reqBody.instanceUrl?.includes('.sandbox.my'),
     user: reqBody.user
   });
   reqBody.sessionId = response.access_token;
