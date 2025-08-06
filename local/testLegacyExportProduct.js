@@ -1,11 +1,12 @@
-const LegacyExportProduct = require('../legacy/ExportPIM')
+import * as dotenv from 'dotenv';
+dotenv.config();
+
+import {LegacyExportPIM} from '../legacy/ExportPIM.js'
 
 const treq = {
   body: {
-    clientId: '3MVG9vDPWAliPr7qI2eOWh9MTRBEzmvX6wKco2wZIs46S42fsNODO7MyZIMxJgQB0qycwRNnwAFCebFZ7Pspf',
     isTest: true,
     user: 'test-lwa0dgwoissf@example.com',
-    sessionId: '',
     namespace: 'PIM__',
     instanceUrl: 'https://velocity-momentum-7312-dev-ed.scratch.my.salesforce.com',
     hostUrl: 'velocity-momentum-7312-dev-ed.scratch.my.salesforce.com',
@@ -36,4 +37,4 @@ const treq = {
   }
 }
 
-LegacyExportProduct(treq)
+LegacyExportPIM(treq, 'testFilename', 'daTestFilename')
