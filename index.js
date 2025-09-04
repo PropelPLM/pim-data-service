@@ -163,6 +163,7 @@ app.post('/import/pim/product', (req, res) => {
     new ImportProduct(req, res);
     res.status(200).send(SUCCESS_OBJ);
   } catch (error) {
+    console.log('error: ', JSON.parse(JSON.stringify(error)));
     ERROR_OBJ.message = error;
     res.status(400).send(ERROR_OBJ);
     console.error(ERROR_OBJ)
