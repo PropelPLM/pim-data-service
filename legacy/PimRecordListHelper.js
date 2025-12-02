@@ -618,7 +618,7 @@ async function getVariantValueDetailMap(productsList) {
       from Variant_Value__c
       where Variant__r.Product__c IN (${service.QUERY_LIST})`
     ),
-    productIdList
+    productIdList.split(',')
   );
   variantValueList.forEach(value => {
     variantValueMap.set(value.Id, value);
