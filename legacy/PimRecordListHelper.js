@@ -60,10 +60,7 @@ async function PimRecordListHelper(
 
   // filter the records if rows were selected or filters applied in product list page
   let filteredRecords = exportRecords.filter(record => {
-    return (
-      recordIds?.includes(record.get('Id')) ||
-      variantValueIds?.includes(record.get('Id'))
-    );
+    return recordIds?.includes(record.get('Id')) || variantValueIds?.includes(record.get('Id'));
   });
   let exportRecordsAndColumns = [filteredRecords]; // [[filtered]] zz
 
@@ -90,17 +87,13 @@ async function PimRecordListHelper(
     if (isSKUExport && exportRecordsAndColumns[0].length) {
       // get parent products of selected records
       for (let selectedRecord of exportRecordsAndColumns[0]) {
-        selectedRecordParentProductId =
-          selectedRecord.get('Parent_ID') ?? selectedRecord.get('Id');
+        selectedRecordParentProductId = selectedRecord.get('Parent_ID') ?? selectedRecord.get('Id');
         if (!productsToQueryForSKU.includes(selectedRecordParentProductId)) {
           productsToQueryForSKU.push(selectedRecordParentProductId);
         }
       }
       // get SKUs (lowest variants) of parent products of selected records
-      let lowestVariants = await getLowestVariantsFromProducts(
-        productsToQueryForSKU,
-        reqBody
-      );
+      let lowestVariants = await getLowestVariantsFromProducts(productsToQueryForSKU, reqBody);
       if (exportOption === 'export-filtered') {
         // For export-filtered, we want to apply What You See Is What You Get (WYSIWYG).
         // The variantValueIds here are passed in from the BE and it may potentially contain lowest variants.
@@ -109,16 +102,12 @@ async function PimRecordListHelper(
           return variantValueIds.includes(lowestVariant.Id);
         });
       }
-      exportRecordsAndColumns[0] = await populateRecordDetailsForLowestVariants(
-        lowestVariants
-      );
+      exportRecordsAndColumns[0] = await populateRecordDetailsForLowestVariants(lowestVariants);
       // update variant value ids and record ids with only those relevant to lowest variants
       vvIds.clear();
       for (let lowestVariant of lowestVariants) {
-        vvIds.add(lowestVariant.Id);
-        recordIdSet.add(
-          helper.getValue(lowestVariant, 'Variant__r.Product__c')
-        );
+        vvIds.add(lowestVariant.Id)
+        recordIdSet.add(helper.getValue(lowestVariant, 'Variant__r.Product__c'));
       }
     } else if (!isSKUExport && exportRecordsAndColumns[0].length) {
       const stringifiedQuotedVariantValueIds = prepareIdsForSOQL(vvIds);
@@ -307,9 +296,7 @@ async function buildStructureWithCategoryIds(
   return await service.queryExtend(
     helper.namespaceQuery(
       `select Id, Name, Category__c, Category__r.Name, ${
-        isProduct
-          ? 'Completeness_Score__c,'
-          : 'CreatedDate, Asset_Status__c, External_File_Id__c, Mime_Type__c, Size__c, View_Link__c,'
+        isProduct ? 'Completeness_Score__c,' : 'CreatedDate, Asset_Status__c, External_File_Id__c, Mime_Type__c, Size__c, View_Link__c,'
       }
       (
         select
@@ -351,8 +338,7 @@ async function buildStructureWithCategoryIds(
           : ` from Digital_Asset__c`
       }
       where Category__c IN (${service.QUERY_LIST})`.replace(/\n/g, ' ')
-    ),
-    listCategoryIds.split(',')
+    ), listCategoryIds.split(',')
   );
 }
 
@@ -415,8 +401,7 @@ async function buildStructureWithSecondaryCategoryIds(listCategoryIds) {
       )
       from Product__c
       where Id IN (${service.QUERY_LIST})`.replace(/\n/g, ' ')
-      ),
-      productIds.split(',')
+      ), productIds.split(',')
     );
   }
 }
@@ -501,7 +486,7 @@ async function getAttributesForRecordMap(
         if (!variantToAttributeMap.has(pathVVId)) continue;
 
         for (let attribute of variantToAttributeMap.get(pathVVId)) {
-          if (helper.getValue(attribute, 'Attribute_Label__r') === null) {
+          if ( helper.getValue(attribute, 'Attribute_Label__r') === null ) {
             continue;
           }
           let attrValValue = helper.getAttributeValueValue(attribute);
@@ -579,23 +564,20 @@ async function getAttributesForRecordMap(
 // PIM repo ProductManager.getVariantMap()
 async function getVariantMap(productsList) {
   let variantMap = new Map();
-  let currentValue;
+  let currentValue
   productsList.forEach(product => {
     if (helper.getValue(product, 'Attributes__r') !== null) {
       helper.getValue(product, 'Attributes__r').records.forEach(attribute => {
-        currentValue = helper.getValue(
-          attribute,
-          'Overwritten_Variant_Value__c'
-        );
+        currentValue = helper.getValue(attribute, 'Overwritten_Variant_Value__c')
         // iterate through each product's Attribute_Value__c
-        if (currentValue !== null) {
+        if ( currentValue !== null ) {
           // if the Attribute_Value__c (e.g. 4kg) belongs to a variant (e.g. AC-SWSH-1001-BLK-M)
-          if (variantMap.has(currentValue)) {
+          if ( variantMap.has(currentValue) ) {
             // add on the Attribute_Value__c to the list of attribute values belonging to the variant
-            variantMap.get(currentValue).push(attribute);
+            variantMap.get(currentValue).push(attribute)
           } else {
             // instantiate the list of attribute values
-            variantMap.set(currentValue, [attribute]);
+            variantMap.set( currentValue, [attribute] );
           }
         }
       });
@@ -612,13 +594,12 @@ async function getVariantValueDetailMap(productsList) {
   });
   productIdList = prepareIdsForSOQL(productIdList);
   let variantValueMap = new Map();
-  const variantValueList = await service.queryExtend(
+  const variantValueList = await service.simpleQuery(
     helper.namespaceQuery(
       `select Id, Parent_Value_Path__c, Variant__r.Product__c
       from Variant_Value__c
-      where Variant__r.Product__c IN (${service.QUERY_LIST})`
-    ),
-    productIdList.split(',')
+      where Variant__r.Product__c IN (${productIdList})`
+    )
   );
   variantValueList.forEach(value => {
     variantValueMap.set(value.Id, value);
@@ -664,10 +645,7 @@ async function addExportColumns(
     await addChildrenOfLinkedGroups(linkedGroups, columnAttributeIds);
     if (!isProduct) {
       // check if "System Attributes" attribute group is selected and slate those for export
-      hasDefaultAssetCols = await checkForDefaultAssetCols(
-        exportColumns,
-        linkedGroups
-      );
+      hasDefaultAssetCols = await checkForDefaultAssetCols(exportColumns, linkedGroups);
     }
   }
   if (columnAttributeIds.size > 0 || hasDefaultAssetCols) {
@@ -744,10 +722,7 @@ async function addExportColumns(
           field = field.slice(11, -1);
           missedCount = 0;
           for (let colAttr of columnAttributes) {
-            if (
-              field === helper.getValue(colAttr, 'Label__c') ||
-              field === helper.getValue(colAttr, 'Primary_Key__c')
-            ) {
+            if (field === helper.getValue(colAttr, 'Label__c') || field === helper.getValue(colAttr, 'Primary_Key__c')) {
               exportColumns.push({
                 fieldName: helper.getValue(colAttr, 'Primary_Key__c'),
                 label: templateHeaders[lastHeaderRowIndex][i],
@@ -841,10 +816,7 @@ async function populateRecordDetailsForLowestVariants(lowestVariants) {
     recordMap = new Map();
     recordMap.set('Id', lowestVariant.Id);
     recordMap.set('Record_ID', lowestVariant.Name);
-    recordMap.set(
-      'Category__c',
-      helper.getValue(lowestVariant, 'Variant__r.Product__r.Category__c')
-    );
+    recordMap.set('Category__c', helper.getValue(lowestVariant, 'Variant__r.Product__r.Category__c'));
     recordMap.set(
       'Category__r.Name',
       helper.getValue(lowestVariant, 'Variant__r.Product__r.Category__r.Name')
@@ -855,10 +827,7 @@ async function populateRecordDetailsForLowestVariants(lowestVariants) {
         ? helper.getValue(lowestVariant, 'Label__c')
         : lowestVariant.Name
     );
-    recordMap.set(
-      'Parent_ID',
-      helper.getValue(lowestVariant, 'Variant__r.Product__c')
-    );
+    recordMap.set('Parent_ID', helper.getValue(lowestVariant, 'Variant__r.Product__c'));
     recordMapList.push(recordMap);
   }
 
